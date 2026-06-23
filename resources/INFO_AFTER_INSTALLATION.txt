@@ -1,0 +1,24 @@
+Semester Tracker — Installation Complete
+
+Semester Tracker has been installed successfully.
+
+Getting started
+1. Launch Semester Tracker from the Start Menu or desktop shortcut.
+2. Create a local account.
+3. Enter the total number of credits required for your degree.
+4. Add your semesters, courses, assignments, grades, and deadlines.
+5. Configure deadline reminders from the Settings page.
+
+Important notes
+- Your data is stored locally on this computer.
+- Keep your password safe. Password recovery is not currently available.
+- Deadline notifications can be enabled or disabled in Settings.
+- The Calendar page shows assignments that have a due date.
+- For accurate GPA and CGPA results, make sure course credits, assignment
+  weights, and grades are entered correctly.
+
+Project information
+Semester Tracker is an open-source C++17 desktop application built with Qt,
+SQLite, and libsodium.
+
+Thank you for installing Semester Tracker.

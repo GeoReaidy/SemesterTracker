@@ -1,0 +1,28 @@
+Semester Tracker — Installation Information
+
+Semester Tracker is a desktop application for university students. It helps
+you organize semesters, courses, assignments, grades, deadlines, and academic
+progress in one place.
+
+Main features
+- Semester and course management
+- Assignment tracking with grades, weights, and due dates
+- GPA and CGPA calculation
+- Calendar view for deadlines
+- Startup and system notifications for nearby deadlines
+- Local user accounts with password hashing
+- Configurable reminder preferences
+
+Data and privacy
+- Your account and academic data are stored locally on this computer.
+- Semester Tracker does not upload your data to an online service.
+- Uninstalling the application may not automatically remove your local
+  database unless you choose to delete it manually.
+
+Before continuing
+- Close any running instance of Semester Tracker.
+- Make sure you have permission to install applications on this computer.
+- This project is provided as-is and is intended for educational and
+  portfolio use.
+
+Click Next to continue with the installation.

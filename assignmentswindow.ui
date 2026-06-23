@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AssignmentsWindow</class>
+ <widget class="QWidget" name="AssignmentsWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>920</width>
+    <height>650</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>780</width>
+    <height>540</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Assignments</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#AssignmentsWindow {
+    background-color: #f5f7fb;
+}
+
+QFrame#headerCard,
+QFrame#selectionCard,
+QFrame#assignmentsCard {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+QLabel#assignmentsTitleLabel {
+    color: #111827;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+QLabel#assignmentsSubtitleLabel,
+QLabel#selectionHelpLabel {
+    color: #64748b;
+    font-size: 13px;
+}
+
+QLabel#semesterLabel,
+QLabel#courseLabel,
+QLabel#assignmentsSectionLabel {
+    color: #111827;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+QPushButton#addAssignmentButton {
+    min-height: 40px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 9px;
+    background-color: #2563eb;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+QPushButton#addAssignmentButton:hover {
+    background-color: #1d4ed8;
+}
+
+QPushButton#addAssignmentButton:pressed {
+    background-color: #1e40af;
+}
+
+QPushButton#addAssignmentButton:disabled {
+    background-color: #cbd5e1;
+    color: #f8fafc;
+}
+
+QComboBox#semesterComboBox,
+QComboBox#courseComboBox {
+    min-height: 38px;
+    min-width: 220px;
+    padding: 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #334155;
+    font-size: 13px;
+}
+
+QComboBox#semesterComboBox:hover,
+QComboBox#courseComboBox:hover {
+    border-color: #93c5fd;
+}
+
+QComboBox#semesterComboBox:focus,
+QComboBox#courseComboBox:focus {
+    border: 1px solid #2563eb;
+}
+
+QComboBox#semesterComboBox QAbstractItemView,
+QComboBox#courseComboBox QAbstractItemView {
+    background-color: #ffffff;
+    color: #1f2937;
+    border: 1px solid #cbd5e1;
+    selection-background-color: #dbeafe;
+    selection-color: #1f2937;
+}
+
+QListWidget#assignmentsListWidget {
+    border: none;
+    background-color: transparent;
+    outline: none;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+QListWidget#assignmentsListWidget::item {
+    margin: 4px 0;
+    border: none;
+    background-color: transparent;
+}
+
+QListWidget#assignmentsListWidget::item:hover {
+    background-color: transparent;
+}
+
+QListWidget#assignmentsListWidget::item:selected {
+    background-color: transparent;
+    color: #1f2937;
+}
+
+QLabel#emptyStateTitleLabel {
+    color: #334155;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+QLabel#emptyStateLabel {
+    color: #94a3b8;
+    font-size: 14px;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="leftMargin">
+    <number>24</number>
+   </property>
+   <property name="topMargin">
+    <number>24</number>
+   </property>
+   <property name="rightMargin">
+    <number>24</number>
+   </property>
+   <property name="bottomMargin">
+    <number>24</number>
+   </property>
+   <property name="spacing">
+    <number>16</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="headerCard">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>96</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>96</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="headerLayout">
+      <property name="leftMargin">
+       <number>22</number>
+      </property>
+      <property name="topMargin">
+       <number>16</number>
+      </property>
+      <property name="rightMargin">
+       <number>22</number>
+      </property>
+      <property name="bottomMargin">
+       <number>16</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="titleLayout">
+        <property name="spacing">
+         <number>3</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="assignmentsTitleLabel">
+          <property name="text">
+           <string>Assignments</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="assignmentsSubtitleLabel">
+          <property name="text">
+           <string>View and manage assignments for one course at a time.</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="headerSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="addAssignmentButton">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>+ Add Assignment</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="selectionCard">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>130</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>130</height>
+      </size>
+     </property>
+     <layout class="QVBoxLayout" name="selectionCardLayout">
+      <property name="leftMargin">
+       <number>20</number>
+      </property>
+      <property name="topMargin">
+       <number>14</number>
+      </property>
+      <property name="rightMargin">
+       <number>20</number>
+      </property>
+      <property name="bottomMargin">
+       <number>14</number>
+      </property>
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="selectionHelpLabel">
+        <property name="text">
+         <string>Select a semester first, then choose one of its courses.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="selectorsLayout">
+        <property name="spacing">
+         <number>18</number>
+        </property>
+        <item>
+         <layout class="QVBoxLayout" name="semesterSelectorLayout">
+          <property name="spacing">
+           <number>5</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="semesterLabel">
+            <property name="text">
+             <string>Semester</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="semesterComboBox">
+            <item>
+             <property name="text">
+              <string>Select a semester</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="courseSelectorLayout">
+          <property name="spacing">
+           <number>5</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="courseLabel">
+            <property name="text">
+             <string>Course</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="courseComboBox">
+            <item>
+             <property name="text">
+              <string>Select a course</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="selectorsSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="assignmentsCard">
+     <layout class="QVBoxLayout" name="assignmentsCardLayout">
+      <property name="leftMargin">
+       <number>18</number>
+      </property>
+      <property name="topMargin">
+       <number>16</number>
+      </property>
+      <property name="rightMargin">
+       <number>18</number>
+      </property>
+      <property name="bottomMargin">
+       <number>18</number>
+      </property>
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="assignmentsSectionLayout">
+        <item>
+         <widget class="QLabel" name="assignmentsSectionLabel">
+          <property name="text">
+           <string>Course Assignments</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="assignmentsSectionSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="assignmentCountLabel">
+          <property name="styleSheet">
+           <string notr="true">color: #64748b; font-size: 13px; font-weight: 600;</string>
+          </property>
+          <property name="text">
+           <string>0 assignments</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QListWidget" name="assignmentsListWidget"/>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="emptyStateLayout">
+        <property name="spacing">
+         <number>5</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="emptyStateTitleLabel">
+          <property name="text">
+           <string>No assignments to show</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="emptyStateLabel">
+          <property name="text">
+           <string>Select a course, then click “Add Assignment” to create its first assignment.</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

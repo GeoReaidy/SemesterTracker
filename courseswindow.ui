@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CoursesWindow</class>
+ <widget class="QWidget" name="CoursesWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>620</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>760</width>
+    <height>520</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Courses</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#CoursesWindow {
+    background-color: #f5f7fb;
+}
+QFrame#headerCard,
+QFrame#semesterSelectorCard,
+QFrame#coursesCard {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+QLabel#coursesTitleLabel {
+    color: #111827;
+    font-size: 25px;
+    font-weight: 700;
+}
+QLabel#coursesSubtitleLabel,
+QLabel#semesterHelpLabel {
+    color: #64748b;
+    font-size: 13px;
+}
+QLabel#semesterSelectorLabel,
+QLabel#coursesSectionLabel {
+    color: #111827;
+    font-size: 16px;
+    font-weight: 700;
+}
+QPushButton#addCourseButton {
+    min-height: 40px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 9px;
+    background-color: #2563eb;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+}
+QPushButton#addCourseButton:hover {
+    background-color: #1d4ed8;
+}
+QPushButton#addCourseButton:pressed {
+    background-color: #1e40af;
+}
+QPushButton#addCourseButton:disabled {
+    background-color: #cbd5e1;
+    color: #f8fafc;
+}
+QComboBox#semesterComboBox {
+    min-height: 38px;
+    min-width: 230px;
+    padding: 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #334155;
+    font-size: 13px;
+}
+QComboBox#semesterComboBox:hover {
+    border-color: #93c5fd;
+}
+QComboBox#semesterComboBox:focus {
+    border: 1px solid #2563eb;
+}
+QComboBox#semesterComboBox QAbstractItemView {
+    background-color: #ffffff;
+    color: #1f2937;
+    border: 1px solid #cbd5e1;
+    selection-background-color: #dbeafe;
+    selection-color: #1f2937;
+}
+QListWidget#coursesListWidget {
+    border: none;
+    background-color: transparent;
+    outline: none;
+    color: #1f2937;
+    font-size: 14px;
+}
+QListWidget#coursesListWidget::item {
+    padding: 0;
+    margin: 4px 0;
+    border: none;
+    background-color: transparent;
+}
+QListWidget#coursesListWidget::item:hover {
+    background-color: transparent;
+    border: none;
+}
+QListWidget#coursesListWidget::item:selected {
+    background-color: transparent;
+    color: #1f2937;
+    border: none;
+}
+QLabel#emptyStateTitleLabel {
+    color: #334155;
+    font-size: 16px;
+    font-weight: 700;
+}
+QLabel#emptyStateLabel {
+    color: #94a3b8;
+    font-size: 14px;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="leftMargin">
+    <number>24</number>
+   </property>
+   <property name="topMargin">
+    <number>24</number>
+   </property>
+   <property name="rightMargin">
+    <number>24</number>
+   </property>
+   <property name="bottomMargin">
+    <number>24</number>
+   </property>
+   <property name="spacing">
+    <number>16</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="headerCard">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>96</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>96</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="headerLayout">
+      <property name="leftMargin">
+       <number>22</number>
+      </property>
+      <property name="topMargin">
+       <number>16</number>
+      </property>
+      <property name="rightMargin">
+       <number>22</number>
+      </property>
+      <property name="bottomMargin">
+       <number>16</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="titleLayout">
+        <property name="spacing">
+         <number>3</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="coursesTitleLabel">
+          <property name="text">
+           <string>Courses</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="coursesSubtitleLabel">
+          <property name="text">
+           <string>View and manage courses for one semester at a time.</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="headerSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="addCourseButton">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>+ Add Course</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="semesterSelectorCard">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>92</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>92</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="semesterSelectorLayout">
+      <property name="leftMargin">
+       <number>20</number>
+      </property>
+      <property name="topMargin">
+       <number>14</number>
+      </property>
+      <property name="rightMargin">
+       <number>20</number>
+      </property>
+      <property name="bottomMargin">
+       <number>14</number>
+      </property>
+      <property name="spacing">
+       <number>18</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="semesterTextLayout">
+        <property name="spacing">
+         <number>3</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="semesterSelectorLabel">
+          <property name="text">
+           <string>Selected Semester</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="semesterHelpLabel">
+          <property name="text">
+           <string>Only courses belonging to this semester will be shown.</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="semesterSelectorSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QComboBox" name="semesterComboBox">
+        <item>
+         <property name="text">
+          <string>Select a semester</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="coursesCard">
+     <layout class="QVBoxLayout" name="coursesCardLayout">
+      <property name="leftMargin">
+       <number>18</number>
+      </property>
+      <property name="topMargin">
+       <number>16</number>
+      </property>
+      <property name="rightMargin">
+       <number>18</number>
+      </property>
+      <property name="bottomMargin">
+       <number>18</number>
+      </property>
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="coursesSectionLayout">
+        <item>
+         <widget class="QLabel" name="coursesSectionLabel">
+          <property name="text">
+           <string>Semester Courses</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="coursesSectionSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="courseCountLabel">
+          <property name="styleSheet">
+           <string notr="true">color: #64748b; font-size: 13px; font-weight: 600;</string>
+          </property>
+          <property name="text">
+           <string>0 courses</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QListWidget" name="coursesListWidget"/>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="emptyStateLayout">
+        <property name="spacing">
+         <number>5</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="emptyStateTitleLabel">
+          <property name="text">
+           <string>No courses to show</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="emptyStateLabel">
+          <property name="text">
+           <string>Select a semester, then click “Add Course” to create its first course.</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

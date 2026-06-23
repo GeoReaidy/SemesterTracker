@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsWindow</class>
+ <widget class="QWidget" name="SettingsWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1040</width>
+    <height>760</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>720</width>
+    <height>520</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Settings</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#SettingsWindow {
+    background-color: #f5f7fb;
+    color: #111827;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="rootLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="settingsScrollArea">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="settingsScrollAreaContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1038</width>
+        <height>920</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="contentLayout">
+       <property name="leftMargin">
+        <number>34</number>
+       </property>
+       <property name="topMargin">
+        <number>30</number>
+       </property>
+       <property name="rightMargin">
+        <number>34</number>
+       </property>
+       <property name="bottomMargin">
+        <number>34</number>
+       </property>
+       <property name="spacing">
+        <number>22</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="pageTitleLabel">
+         <property name="styleSheet">
+          <string notr="true">color: #111827; font-size: 26px; font-weight: 700;</string>
+         </property>
+         <property name="text">
+          <string>Settings</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="pageSubtitleLabel">
+         <property name="styleSheet">
+          <string notr="true">color: #64748b; font-size: 13px;</string>
+         </property>
+         <property name="text">
+          <string>Manage your profile, security, and application preferences.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="profileCard">
+         <layout class="QVBoxLayout" name="profileCardLayout">
+          <property name="leftMargin">
+           <number>24</number>
+          </property>
+          <property name="topMargin">
+           <number>22</number>
+          </property>
+          <property name="rightMargin">
+           <number>24</number>
+          </property>
+          <property name="bottomMargin">
+           <number>22</number>
+          </property>
+          <property name="spacing">
+           <number>14</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="profileTitleLabel">
+            <property name="styleSheet">
+             <string notr="true">color: #111827; font-size: 18px; font-weight: 700;</string>
+            </property>
+            <property name="text">
+             <string>Profile</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="profileDescriptionLabel">
+            <property name="styleSheet">
+             <string notr="true">color: #64748b; font-size: 12px;</string>
+            </property>
+            <property name="text">
+             <string>Update your username and degree credit target.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="profileFormLayout">
+            <property name="horizontalSpacing">
+             <number>20</number>
+            </property>
+            <property name="verticalSpacing">
+             <number>12</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="usernameLabel">
+              <property name="text">
+               <string>Username</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="usernameLineEdit">
+              <property name="placeholderText">
+               <string>Enter username</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="maximumCreditsLabel">
+              <property name="text">
+               <string>Maximum credits</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="maximumCreditsLineEdit">
+              <property name="placeholderText">
+               <string>Example: 120</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="accountIdLabel">
+              <property name="text">
+               <string>Account ID</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLabel" name="accountIdValueLabel">
+              <property name="styleSheet">
+               <string notr="true">color: #64748b;</string>
+              </property>
+              <property name="text">
+               <string>—</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="profileActionLayout">
+            <item>
+             <spacer name="profileActionSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="saveProfileButton">
+              <property name="text">
+               <string>Save Profile</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="securityCard">
+         <layout class="QVBoxLayout" name="securityCardLayout">
+          <property name="leftMargin">
+           <number>24</number>
+          </property>
+          <property name="topMargin">
+           <number>22</number>
+          </property>
+          <property name="rightMargin">
+           <number>24</number>
+          </property>
+          <property name="bottomMargin">
+           <number>22</number>
+          </property>
+          <property name="spacing">
+           <number>14</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="securityTitleLabel">
+            <property name="styleSheet">
+             <string notr="true">color: #111827; font-size: 18px; font-weight: 700;</string>
+            </property>
+            <property name="text">
+             <string>Security</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="securityDescriptionLabel">
+            <property name="styleSheet">
+             <string notr="true">color: #64748b; font-size: 12px;</string>
+            </property>
+            <property name="text">
+             <string>Change your account password.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="securityFormLayout">
+            <property name="horizontalSpacing">
+             <number>20</number>
+            </property>
+            <property name="verticalSpacing">
+             <number>12</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="currentPasswordLabel">
+              <property name="text">
+               <string>Current password</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="currentPasswordLineEdit">
+              <property name="placeholderText">
+               <string>Enter current password</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="newPasswordLabel">
+              <property name="text">
+               <string>New password</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="newPasswordLineEdit">
+              <property name="placeholderText">
+               <string>At least 8 characters</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="confirmPasswordLabel">
+              <property name="text">
+               <string>Confirm password</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="confirmPasswordLineEdit">
+              <property name="placeholderText">
+               <string>Re-enter new password</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="securityActionLayout">
+            <item>
+             <spacer name="securityActionSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="changePasswordButton">
+              <property name="text">
+               <string>Change Password</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="preferencesCard">
+         <layout class="QVBoxLayout" name="preferencesCardLayout">
+          <property name="leftMargin">
+           <number>24</number>
+          </property>
+          <property name="topMargin">
+           <number>22</number>
+          </property>
+          <property name="rightMargin">
+           <number>24</number>
+          </property>
+          <property name="bottomMargin">
+           <number>22</number>
+          </property>
+          <property name="spacing">
+           <number>14</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="preferencesTitleLabel">
+            <property name="styleSheet">
+             <string notr="true">color: #111827; font-size: 18px; font-weight: 700;</string>
+            </property>
+            <property name="text">
+             <string>Preferences</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="reminderLayout">
+            <item>
+             <layout class="QVBoxLayout" name="reminderTextLayout">
+              <item>
+               <widget class="QLabel" name="reminderTitleLabel">
+                <property name="styleSheet">
+                 <string notr="true">font-weight: 600;</string>
+                </property>
+                <property name="text">
+                 <string>Deadline reminders</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="reminderDescriptionLabel">
+                <property name="styleSheet">
+                 <string notr="true">color: #64748b; font-size: 12px;</string>
+                </property>
+                <property name="text">
+                 <string>Show startup and system notifications for nearby deadlines.</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="deadlineRemindersCheckBox">
+              <property name="text">
+               <string>Enabled</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="reminderDaysLayout">
+            <item>
+             <widget class="QLabel" name="reminderDaysLabel">
+              <property name="text">
+               <string>Reminder window</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="reminderDaysSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QComboBox" name="reminderDaysComboBox">
+              <item>
+               <property name="text">
+                <string>2 days</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>3 days</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="dangerCard">
+         <layout class="QVBoxLayout" name="dangerCardLayout">
+          <property name="leftMargin">
+           <number>24</number>
+          </property>
+          <property name="topMargin">
+           <number>22</number>
+          </property>
+          <property name="rightMargin">
+           <number>24</number>
+          </property>
+          <property name="bottomMargin">
+           <number>22</number>
+          </property>
+          <property name="spacing">
+           <number>12</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="dangerTitleLabel">
+            <property name="styleSheet">
+             <string notr="true">color: #b91c1c; font-size: 18px; font-weight: 700;</string>
+            </property>
+            <property name="text">
+             <string>Danger Zone</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="dangerDescriptionLabel">
+            <property name="styleSheet">
+             <string notr="true">color: #64748b; font-size: 12px;</string>
+            </property>
+            <property name="text">
+             <string>Deleting your account permanently removes all semesters, courses, assignments, and grades.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="dangerActionLayout">
+            <item>
+             <spacer name="dangerActionSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="deleteAccountButton">
+              <property name="text">
+               <string>Delete Account</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="bottomSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>30</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

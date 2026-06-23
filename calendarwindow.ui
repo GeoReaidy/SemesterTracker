@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CalendarWindow</class>
+ <widget class="QWidget" name="CalendarWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1100</width>
+    <height>760</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>760</width>
+    <height>540</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Calendar</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#CalendarWindow {
+    background: #f5f7fb;
+    color: #111827;
+}
+
+QFrame#calendarCard,
+QFrame#selectedDateCard,
+QFrame#upcomingCard {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+QFrame#calendarCard QLabel,
+QFrame#calendarCard QPushButton,
+QFrame#calendarCard QCalendarWidget,
+QFrame#selectedDateCard QLabel,
+QFrame#selectedDateCard QListWidget,
+QFrame#upcomingCard QLabel,
+QFrame#upcomingCard QListWidget {
+    border: none;
+}
+
+QPushButton {
+    min-height: 34px;
+    padding: 0 14px;
+    color: #334155;
+    background: #f8fafc;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+QPushButton:hover {
+    background: #eef2ff;
+    border-color: #a5b4fc;
+}
+
+QCalendarWidget QWidget {
+    alternate-background-color: #f8fafc;
+}
+
+QCalendarWidget QTableView {
+    color: #111827;
+    background: #ffffff;
+    selection-color: #ffffff;
+    selection-background-color: #4f46e5;
+    border: none;
+    outline: none;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="rootLayout">
+   <property name="leftMargin">
+    <number>28</number>
+   </property>
+   <property name="topMargin">
+    <number>26</number>
+   </property>
+   <property name="rightMargin">
+    <number>28</number>
+   </property>
+   <property name="bottomMargin">
+    <number>26</number>
+   </property>
+   <property name="spacing">
+    <number>18</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="pageTitleLabel">
+     <property name="styleSheet">
+      <string notr="true">font-size:26px; font-weight:700; color:#111827;</string>
+     </property>
+     <property name="text">
+      <string>Calendar</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="pageSubtitleLabel">
+     <property name="styleSheet">
+      <string notr="true">font-size:13px; color:#64748b;</string>
+     </property>
+     <property name="text">
+      <string>Track assignment deadlines across all semesters and courses.</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="mainContentLayout">
+     <property name="spacing">
+      <number>18</number>
+     </property>
+     <item>
+      <layout class="QVBoxLayout" name="leftColumnLayout">
+       <property name="spacing">
+        <number>18</number>
+       </property>
+       <item>
+        <widget class="QFrame" name="calendarCard">
+         <layout class="QVBoxLayout" name="calendarCardLayout">
+          <property name="leftMargin">
+           <number>18</number>
+          </property>
+          <property name="topMargin">
+           <number>16</number>
+          </property>
+          <property name="rightMargin">
+           <number>18</number>
+          </property>
+          <property name="bottomMargin">
+           <number>18</number>
+          </property>
+          <property name="spacing">
+           <number>12</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="monthNavigationLayout">
+            <item>
+             <widget class="QPushButton" name="previousMonthButton">
+              <property name="text">
+               <string>‹</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="monthLeftSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="monthTitleLabel">
+              <property name="styleSheet">
+               <string notr="true">font-size:18px; font-weight:700; color:#111827;</string>
+              </property>
+              <property name="text">
+               <string>Month Year</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="monthRightSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="todayButton">
+              <property name="text">
+               <string>Today</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="nextMonthButton">
+              <property name="text">
+               <string>›</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCalendarWidget" name="calendarWidget">
+            <property name="minimumSize">
+             <size>
+              <width>500</width>
+              <height>390</height>
+             </size>
+            </property>
+            <property name="gridVisible">
+             <bool>true</bool>
+            </property>
+            <property name="selectionMode">
+             <enum>QCalendarWidget::SingleSelection</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="selectedDateCard">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>190</height>
+          </size>
+         </property>
+         <layout class="QVBoxLayout" name="selectedDateCardLayout">
+          <property name="leftMargin">
+           <number>18</number>
+          </property>
+          <property name="topMargin">
+           <number>16</number>
+          </property>
+          <property name="rightMargin">
+           <number>18</number>
+          </property>
+          <property name="bottomMargin">
+           <number>16</number>
+          </property>
+          <property name="spacing">
+           <number>10</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="selectedDateLabel">
+            <property name="styleSheet">
+             <string notr="true">font-size:16px; font-weight:700; color:#111827;</string>
+            </property>
+            <property name="text">
+             <string>Selected date</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QListWidget" name="selectedDateAssignmentsListWidget"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QFrame" name="upcomingCard">
+       <property name="minimumSize">
+        <size>
+         <width>330</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>430</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <layout class="QVBoxLayout" name="upcomingCardLayout">
+        <property name="leftMargin">
+         <number>18</number>
+        </property>
+        <property name="topMargin">
+         <number>18</number>
+        </property>
+        <property name="rightMargin">
+         <number>18</number>
+        </property>
+        <property name="bottomMargin">
+         <number>18</number>
+        </property>
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="upcomingHeaderLayout">
+          <item>
+           <widget class="QLabel" name="upcomingTitleLabel">
+            <property name="styleSheet">
+             <string notr="true">font-size:18px; font-weight:700; color:#111827;</string>
+            </property>
+            <property name="text">
+             <string>Upcoming Deadlines</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="upcomingHeaderSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>30</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="upcomingCountLabel">
+            <property name="styleSheet">
+             <string notr="true">color:#64748b; font-size:12px;</string>
+            </property>
+            <property name="text">
+             <string>0 upcoming</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QListWidget" name="upcomingDeadlinesListWidget"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
