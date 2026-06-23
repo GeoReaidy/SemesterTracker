@@ -23,6 +23,64 @@ SettingsWindow::SettingsWindow(
 {
     ui->setupUi(this);
 
+    setStyleSheet(styleSheet() + R"(
+    QComboBox {
+        background-color: white;
+        color: #1f2937;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 6px 30px 6px 10px;
+        min-height: 22px;
+    }
+
+    QComboBox:hover {
+        border-color: #94a3b8;
+    }
+
+    QComboBox:focus {
+        border-color: #2563eb;
+    }
+
+    QComboBox:disabled {
+        background-color: #f1f5f9;
+        color: #94a3b8;
+    }
+
+    QComboBox::drop-down {
+        subcontrol-origin: padding;
+        subcontrol-position: top right;
+        width: 28px;
+        border-left: 1px solid #cbd5e1;
+    }
+
+    QComboBox QAbstractItemView {
+        background-color: white;
+        color: #1f2937;
+        border: 1px solid #cbd5e1;
+        selection-background-color: #2563eb;
+        selection-color: white;
+        outline: none;
+        padding: 4px;
+    }
+
+    QComboBox QAbstractItemView::item {
+        min-height: 28px;
+        padding: 4px 8px;
+        color: #1f2937;
+        background-color: white;
+    }
+
+    QComboBox QAbstractItemView::item:hover {
+        background-color: #e2e8f0;
+        color: #111827;
+    }
+
+    QComboBox QAbstractItemView::item:selected {
+        background-color: #2563eb;
+        color: white;
+    }
+)");
+
     updateManager =
         new UpdateManager(
             this,
