@@ -1,3 +1,0 @@
-C:\Qt\Tools\CMake_64\bin\cmake.exe -E rm -f CMakeFiles\SemesterTrackerGUI.dir/objects.a
-C:\Qt\Tools\mingw1310_64\bin\ar.exe qc CMakeFiles\SemesterTrackerGUI.dir/objects.a @CMakeFiles\SemesterTrackerGUI.dir\objects1.rsp
-C:\Qt\Tools\mingw1310_64\bin\g++.exe -g -mwindows -static-libgcc -static-libstdc++ -Wl,--whole-archive CMakeFiles\SemesterTrackerGUI.dir/objects.a -Wl,--no-whole-archive -o SemesterTrackerGUI.exe -Wl,--out-implib,libSemesterTrackerGUI.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\SemesterTrackerGUI.dir\linkLibs.rsp

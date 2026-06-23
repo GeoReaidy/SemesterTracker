@@ -1,2 +1,0 @@
-CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp.obj: \
- C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\3YJK5W5UP7\qrc_app_resources.cpp
