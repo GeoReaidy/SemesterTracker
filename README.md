@@ -46,15 +46,7 @@ It was built in C++17 using Qt, SQLite, CMake, and libsodium.
 
 ## Screenshots
 
-Add screenshots to a `screenshots` folder and reference them here.
-
-Example:
-
-```md
-![Dashboard](screenshots/dashboard.png)
-![Courses](screenshots/courses.png)
-![Calendar](screenshots/calendar.png)
-```
+For Later
 
 ## Technologies
 
