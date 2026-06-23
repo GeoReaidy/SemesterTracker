@@ -5,7 +5,6 @@
 #include "ui_mainwindow.h"
 #include "updatemanager.h"
 
-#include <QAbstractButton>
 #include <QApplication>
 #include <QDebug>
 #include <QIcon>
@@ -375,8 +374,6 @@ void GUIApp::showDeadlineReminders()
     pendingNotificationDate =
         newDeadlines.front().dueDate;
 
-    showStartupReminderDialog(newDeadlines);
-
     setupNotificationTray();
 
     if (!trayIcon)
@@ -538,117 +535,6 @@ GUIApp::collectNearbyDeadlines(
     );
 
     return deadlines;
-}
-
-void GUIApp::showStartupReminderDialog(
-    const std::vector<DeadlineReminder> &deadlines)
-{
-    if (!dashboard || deadlines.empty())
-    {
-        return;
-    }
-
-    QString details;
-
-    const int visibleCount =
-        std::min(
-            static_cast<int>(deadlines.size()),
-            6
-        );
-
-    for (int index = 0;
-         index < visibleCount;
-         ++index)
-    {
-        const DeadlineReminder &deadline =
-            deadlines[index];
-
-        const int daysAway =
-            QDate::currentDate().daysTo(
-                deadline.dueDate
-            );
-
-        QString timing;
-
-        if (daysAway == 0)
-        {
-            timing = "Today";
-        }
-        else if (daysAway == 1)
-        {
-            timing = "Tomorrow";
-        }
-        else
-        {
-            timing =
-                QString("In %1 days")
-                    .arg(daysAway);
-        }
-
-        details +=
-            QString("• %1 — %2 (%3)\n")
-                .arg(deadline.courseCode)
-                .arg(deadline.assignmentName)
-                .arg(timing);
-    }
-
-    if (deadlines.size() >
-        static_cast<std::size_t>(visibleCount))
-    {
-        details += QString(
-            "• And %1 more…"
-        ).arg(
-            static_cast<int>(deadlines.size()) -
-            visibleCount
-        );
-    }
-
-    QMessageBox reminderBox(dashboard.get());
-
-    reminderBox.setWindowTitle(
-        "Upcoming Deadlines"
-    );
-
-    reminderBox.setIcon(
-        QMessageBox::Information
-    );
-
-    reminderBox.setText(
-        QString(
-            "You have %1 assignment deadline%2 "
-            "within your reminder window."
-        )
-            .arg(
-                static_cast<int>(
-                    deadlines.size()
-                )
-            )
-            .arg(
-                deadlines.size() == 1
-                    ? ""
-                    : "s"
-            )
-    );
-
-    reminderBox.setInformativeText(details);
-
-    QAbstractButton *openCalendarButton =
-        reminderBox.addButton(
-            "Open Calendar",
-            QMessageBox::ActionRole
-        );
-
-    reminderBox.addButton(
-        QMessageBox::Ok
-    );
-
-    reminderBox.exec();
-
-    if (reminderBox.clickedButton() ==
-        openCalendarButton)
-    {
-        openPendingDeadline();
-    }
 }
 
 void GUIApp::openPendingDeadline()

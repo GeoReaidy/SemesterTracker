@@ -72,6 +72,12 @@ public:
                      int year,
                      bool inProgress = false);
 
+    bool addCompletedSemester(int userID,
+                              const std::string &name,
+                              int year,
+                              int completedCredits,
+                              double semesterGPA);
+
     bool updateSemester(int semesterID,
                         const std::string &name,
                         int year,

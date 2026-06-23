@@ -56,9 +56,6 @@ private:
     void showDeadlineReminders();
     std::vector<DeadlineReminder>
     collectNearbyDeadlines(int reminderDays);
-    void showStartupReminderDialog(
-        const std::vector<DeadlineReminder> &deadlines
-    );
 
     MainWindow &window;
     DatabaseManager database;

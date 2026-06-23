@@ -212,16 +212,23 @@ void CoursesWindow::refreshSemesters()
 
     for (const Semester &semester : semesters)
     {
-        const QString label =
+        QString label =
             QString("%1 %2")
                 .arg(QString::fromStdString(
                     semester.getName()
                 ))
                 .arg(semester.getYear());
 
-        ui->semesterComboBox->addItem(
-            label,
-            semester.getID()
+        if (semester.isSummaryOnly())
+        {
+            label += " — completed summary";
+        }
+
+        ui->semesterComboBox->addItem(label, semester.getID());
+        ui->semesterComboBox->setItemData(
+            ui->semesterComboBox->count() - 1,
+            semester.isSummaryOnly(),
+            Qt::UserRole + 1
         );
 
         const int index =
@@ -272,6 +279,10 @@ void CoursesWindow::refreshSemesters()
     }
 
     ui->semesterComboBox->blockSignals(false);
+    ui->addCourseButton->setEnabled(
+        ui->semesterComboBox->isEnabled() &&
+        !selectedSemesterIsSummaryOnly()
+    );
 
     refreshCourses();
 }
@@ -302,6 +313,10 @@ void CoursesWindow::refreshCourses()
 void CoursesWindow::handleSemesterChanged(int index)
 {
     Q_UNUSED(index);
+    ui->addCourseButton->setEnabled(
+        selectedSemesterID() >= 0 &&
+        !selectedSemesterIsSummaryOnly()
+    );
     refreshCourses();
 }
 
@@ -315,6 +330,16 @@ void CoursesWindow::handleAddCourse()
             this,
             "No Semester Selected",
             "Select or create a semester before adding a course."
+        );
+        return;
+    }
+
+    if (selectedSemesterIsSummaryOnly())
+    {
+        QMessageBox::information(
+            this,
+            "Completed Semester",
+            "This semester stores a credits-and-GPA summary and is read-only for courses."
         );
         return;
     }
@@ -547,6 +572,16 @@ int CoursesWindow::selectedSemesterID() const
     return ui->semesterComboBox
         ->currentData()
         .toInt();
+}
+
+bool CoursesWindow::selectedSemesterIsSummaryOnly() const
+{
+    if (!ui || !ui->semesterComboBox || ui->semesterComboBox->currentIndex() < 0)
+    {
+        return false;
+    }
+
+    return ui->semesterComboBox->currentData(Qt::UserRole + 1).toBool();
 }
 
 void CoursesWindow::addCourseRow(

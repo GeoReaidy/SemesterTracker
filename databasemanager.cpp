@@ -117,6 +117,30 @@ bool rowExists(
     return exists;
 }
 
+
+bool semesterAcceptsCourses(sqlite3 *database, int semesterID)
+{
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT summary_only FROM semesters WHERE id = ?;",
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(statement, 1, semesterID);
+    const bool accepts =
+        sqlite3_step(statement) == SQLITE_ROW &&
+        sqlite3_column_int(statement, 0) == 0;
+
+    sqlite3_finalize(statement);
+    return accepts;
+}
+
 int assignmentWeightTotal(
     sqlite3 *database,
     int courseID,
@@ -261,6 +285,9 @@ bool DatabaseManager::createTables()
         "name TEXT NOT NULL, "
         "year INTEGER NOT NULL, "
         "in_progress INTEGER NOT NULL DEFAULT 0, "
+        "summary_only INTEGER NOT NULL DEFAULT 0, "
+        "summary_credits INTEGER NOT NULL DEFAULT 0, "
+        "summary_gpa REAL NOT NULL DEFAULT 0.0, "
         "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
         ");"
 
@@ -343,6 +370,48 @@ bool DatabaseManager::createTables()
                       << std::endl;
 
             sqlite3_free(migrationError);
+            return false;
+        }
+    }
+
+    const struct SemesterColumnMigration
+    {
+        const char *name;
+        const char *sql;
+    } semesterMigrations[] = {
+        {"summary_only", "ALTER TABLE semesters ADD COLUMN summary_only INTEGER NOT NULL DEFAULT 0;"},
+        {"summary_credits", "ALTER TABLE semesters ADD COLUMN summary_credits INTEGER NOT NULL DEFAULT 0;"},
+        {"summary_gpa", "ALTER TABLE semesters ADD COLUMN summary_gpa REAL NOT NULL DEFAULT 0.0;"}
+    };
+
+    for (const SemesterColumnMigration &migration : semesterMigrations)
+    {
+        bool exists = false;
+        sqlite3_stmt *semesterColumnStatement = nullptr;
+
+        if (sqlite3_prepare_v2(database, "PRAGMA table_info(semesters);", -1,
+                               &semesterColumnStatement, nullptr) == SQLITE_OK)
+        {
+            while (sqlite3_step(semesterColumnStatement) == SQLITE_ROW)
+            {
+                const unsigned char *columnName =
+                    sqlite3_column_text(semesterColumnStatement, 1);
+
+                if (columnName != nullptr &&
+                    std::string(reinterpret_cast<const char *>(columnName)) == migration.name)
+                {
+                    exists = true;
+                    break;
+                }
+            }
+        }
+
+        sqlite3_finalize(semesterColumnStatement);
+
+        if (!exists && sqlite3_exec(database, migration.sql, nullptr, nullptr, nullptr) != SQLITE_OK)
+        {
+            std::cout << "Failed to add semester column " << migration.name
+                      << ": " << sqlite3_errmsg(database) << std::endl;
             return false;
         }
     }
@@ -1015,6 +1084,62 @@ bool DatabaseManager::addSemester(
     return success;
 }
 
+bool DatabaseManager::addCompletedSemester(
+    int userID,
+    const std::string &name,
+    int year,
+    int completedCredits,
+    double semesterGPA)
+{
+    if (database == nullptr || userID <= 0)
+    {
+        return false;
+    }
+
+    const std::string normalizedName = trimCopy(name);
+
+    try
+    {
+        const Semester candidate(-1, normalizedName, year, false, true,
+                                 completedCredits, semesterGPA);
+        (void)candidate;
+    }
+    catch (const std::exception &error)
+    {
+        std::cout << "Invalid completed semester data: " << error.what() << std::endl;
+        return false;
+    }
+
+    if (rowExists(database,
+                  "SELECT 1 FROM semesters WHERE user_id = ? "
+                  "AND lower(trim(name)) = lower(trim(?)) AND year = ? LIMIT 1;",
+                  userID, normalizedName, year))
+    {
+        return false;
+    }
+
+    const char *sql =
+        "INSERT INTO semesters "
+        "(user_id, name, year, in_progress, summary_only, summary_credits, summary_gpa) "
+        "VALUES (?, ?, ?, 0, 1, ?, ?);";
+
+    sqlite3_stmt *statement = nullptr;
+    if (sqlite3_prepare_v2(database, sql, -1, &statement, nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(statement, 1, userID);
+    sqlite3_bind_text(statement, 2, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int(statement, 3, year);
+    sqlite3_bind_int(statement, 4, completedCredits);
+    sqlite3_bind_double(statement, 5, semesterGPA);
+
+    const bool success = sqlite3_step(statement) == SQLITE_DONE;
+    sqlite3_finalize(statement);
+    return success;
+}
+
 bool DatabaseManager::updateSemester(
     int semesterID,
     const std::string &name,
@@ -1167,7 +1292,7 @@ std::vector<Semester> DatabaseManager::loadSemestersForUser(int userID)
     std::vector<Semester> semesters;
 
     const char *sql =
-        "SELECT id, name, year, in_progress FROM semesters "
+        "SELECT id, name, year, in_progress, summary_only, summary_credits, summary_gpa FROM semesters "
         "WHERE user_id = ? "
         "ORDER BY year ASC, id ASC;";
 
@@ -1195,8 +1320,12 @@ std::vector<Semester> DatabaseManager::loadSemestersForUser(int userID)
         int year = sqlite3_column_int(statement, 2);
 
         bool inProgress = sqlite3_column_int(statement, 3) == 1;
+        bool summaryOnly = sqlite3_column_int(statement, 4) == 1;
+        int summaryCredits = sqlite3_column_int(statement, 5);
+        double summaryGPA = sqlite3_column_double(statement, 6);
 
-        Semester semester(semesterID, name, year, inProgress);
+        Semester semester(semesterID, name, year, inProgress,
+                          summaryOnly, summaryCredits, summaryGPA);
         semesters.push_back(semester);
     }
 
@@ -1256,7 +1385,8 @@ bool DatabaseManager::addCourse(
     const std::string &courseName,
     int credits)
 {
-    if (database == nullptr || semesterID <= 0)
+    if (database == nullptr || semesterID <= 0 ||
+        !semesterAcceptsCourses(database, semesterID))
     {
         return false;
     }
@@ -1553,7 +1683,8 @@ bool DatabaseManager::retakeCourse(
         courseCode.empty() ||
         courseName.empty() ||
         credits < 1 ||
-        credits > 30)
+        credits > 30 ||
+        !semesterAcceptsCourses(database, newSemesterID))
     {
         return false;
     }

@@ -102,21 +102,31 @@ void validateSemesterYear(int year)
 Semester::Semester()
     : semesterYear(MinimumSemesterYear),
       semesterID(-1),
-      inProgress(false)
+      inProgress(false),
+      summaryOnly(false),
+      summaryCredits(0),
+      summaryGPA(0.0)
 {
 }
 
 Semester::Semester(int id,
                    std::string name,
                    int year,
-                   bool inProgress)
+                   bool inProgress,
+                   bool summaryOnly,
+                   int summaryCredits,
+                   double summaryGPA)
     : semesterName(validateSemesterName(name)),
       semesterYear(year),
       semesterID(id),
-      inProgress(inProgress)
+      inProgress(inProgress),
+      summaryOnly(summaryOnly),
+      summaryCredits(summaryCredits),
+      summaryGPA(summaryGPA)
 {
     validateSemesterID(semesterID);
     validateSemesterYear(semesterYear);
+    setSummaryData(summaryOnly, summaryCredits, summaryGPA);
 }
 
 int Semester::getID() const
@@ -139,6 +149,21 @@ bool Semester::isInProgress() const
     return inProgress;
 }
 
+bool Semester::isSummaryOnly() const
+{
+    return summaryOnly;
+}
+
+int Semester::getSummaryCredits() const
+{
+    return summaryCredits;
+}
+
+double Semester::getSummaryGPA() const
+{
+    return summaryGPA;
+}
+
 const std::vector<Course> &Semester::getCourses() const
 {
     return courses;
@@ -158,6 +183,28 @@ void Semester::setYear(int year)
 void Semester::setInProgress(bool status)
 {
     inProgress = status;
+}
+
+void Semester::setSummaryData(bool isSummary, int credits, double gpa)
+{
+    if (credits < 0 || credits > 300)
+    {
+        throw std::invalid_argument("Summary credits must be between 0 and 300.");
+    }
+
+    if (gpa < 0.0 || gpa > 4.0)
+    {
+        throw std::invalid_argument("Summary GPA must be between 0.00 and 4.00.");
+    }
+
+    summaryOnly = isSummary;
+    summaryCredits = isSummary ? credits : 0;
+    summaryGPA = isSummary ? gpa : 0.0;
+
+    if (summaryOnly)
+    {
+        inProgress = false;
+    }
 }
 
 void Semester::addCourse(const Course &course)
@@ -227,6 +274,11 @@ Course *Semester::findCourse(int courseID)
 
 double Semester::calculateSemesterGPA() const
 {
+    if (summaryOnly)
+    {
+        return summaryGPA;
+    }
+
     double totalQualityPoints = 0.0;
     int totalCredits = 0;
 

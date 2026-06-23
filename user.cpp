@@ -202,6 +202,13 @@ double User::calculateCGPA() const
 
     for (const Semester &semester : semesters)
     {
+        if (semester.isSummaryOnly())
+        {
+            totalQualityPoints += semester.getSummaryGPA() * semester.getSummaryCredits();
+            totalCredits += semester.getSummaryCredits();
+            continue;
+        }
+
         for (const Course &course : semester.getCourses())
         {
             if (!course.hasGradedAssignments())
@@ -231,6 +238,12 @@ int User::calculateCompletedCredits() const
 
     for (const Semester &semester : semesters)
     {
+        if (semester.isSummaryOnly())
+        {
+            completedCredits += semester.getSummaryCredits();
+            continue;
+        }
+
         for (const Course &course : semester.getCourses())
         {
             completedCredits += course.getCredits();

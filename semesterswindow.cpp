@@ -217,17 +217,71 @@ void SemestersWindow::handleAddSemester()
         return;
     }
 
-    const QMessageBox::StandardButton currentAnswer =
+    const QMessageBox::StandardButton completedAnswer =
         QMessageBox::question(
             this,
-            "Current Semester",
-            "Set this as the current semester?",
+            "Semester Status",
+            "Is this semester already completed?",
             QMessageBox::Yes | QMessageBox::No,
             QMessageBox::No
         );
 
-    const bool isCurrent =
-        currentAnswer == QMessageBox::Yes;
+    const bool isCompleted =
+        completedAnswer == QMessageBox::Yes;
+
+    int completedCredits = 0;
+    double completedGPA = 0.0;
+    bool isCurrent = false;
+
+    if (isCompleted)
+    {
+        bool creditsAccepted = false;
+        completedCredits = QInputDialog::getInt(
+            this,
+            "Completed Semester",
+            "Total completed credits:",
+            15,
+            1,
+            300,
+            1,
+            &creditsAccepted
+        );
+
+        if (!creditsAccepted)
+        {
+            return;
+        }
+
+        bool gpaAccepted = false;
+        completedGPA = QInputDialog::getDouble(
+            this,
+            "Completed Semester",
+            "Semester GPA:",
+            3.00,
+            0.00,
+            4.00,
+            2,
+            &gpaAccepted
+        );
+
+        if (!gpaAccepted)
+        {
+            return;
+        }
+    }
+    else
+    {
+        const QMessageBox::StandardButton currentAnswer =
+            QMessageBox::question(
+                this,
+                "Current Semester",
+                "Set this as the current semester?",
+                QMessageBox::Yes | QMessageBox::No,
+                QMessageBox::No
+            );
+
+        isCurrent = currentAnswer == QMessageBox::Yes;
+    }
 
     try
     {
@@ -235,7 +289,10 @@ void SemestersWindow::handleAddSemester()
             -1,
             term.toStdString(),
             year,
-            isCurrent
+            isCurrent,
+            isCompleted,
+            completedCredits,
+            completedGPA
         );
 
         Q_UNUSED(candidate);
@@ -275,11 +332,20 @@ void SemestersWindow::handleAddSemester()
         return;
     }
 
-    if (!database.addSemester(
-            userID,
-            term.toStdString(),
-            year,
-            isCurrent))
+    const bool saved = isCompleted
+        ? database.addCompletedSemester(
+              userID,
+              term.toStdString(),
+              year,
+              completedCredits,
+              completedGPA)
+        : database.addSemester(
+              userID,
+              term.toStdString(),
+              year,
+              isCurrent);
+
+    if (!saved)
     {
         QMessageBox::warning(
             this,
@@ -325,6 +391,9 @@ void SemestersWindow::addSemesterRow(
         Qt::UserRole + 3,
         semester.isInProgress()
     );
+    item->setData(Qt::UserRole + 4, semester.isSummaryOnly());
+    item->setData(Qt::UserRole + 5, semester.getSummaryCredits());
+    item->setData(Qt::UserRole + 6, semester.getSummaryGPA());
 
     auto *rowWidget = new QWidget(
         ui->semestersListWidget
@@ -355,12 +424,13 @@ void SemestersWindow::addSemesterRow(
         Qt::AlignLeft | Qt::AlignVCenter
     );
 
-    auto *statusLabel = new QLabel(
-        semester.isInProgress()
-            ? "Current"
-            : "Upcoming",
-        rowWidget
-    );
+    const QString statusText = semester.isSummaryOnly()
+        ? QString("Completed · %1 cr · %2 GPA")
+              .arg(semester.getSummaryCredits())
+              .arg(semester.getSummaryGPA(), 0, 'f', 2)
+        : (semester.isInProgress() ? "Current" : "Upcoming");
+
+    auto *statusLabel = new QLabel(statusText, rowWidget);
 
     statusLabel->setStyleSheet(
         semester.isInProgress()
@@ -369,10 +439,16 @@ void SemestersWindow::addSemesterRow(
               "border-radius: 8px;"
               "padding: 4px 9px;"
               "font-weight: 600;"
-            : "color: #64748b;"
-              "background-color: #f1f5f9;"
-              "border-radius: 8px;"
-              "padding: 4px 9px;"
+            : semester.isSummaryOnly()
+                ? "color: #1d4ed8;"
+                  "background-color: #dbeafe;"
+                  "border-radius: 8px;"
+                  "padding: 4px 9px;"
+                  "font-weight: 600;"
+                : "color: #64748b;"
+                  "background-color: #f1f5f9;"
+                  "border-radius: 8px;"
+                  "padding: 4px 9px;"
     );
 
     statusLabel->setAlignment(Qt::AlignCenter);
@@ -489,6 +565,9 @@ void SemestersWindow::editSemesterRow(
     const bool currentlyCurrent =
         item->data(Qt::UserRole + 3).toBool();
 
+    const bool summaryOnly =
+        item->data(Qt::UserRole + 4).toBool();
+
     const QStringList terms{
         "Spring",
         "Summer",
@@ -535,19 +614,23 @@ void SemestersWindow::editSemesterRow(
         return;
     }
 
-    const QMessageBox::StandardButton currentAnswer =
-        QMessageBox::question(
-            this,
-            "Current Semester",
-            "Set this as the current semester?",
-            QMessageBox::Yes | QMessageBox::No,
-            currentlyCurrent
-                ? QMessageBox::Yes
-                : QMessageBox::No
-        );
+    bool newIsCurrent = false;
 
-    const bool newIsCurrent =
-        currentAnswer == QMessageBox::Yes;
+    if (!summaryOnly)
+    {
+        const QMessageBox::StandardButton currentAnswer =
+            QMessageBox::question(
+                this,
+                "Current Semester",
+                "Set this as the current semester?",
+                QMessageBox::Yes | QMessageBox::No,
+                currentlyCurrent
+                    ? QMessageBox::Yes
+                    : QMessageBox::No
+            );
+
+        newIsCurrent = currentAnswer == QMessageBox::Yes;
+    }
 
     try
     {

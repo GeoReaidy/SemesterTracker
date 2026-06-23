@@ -40,6 +40,7 @@ private slots:
 
 private:
     int selectedSemesterID() const;
+    bool selectedSemesterIsSummaryOnly() const;
     void addCourseRow(const Course &course);
     void editCourseRow(QListWidgetItem *item);
     void deleteCourseRow(QListWidgetItem *item);

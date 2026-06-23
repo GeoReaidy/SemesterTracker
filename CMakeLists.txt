@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(
     SemesterTrackerGUI
-    VERSION 1.0.0
+    VERSION 1.1.0
     LANGUAGES C CXX
 )
 
@@ -121,6 +121,8 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
         calendarwindow.cpp calendarwindow.h calendarwindow.ui
         updatemanager.cpp updatemanager.h
         ${APP_RESOURCE_FILES}
+        README.md
+        gitignore
     )
 else()
     if(ANDROID)
