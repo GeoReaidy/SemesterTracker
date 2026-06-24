@@ -390,6 +390,10 @@ CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qsizepolicy.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qcursor.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qbitmap.h \
+ C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\assignmenteditordialog.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDialog \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialog.h \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QString \
  C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/build/Desktop_Qt_6_11_1_MinGW_64_bit-Release/SemesterTrackerGUI_autogen/include/ui_assignmentswindow.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QVariant \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QApplication \
@@ -445,41 +449,28 @@ CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpacerItem \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QVBoxLayout \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QWidget \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QAbstractItemView \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QColor \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QComboBox \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QDate \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qdatetime.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qcalendar.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDateEdit \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdatetimeedit.h \
- C:/Qt/6.11.1/mingw_64/include/QtCore/qtimezone.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDialog \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialog.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDialogButtonBox \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialogbuttonbox.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QFormLayout \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qformlayout.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLayout \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QHBoxLayout \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QIcon \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QInputDialog \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qinputdialog.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlineedit.h \
- C:/Qt/6.11.1/mingw_64/include/QtGui/qtextcursor.h \
- C:/Qt/6.11.1/mingw_64/include/QtGui/qtextformat.h \
- C:/Qt/6.11.1/mingw_64/include/QtGui/qpen.h \
- C:/Qt/6.11.1/mingw_64/include/QtGui/qtextoption.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLabel \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLineEdit \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QListView \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QListWidget \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QListWidgetItem \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMessageBox \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmessagebox.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialogbuttonbox.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QPainter \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qpainter.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qtextoption.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qpen.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QPen \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QSize \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QToolButton \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtoolbutton.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QVBoxLayout

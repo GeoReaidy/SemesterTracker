@@ -271,6 +271,30 @@ assignment.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/assignment.cpp.s
 .PHONY : assignment.cpp.s
 
+assignmenteditordialog.obj: assignmenteditordialog.cpp.obj
+.PHONY : assignmenteditordialog.obj
+
+# target to build an object file
+assignmenteditordialog.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/assignmenteditordialog.cpp.obj
+.PHONY : assignmenteditordialog.cpp.obj
+
+assignmenteditordialog.i: assignmenteditordialog.cpp.i
+.PHONY : assignmenteditordialog.i
+
+# target to preprocess a source file
+assignmenteditordialog.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/assignmenteditordialog.cpp.i
+.PHONY : assignmenteditordialog.cpp.i
+
+assignmenteditordialog.s: assignmenteditordialog.cpp.s
+.PHONY : assignmenteditordialog.s
+
+# target to generate assembly for a file
+assignmenteditordialog.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/assignmenteditordialog.cpp.s
+.PHONY : assignmenteditordialog.cpp.s
+
 assignmentswindow.obj: assignmentswindow.cpp.obj
 .PHONY : assignmentswindow.obj
 
@@ -783,6 +807,9 @@ help:
 	@echo ... assignment.obj
 	@echo ... assignment.i
 	@echo ... assignment.s
+	@echo ... assignmenteditordialog.obj
+	@echo ... assignmenteditordialog.i
+	@echo ... assignmenteditordialog.s
 	@echo ... assignmentswindow.obj
 	@echo ... assignmentswindow.i
 	@echo ... assignmentswindow.s

@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/SemesterTrackerGUI_autogen"
+  "SemesterTrackerGUI_autogen/include/ui_assignmenteditordialog.h"
   "SemesterTrackerGUI_autogen/include/ui_assignmentswindow.h"
   "SemesterTrackerGUI_autogen/include/ui_calendarwindow.h"
   "SemesterTrackerGUI_autogen/include/ui_courseeditordialog.h"

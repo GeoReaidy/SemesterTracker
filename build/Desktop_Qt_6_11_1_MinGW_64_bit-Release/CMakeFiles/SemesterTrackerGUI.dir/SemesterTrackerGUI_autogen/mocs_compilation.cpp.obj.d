@@ -1,8 +1,7 @@
 CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/mocs_compilation.cpp.obj: \
  C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\mocs_compilation.cpp \
- C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\EWIEGA46WW/moc_assignmentswindow.cpp \
- C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignmentswindow.h \
- C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/databasemanager.h \
+ C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\EWIEGA46WW/moc_assignmenteditordialog.cpp \
+ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignmenteditordialog.h \
  C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignment.h \
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/string \
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/requires_hosted.h \
@@ -101,6 +100,7 @@ CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/mocs_compilation.cp
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/uses_allocator.h \
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/uses_allocator_args.h \
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/tuple \
+ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/databasemanager.h \
  C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/course.h \
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/vector \
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/stl_uninitialized.h \
@@ -113,8 +113,8 @@ CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/mocs_compilation.cp
  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/stdarg.h \
  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/_mingw_stdarg.h \
  C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/user.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QWidget \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qwidget.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDialog \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialog.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtwidgetsglobal.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qtguiglobal.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qglobal.h \
@@ -213,6 +213,7 @@ CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/mocs_compilation.cp
  C:/Qt/6.11.1/mingw_64/include/QtGui/qtguiexports.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtwidgets-config.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtwidgetsexports.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qwidget.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qwindowdefs.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qobjectdefs.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qnamespace.h \
@@ -391,20 +392,21 @@ CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/mocs_compilation.cp
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qsizepolicy.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qcursor.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qbitmap.h \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QString \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qtmochelpers.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qtmocconstants.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/q20algorithm.h \
+ C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\EWIEGA46WW/moc_assignmentswindow.cpp \
+ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignmentswindow.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QWidget \
  C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\EWIEGA46WW/moc_calendarwindow.cpp \
  C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/calendarwindow.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QDate \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qdatetime.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qcalendar.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qlocale.h \
- C:/Qt/6.11.1/mingw_64/include/QtCore/QString \
  C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\EWIEGA46WW/moc_courseeditordialog.cpp \
  C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordialog.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDialog \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialog.h \
  C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\EWIEGA46WW/moc_courseswindow.cpp \
  C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseswindow.h \
  C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\EWIEGA46WW/moc_dashboard.cpp \

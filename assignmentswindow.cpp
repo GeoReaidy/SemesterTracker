@@ -1,25 +1,23 @@
 #include "assignmentswindow.h"
+#include "assignmenteditordialog.h"
 #include "ui_assignmentswindow.h"
 
-#include <QAbstractItemView>
+#include <QColor>
 #include <QComboBox>
-#include <QDate>
-#include <QDateEdit>
 #include <QDialog>
-#include <QDialogButtonBox>
-#include <QFormLayout>
+#include <QDate>
 #include <QHBoxLayout>
 #include <QIcon>
-#include <QInputDialog>
 #include <QLabel>
-#include <QLineEdit>
 #include <QListView>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMessageBox>
 #include <QPainter>
+#include <QPen>
 #include <QPixmap>
 #include <QPushButton>
+#include <QSize>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -74,125 +72,11 @@ QIcon makeBinIcon()
     return QIcon(pixmap);
 }
 
-bool askForDueDate(
-    QWidget *parent,
-    const QString &title,
-    const QDate &initialDate,
-    QDate &selectedDate)
-{
-    QDialog dialog(parent);
-    dialog.setWindowTitle(title);
-    dialog.setModal(true);
-
-    auto *layout = new QFormLayout(&dialog);
-
-    auto *dateEdit = new QDateEdit(
-        initialDate.isValid()
-            ? initialDate
-            : QDate::currentDate(),
-        &dialog
-    );
-
-    dateEdit->setCalendarPopup(true);
-    dateEdit->setDisplayFormat("dd MMM yyyy");
-    dateEdit->setMinimumDate(QDate(2000, 1, 1));
-    dateEdit->setMaximumDate(QDate(2100, 12, 31));
-
-    layout->addRow("Due date:", dateEdit);
-
-    auto *buttons = new QDialogButtonBox(
-        QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
-        &dialog
-    );
-
-    QObject::connect(
-        buttons,
-        &QDialogButtonBox::accepted,
-        &dialog,
-        &QDialog::accept
-    );
-
-    QObject::connect(
-        buttons,
-        &QDialogButtonBox::rejected,
-        &dialog,
-        &QDialog::reject
-    );
-
-    layout->addRow(buttons);
-
-    if (dialog.exec() != QDialog::Accepted)
-    {
-        return false;
-    }
-
-    selectedDate = dateEdit->date();
-    return selectedDate.isValid();
-}
-
 QString assignmentCountText(int count)
 {
     return QString("%1 assignment%2")
         .arg(count)
         .arg(count == 1 ? "" : "s");
-}
-
-bool assignmentNameAlreadyExists(
-    DatabaseManager &database,
-    int courseID,
-    const QString &name,
-    int ignoredAssignmentID = -1)
-{
-    const std::vector<Assignment> assignments =
-        database.loadAssignmentsForCourse(courseID);
-
-    const QString normalizedName =
-        name.trimmed().toCaseFolded();
-
-    for (const Assignment &assignment : assignments)
-    {
-        if (assignment.getID() == ignoredAssignmentID)
-        {
-            continue;
-        }
-
-        const QString existingName =
-            QString::fromStdString(
-                assignment.getName()
-            ).trimmed().toCaseFolded();
-
-        if (existingName == normalizedName)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-int totalAssignmentWeight(
-    DatabaseManager &database,
-    int courseID,
-    int ignoredAssignmentID = -1)
-{
-    int total = 0;
-
-    const std::vector<Assignment> assignments =
-        database.loadAssignmentsForCourse(courseID);
-
-    for (const Assignment &assignment : assignments)
-    {
-        if (assignment.getID() == ignoredAssignmentID)
-        {
-            continue;
-        }
-
-        total += static_cast<int>(
-            assignment.getWeightPercentage()
-        );
-    }
-
-    return total;
 }
 }
 
@@ -460,184 +344,21 @@ void AssignmentsWindow::handleAddAssignment()
     {
         QMessageBox::information(
             this,
-            "No Course",
-            "Select a course before adding an assignment."
+            tr("No Course"),
+            tr("Select a course before adding an assignment.")
         );
         return;
     }
 
-    bool nameAccepted = false;
+    AssignmentEditorDialog dialog(
+        database,
+        courseID,
+        ui->courseComboBox->currentText(),
+        this
+    );
 
-    const QString name =
-        QInputDialog::getText(
-            this,
-            "Add Assignment",
-            "Assignment name:",
-            QLineEdit::Normal,
-            QString(),
-            &nameAccepted
-        ).trimmed();
-
-    if (!nameAccepted)
+    if (dialog.exec() != QDialog::Accepted)
     {
-        return;
-    }
-
-    if (name.isEmpty())
-    {
-        QMessageBox::warning(
-            this,
-            "Invalid Assignment",
-            "Assignment name cannot be empty."
-        );
-        return;
-    }
-
-    bool weightAccepted = false;
-
-    const int weight =
-        QInputDialog::getInt(
-            this,
-            "Add Assignment",
-            "Weight percentage:",
-            10,
-            1,
-            100,
-            1,
-            &weightAccepted
-        );
-
-    if (!weightAccepted)
-    {
-        return;
-    }
-
-    double grade = -1.0;
-
-    const QMessageBox::StandardButton gradeAnswer =
-        QMessageBox::question(
-            this,
-            "Assignment Grade",
-            "Has the grade for this assignment been released?",
-            QMessageBox::Yes | QMessageBox::No,
-            QMessageBox::No
-        );
-
-    if (gradeAnswer == QMessageBox::Yes)
-    {
-        bool gradeAccepted = false;
-
-        grade = QInputDialog::getDouble(
-            this,
-            "Add Assignment",
-            "Grade percentage:",
-            0.0,
-            0.0,
-            100.0,
-            2,
-            &gradeAccepted
-        );
-
-        if (!gradeAccepted)
-        {
-            return;
-        }
-    }
-
-    std::string dueDateValue;
-
-    const QMessageBox::StandardButton dueDateAnswer =
-        QMessageBox::question(
-            this,
-            "Assignment Due Date",
-            "Does this assignment have a due date?",
-            QMessageBox::Yes | QMessageBox::No,
-            QMessageBox::Yes
-        );
-
-    if (dueDateAnswer == QMessageBox::Yes)
-    {
-        QDate dueDate;
-
-        if (!askForDueDate(
-                this,
-                "Assignment Due Date",
-                QDate::currentDate(),
-                dueDate))
-        {
-            return;
-        }
-
-        dueDateValue =
-            dueDate.toString(Qt::ISODate).toStdString();
-    }
-
-    try
-    {
-        const Assignment candidate(
-            -1,
-            name.toStdString(),
-            weight,
-            grade,
-            dueDateValue
-        );
-
-        Q_UNUSED(candidate);
-    }
-    catch (const std::exception &error)
-    {
-        QMessageBox::warning(
-            this,
-            "Invalid Assignment",
-            error.what()
-        );
-        return;
-    }
-
-    if (assignmentNameAlreadyExists(
-            database,
-            courseID,
-            name))
-    {
-        QMessageBox::warning(
-            this,
-            "Duplicate Assignment",
-            "An assignment with this name already exists in the selected course."
-        );
-        return;
-    }
-
-    const int existingWeight =
-        totalAssignmentWeight(
-            database,
-            courseID
-        );
-
-    if (existingWeight + weight > 100)
-    {
-        QMessageBox::warning(
-            this,
-            "Invalid Weight",
-            QString(
-                "The total assignment weight would become %1%. "
-                "A course cannot exceed 100%."
-            ).arg(existingWeight + weight)
-        );
-        return;
-    }
-
-    if (!database.addAssignment(
-            courseID,
-            name.toStdString(),
-            grade,
-            weight,
-            dueDateValue))
-    {
-        QMessageBox::warning(
-            this,
-            "Database Error",
-            "Could not save the assignment."
-        );
         return;
     }
 
@@ -691,10 +412,6 @@ void AssignmentsWindow::addAssignmentRow(
     item->setData(
         Qt::UserRole + 4,
         QString::fromStdString(assignment.getDueDate())
-    );
-    item->setData(
-        Qt::UserRole + 5,
-        assignment.hasGrade()
     );
 
     auto *rowWidget =
@@ -869,213 +586,41 @@ void AssignmentsWindow::editAssignmentRow(
         return;
     }
 
-    const int assignmentID =
-        item->data(Qt::UserRole).toInt();
-
-    const QString currentName =
-        item->data(Qt::UserRole + 1).toString();
-
-    const int currentWeight =
-        static_cast<int>(
-            item->data(Qt::UserRole + 2).toDouble()
-        );
-
-    const double currentGrade =
-        item->data(Qt::UserRole + 3).toDouble();
-
-    const QString currentDueDateText =
-        item->data(Qt::UserRole + 4).toString();
-
-    const bool currentlyHasGrade =
-        item->data(Qt::UserRole + 5).toBool();
-
-    const QDate currentDueDate =
-        QDate::fromString(
-            currentDueDateText,
-            Qt::ISODate
-        );
-
-    bool nameAccepted = false;
-
-    const QString newName =
-        QInputDialog::getText(
-            this,
-            "Edit Assignment",
-            "Assignment name:",
-            QLineEdit::Normal,
-            currentName,
-            &nameAccepted
-        ).trimmed();
-
-    if (!nameAccepted)
-    {
-        return;
-    }
-
-    if (newName.isEmpty())
-    {
-        QMessageBox::warning(
-            this,
-            "Invalid Assignment",
-            "Assignment name cannot be empty."
-        );
-        return;
-    }
-
-    bool weightAccepted = false;
-
-    const int newWeight =
-        QInputDialog::getInt(
-            this,
-            "Edit Assignment",
-            "Weight percentage:",
-            currentWeight,
-            1,
-            100,
-            1,
-            &weightAccepted
-        );
-
-    if (!weightAccepted)
-    {
-        return;
-    }
-
-    double newGrade = -1.0;
-
-    const QMessageBox::StandardButton gradeAnswer =
-        QMessageBox::question(
-            this,
-            "Assignment Grade",
-            "Has the grade for this assignment been released?",
-            QMessageBox::Yes | QMessageBox::No,
-            currentlyHasGrade
-                ? QMessageBox::Yes
-                : QMessageBox::No
-        );
-
-    if (gradeAnswer == QMessageBox::Yes)
-    {
-        bool gradeAccepted = false;
-
-        newGrade = QInputDialog::getDouble(
-            this,
-            "Edit Assignment",
-            "Grade percentage:",
-            currentlyHasGrade ? currentGrade : 0.0,
-            0.0,
-            100.0,
-            2,
-            &gradeAccepted
-        );
-
-        if (!gradeAccepted)
-        {
-            return;
-        }
-    }
-
-    std::string newDueDateValue;
-
-    const QMessageBox::StandardButton dueDateAnswer =
-        QMessageBox::question(
-            this,
-            "Assignment Due Date",
-            "Does this assignment have a due date?",
-            QMessageBox::Yes | QMessageBox::No,
-            currentDueDate.isValid()
-                ? QMessageBox::Yes
-                : QMessageBox::No
-        );
-
-    if (dueDateAnswer == QMessageBox::Yes)
-    {
-        QDate newDueDate;
-
-        if (!askForDueDate(
-                this,
-                "Edit Assignment Due Date",
-                currentDueDate.isValid()
-                    ? currentDueDate
-                    : QDate::currentDate(),
-                newDueDate))
-        {
-            return;
-        }
-
-        newDueDateValue =
-            newDueDate.toString(Qt::ISODate).toStdString();
-    }
-
     try
     {
-        const Assignment candidate(
-            assignmentID,
-            newName.toStdString(),
-            newWeight,
-            newGrade,
-            newDueDateValue
+        const Assignment assignment(
+            item->data(Qt::UserRole).toInt(),
+            item->data(Qt::UserRole + 1)
+                .toString()
+                .toStdString(),
+            static_cast<int>(
+                item->data(Qt::UserRole + 2).toDouble()
+            ),
+            item->data(Qt::UserRole + 3).toDouble(),
+            item->data(Qt::UserRole + 4)
+                .toString()
+                .toStdString()
         );
 
-        Q_UNUSED(candidate);
+        AssignmentEditorDialog dialog(
+            database,
+            selectedCourseID(),
+            ui->courseComboBox->currentText(),
+            assignment,
+            this
+        );
+
+        if (dialog.exec() != QDialog::Accepted)
+        {
+            return;
+        }
     }
     catch (const std::exception &error)
     {
         QMessageBox::warning(
             this,
-            "Invalid Assignment",
-            error.what()
-        );
-        return;
-    }
-
-    const int courseID = selectedCourseID();
-
-    if (assignmentNameAlreadyExists(
-            database,
-            courseID,
-            newName,
-            assignmentID))
-    {
-        QMessageBox::warning(
-            this,
-            "Duplicate Assignment",
-            "Another assignment with this name already exists in the selected course."
-        );
-        return;
-    }
-
-    const int otherAssignmentsWeight =
-        totalAssignmentWeight(
-            database,
-            courseID,
-            assignmentID
-        );
-
-    if (otherAssignmentsWeight + newWeight > 100)
-    {
-        QMessageBox::warning(
-            this,
-            "Invalid Weight",
-            QString(
-                "The total assignment weight would become %1%. "
-                "A course cannot exceed 100%."
-            ).arg(otherAssignmentsWeight + newWeight)
-        );
-        return;
-    }
-
-    if (!database.updateAssignment(
-            assignmentID,
-            newName.toStdString(),
-            newGrade,
-            newWeight,
-            newDueDateValue))
-    {
-        QMessageBox::warning(
-            this,
-            "Database Error",
-            "Could not update the assignment."
+            tr("Invalid Assignment"),
+            QString::fromUtf8(error.what())
         );
         return;
     }

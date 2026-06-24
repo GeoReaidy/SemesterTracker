@@ -119,6 +119,8 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
         courseeditordialog.ui
         assignmentswindow.ui
         assignmentswindow.h assignmentswindow.cpp
+        assignmenteditordialog.ui
+        assignmenteditordialog.h assignmenteditordialog.cpp
         gradeswindow.ui
         gradeswindow.h gradeswindow.cpp
         settingswindow.cpp settingswindow.h settingswindow.ui
