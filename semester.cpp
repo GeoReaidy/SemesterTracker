@@ -38,6 +38,23 @@ std::string trimCopy(const std::string &value)
     return std::string(first, last);
 }
 
+std::string lowerCopy(std::string value)
+{
+    std::transform(
+        value.begin(),
+        value.end(),
+        value.begin(),
+        [](unsigned char character)
+        {
+            return static_cast<char>(
+                std::tolower(character)
+            );
+        }
+    );
+
+    return value;
+}
+
 std::string upperCopy(std::string value)
 {
     std::transform(
@@ -99,10 +116,46 @@ void validateSemesterYear(int year)
 }
 }
 
+std::string semesterStatusToStorage(SemesterStatus status)
+{
+    switch (status)
+    {
+    case SemesterStatus::Planned:
+        return "planned";
+    case SemesterStatus::Active:
+        return "active";
+    case SemesterStatus::Completed:
+        return "completed";
+    }
+
+    return "planned";
+}
+
+SemesterStatus semesterStatusFromStorage(
+    const std::string &value)
+{
+    const std::string normalized =
+        lowerCopy(trimCopy(value));
+
+    if (normalized == "active" ||
+        normalized == "current" ||
+        normalized == "in_progress")
+    {
+        return SemesterStatus::Active;
+    }
+
+    if (normalized == "completed")
+    {
+        return SemesterStatus::Completed;
+    }
+
+    return SemesterStatus::Planned;
+}
+
 Semester::Semester()
     : semesterYear(MinimumSemesterYear),
       semesterID(-1),
-      inProgress(false),
+      status(SemesterStatus::Planned),
       summaryOnly(false),
       summaryCredits(0),
       summaryGPA(0.0)
@@ -115,11 +168,18 @@ Semester::Semester(int id,
                    bool inProgress,
                    bool summaryOnly,
                    int summaryCredits,
-                   double summaryGPA)
+                   double summaryGPA,
+                   SemesterStatus semesterStatus)
     : semesterName(validateSemesterName(name)),
       semesterYear(year),
       semesterID(id),
-      inProgress(inProgress),
+      status(
+          summaryOnly
+              ? SemesterStatus::Completed
+              : (inProgress
+                     ? SemesterStatus::Active
+                     : semesterStatus)
+      ),
       summaryOnly(summaryOnly),
       summaryCredits(summaryCredits),
       summaryGPA(summaryGPA)
@@ -144,9 +204,24 @@ int Semester::getYear() const
     return semesterYear;
 }
 
+SemesterStatus Semester::getStatus() const
+{
+    return status;
+}
+
+bool Semester::isPlanned() const
+{
+    return status == SemesterStatus::Planned;
+}
+
 bool Semester::isInProgress() const
 {
-    return inProgress;
+    return status == SemesterStatus::Active;
+}
+
+bool Semester::isCompleted() const
+{
+    return status == SemesterStatus::Completed;
 }
 
 bool Semester::isSummaryOnly() const
@@ -180,21 +255,48 @@ void Semester::setYear(int year)
     semesterYear = year;
 }
 
-void Semester::setInProgress(bool status)
+void Semester::setStatus(SemesterStatus newStatus)
 {
-    inProgress = status;
+    if (summaryOnly &&
+        newStatus != SemesterStatus::Completed)
+    {
+        throw std::invalid_argument(
+            "A summary-only semester must remain completed."
+        );
+    }
+
+    status = newStatus;
+}
+
+void Semester::setInProgress(bool inProgress)
+{
+    if (summaryOnly)
+    {
+        status = SemesterStatus::Completed;
+        return;
+    }
+
+    setStatus(
+        inProgress
+            ? SemesterStatus::Active
+            : SemesterStatus::Planned
+    );
 }
 
 void Semester::setSummaryData(bool isSummary, int credits, double gpa)
 {
     if (credits < 0 || credits > 300)
     {
-        throw std::invalid_argument("Summary credits must be between 0 and 300.");
+        throw std::invalid_argument(
+            "Summary credits must be between 0 and 300."
+        );
     }
 
     if (gpa < 0.0 || gpa > 4.0)
     {
-        throw std::invalid_argument("Summary GPA must be between 0.00 and 4.00.");
+        throw std::invalid_argument(
+            "Summary GPA must be between 0.00 and 4.00."
+        );
     }
 
     summaryOnly = isSummary;
@@ -203,7 +305,7 @@ void Semester::setSummaryData(bool isSummary, int credits, double gpa)
 
     if (summaryOnly)
     {
-        inProgress = false;
+        status = SemesterStatus::Completed;
     }
 }
 

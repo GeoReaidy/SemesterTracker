@@ -772,7 +772,6 @@ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordial
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semester.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/sqlite3.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/user.h
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/consoleapp.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseswindow.h
  mmc:Q_OBJECT
  mdp:C:/Qt/6.11.1/mingw_64/include/QtCore/q17memory.h
@@ -1539,8 +1538,9 @@ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignmentswindo
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semester.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/sqlite3.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/user.h
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/sqlite3.h
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/consoleapp.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/authservice.h
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/sqlite3.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/calendarwindow.h
  mmc:Q_OBJECT
  mdp:C:/Qt/6.11.1/mingw_64/include/QtCore/QDate
@@ -2316,10 +2316,8 @@ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/dashboard.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semester.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/sqlite3.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/user.h
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semester.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/databasemanager.h
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/course.cpp
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignment.cpp
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semester.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/gradeswindow.h
  mmc:Q_OBJECT
  mdp:C:/Qt/6.11.1/mingw_64/include/QtCore/q17memory.h
@@ -2703,7 +2701,8 @@ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/gradeswindow.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semester.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/sqlite3.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/user.h
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/sqlite3.c
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignment.cpp
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/course.cpp
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/guiapp.h
  mmc:Q_OBJECT
  mdp:C:/Qt/6.11.1/mingw_64/include/QtCore/QDate
@@ -3053,6 +3052,7 @@ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/guiapp.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semester.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/sqlite3.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/user.h
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/sqlite3.c
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/mainwindow.h
  mmc:Q_OBJECT
  mdp:C:/Qt/6.11.1/mingw_64/include/QtCore/q17memory.h
@@ -4583,7 +4583,6 @@ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/settingswindow.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/settingswindow.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/sqlite3.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/user.h
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/authservice.cpp
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/updatemanager.h
  mmc:Q_OBJECT
  mdp:C:/Qt/6.11.1/mingw_64/include/QtCore/QObject
@@ -4901,22 +4900,23 @@ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/updatemanager.h
  mdp:C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/build/Desktop_Qt_6_11_1_MinGW_64_bit-Release/SemesterTrackerGUI_autogen/moc_predefs.h
  mdp:C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/updatemanager.h
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/authservice.cpp
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/user.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/dashboard.cpp
  uic:ui_dashboard.h
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/user.h
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordialog.cpp
- uic:ui_courseeditordialog.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignmenteditordialog.cpp
  uic:ui_assignmenteditordialog.h
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseswindow.cpp
- uic:ui_courseswindow.h
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordialog.cpp
+ uic:ui_courseeditordialog.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignmentswindow.cpp
  uic:ui_assignmentswindow.h
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseswindow.cpp
+ uic:ui_courseswindow.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/calendarwindow.cpp
  uic:ui_calendarwindow.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/consoleapp.cpp
-C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semester.cpp
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/databasemanager.cpp
+C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semester.cpp
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/gradeswindow.cpp
  uic:ui_gradeswindow.h
 C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/guiapp.cpp

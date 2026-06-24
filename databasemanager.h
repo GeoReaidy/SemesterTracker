@@ -90,7 +90,13 @@ public:
         bool inProgress,
         bool summaryOnly,
         int summaryCredits,
-        double summaryGPA
+        double summaryGPA,
+        SemesterStatus status = SemesterStatus::Planned
+    );
+
+    bool setSemesterStatus(
+        int semesterID,
+        SemesterStatus status
     );
 
     bool deleteSemester(int semesterID);

@@ -38,6 +38,7 @@ CourseEditorDialog::CourseEditorDialog(
       database(database),
       userID(userID),
       courseID(-1),
+      originalSemesterID(-1),
       editMode(false),
       ui(new Ui::CourseEditorDialog)
 {
@@ -70,6 +71,7 @@ CourseEditorDialog::CourseEditorDialog(
       database(database),
       userID(userID),
       courseID(course.getID()),
+      originalSemesterID(currentSemesterID),
       editMode(true),
       ui(new Ui::CourseEditorDialog)
 {
@@ -119,14 +121,24 @@ void CourseEditorDialog::populateSemesters(
                 .arg(QString::fromStdString(semester.getName()))
                 .arg(semester.getYear());
 
-        if (semester.isInProgress())
+        if (semester.getStatus() == SemesterStatus::Active)
         {
-            label += tr(" — current");
+            label += tr(" — active");
+        }
+        else if (semester.getStatus() == SemesterStatus::Completed)
+        {
+            label += tr(" — completed");
         }
 
         ui->semesterComboBox->addItem(
             label,
             semester.getID()
+        );
+
+        ui->semesterComboBox->setItemData(
+            ui->semesterComboBox->count() - 1,
+            static_cast<int>(semester.getStatus()),
+            Qt::UserRole + 1
         );
 
         if (semester.getID() == selectedSemesterID)
@@ -210,6 +222,22 @@ int CourseEditorDialog::selectedSemesterID() const
     return ui->semesterComboBox->currentData().toInt();
 }
 
+SemesterStatus CourseEditorDialog::selectedSemesterStatus() const
+{
+    if (!ui ||
+        !ui->semesterComboBox ||
+        ui->semesterComboBox->currentIndex() < 0)
+    {
+        return SemesterStatus::Planned;
+    }
+
+    return static_cast<SemesterStatus>(
+        ui->semesterComboBox->currentData(
+            Qt::UserRole + 1
+        ).toInt()
+    );
+}
+
 double CourseEditorDialog::selectedFinalPercentage() const
 {
     const QString grade =
@@ -244,6 +272,8 @@ void CourseEditorDialog::saveCourse()
     }
 
     const int semesterID = selectedSemesterID();
+    const SemesterStatus semesterStatus =
+        selectedSemesterStatus();
 
     if (semesterID <= 0)
     {
@@ -296,6 +326,16 @@ void CourseEditorDialog::saveCourse()
             return;
         }
 
+        if (semesterStatus == SemesterStatus::Completed &&
+            semesterID != originalSemesterID)
+        {
+            showValidationError(
+                tr("An existing course cannot be moved into a completed "
+                   "semester. Add it there as a completed course instead.")
+            );
+            return;
+        }
+
         if (!database.updateCourseDetails(
                 courseID,
                 semesterID,
@@ -325,6 +365,16 @@ void CourseEditorDialog::saveCourse()
         hasFinalGrade
             ? selectedFinalPercentage()
             : -1.0;
+
+    if (semesterStatus == SemesterStatus::Completed &&
+        !hasFinalGrade)
+    {
+        showValidationError(
+            tr("A course added to a completed semester must include "
+               "its final letter grade.")
+        );
+        return;
+    }
 
     if (existingCourseID >= 0 && !retake)
     {

@@ -39,6 +39,10 @@ private slots:
 
 private:
     void addSemesterRow(const Semester &semester);
+    void setSemesterStatus(
+        QListWidgetItem *item,
+        SemesterStatus status
+    );
     void editSemesterRow(QListWidgetItem *item);
     void deleteSemesterRow(QListWidgetItem *item);
     void updateEmptyState();

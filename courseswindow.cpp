@@ -357,6 +357,18 @@ void CoursesWindow::refreshSemesters()
         {
             label += " — completed summary";
         }
+        else if (semester.getStatus() == SemesterStatus::Active)
+        {
+            label += " — active";
+        }
+        else if (semester.getStatus() == SemesterStatus::Completed)
+        {
+            label += " — completed";
+        }
+        else
+        {
+            label += " — planned";
+        }
 
         ui->semesterComboBox->addItem(label, semester.getID());
         ui->semesterComboBox->setItemData(

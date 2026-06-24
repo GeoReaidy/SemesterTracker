@@ -18,6 +18,7 @@ SemesterEditorDialog::SemesterEditorDialog(
       userID(userID),
       semesterID(-1),
       editMode(false),
+      existingStatus(SemesterStatus::Planned),
       existingSemesterHasCourses(false),
       ui(new Ui::SemesterEditorDialog)
 {
@@ -56,6 +57,7 @@ SemesterEditorDialog::SemesterEditorDialog(
       userID(userID),
       semesterID(semester.getID()),
       editMode(true),
+      existingStatus(semester.getStatus()),
       existingSemesterHasCourses(false),
       ui(new Ui::SemesterEditorDialog)
 {
@@ -97,6 +99,8 @@ void SemesterEditorDialog::configureForAdd()
         tr("Enter all semester details in one place.")
     );
 
+    existingStatus = SemesterStatus::Planned;
+
     ui->termComboBox->setCurrentIndex(0);
     ui->yearSpinBox->setValue(QDate::currentDate().year());
     ui->completedCheckBox->setChecked(false);
@@ -129,6 +133,10 @@ void SemesterEditorDialog::configureForEdit(
     ui->yearSpinBox->setValue(semester.getYear());
     ui->completedCheckBox->setChecked(semester.isSummaryOnly());
     ui->currentCheckBox->setChecked(semester.isInProgress());
+    ui->currentCheckBox->setEnabled(false);
+    ui->currentCheckBox->setToolTip(
+        tr("Change semester status from the semester row.")
+    );
     ui->completedCreditsSpinBox->setValue(
         semester.isSummaryOnly()
             ? semester.getSummaryCredits()
@@ -163,12 +171,14 @@ void SemesterEditorDialog::configureForEdit(
 
     ui->validationLabel->setVisible(false);
     updateCompletedState(semester.isSummaryOnly());
+
+    ui->currentCheckBox->setEnabled(false);
 }
 
 void SemesterEditorDialog::updateCompletedState(bool completed)
 {
     ui->completedFieldsFrame->setVisible(completed);
-    ui->currentCheckBox->setEnabled(!completed);
+    ui->currentCheckBox->setEnabled(!completed && !editMode);
 
     if (completed)
     {
@@ -238,6 +248,17 @@ void SemesterEditorDialog::saveSemester()
     const bool completed = ui->completedCheckBox->isChecked();
     const bool current =
         !completed && ui->currentCheckBox->isChecked();
+
+    const SemesterStatus selectedStatus =
+        completed
+            ? SemesterStatus::Completed
+            : (current
+                   ? SemesterStatus::Active
+                   : (editMode &&
+                      existingStatus == SemesterStatus::Completed
+                          ? SemesterStatus::Completed
+                          : SemesterStatus::Planned));
+
     const int completedCredits = completed
         ? ui->completedCreditsSpinBox->value()
         : 0;
@@ -271,7 +292,8 @@ void SemesterEditorDialog::saveSemester()
             current,
             completed,
             completedCredits,
-            semesterGpa
+            semesterGpa,
+            selectedStatus
         );
 
         Q_UNUSED(candidate);
@@ -303,7 +325,8 @@ void SemesterEditorDialog::saveSemester()
             current,
             completed,
             completedCredits,
-            semesterGpa
+            semesterGpa,
+            selectedStatus
         );
     }
     else if (completed)

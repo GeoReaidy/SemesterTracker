@@ -43,6 +43,7 @@ private:
     void configureForAdd();
     void configureForEdit(const Course &course);
     int selectedSemesterID() const;
+    SemesterStatus selectedSemesterStatus() const;
     double selectedFinalPercentage() const;
     void showValidationError(const QString &message);
     void clearValidationError();
@@ -50,6 +51,7 @@ private:
     DatabaseManager &database;
     int userID;
     int courseID;
+    int originalSemesterID;
     bool editMode;
     Ui::CourseEditorDialog *ui;
 };
