@@ -1,0 +1,44 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>Semester tracker app logo</title>
+<desc>A rounded square app icon with a purple-to-blue gradient background, featuring a stylized open book whose pages form a calendar grid, with a progress arc and a checkmark dot marking a completed day.</desc>
+
+<defs>
+<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#5B5FEF"/>
+<stop offset="100%" stop-color="#9B5DE5"/>
+</linearGradient>
+<linearGradient id="pageShade" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#FFFFFF"/>
+<stop offset="100%" stop-color="#F1EEFF"/>
+</linearGradient>
+<linearGradient id="arc" x1="0%" y1="0%" x2="100%" y2="0%">
+<stop offset="0%" stop-color="#FFE08A"/>
+<stop offset="100%" stop-color="#FFB05C"/>
+</linearGradient>
+</defs>
+
+<rect x="0" y="0" width="512" height="512" rx="104" fill="url(#bg)"/>
+
+<circle cx="256" cy="256" r="148" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="14"/>
+<path d="M 256 108 A 148 148 0 1 1 130.5 326" fill="none" stroke="url(#arc)" stroke-width="14" stroke-linecap="round"/>
+
+<g>
+<path d="M256 178 C 232 162 188 156 158 166 L158 332 C 188 322 232 328 256 344 Z" fill="url(#pageShade)"/>
+<path d="M256 178 C 280 162 324 156 354 166 L354 332 C 324 322 280 328 256 344 Z" fill="#FFFFFF"/>
+<path d="M256 178 L256 344" stroke="#D9D4FA" stroke-width="3"/>
+
+<line x1="172" y1="196" x2="238" y2="190" stroke="#C9C2F5" stroke-width="5" stroke-linecap="round"/>
+<line x1="172" y1="216" x2="238" y2="210" stroke="#C9C2F5" stroke-width="5" stroke-linecap="round"/>
+<line x1="172" y1="236" x2="238" y2="232" stroke="#C9C2F5" stroke-width="5" stroke-linecap="round"/>
+<line x1="172" y1="256" x2="222" y2="253" stroke="#C9C2F5" stroke-width="5" stroke-linecap="round"/>
+
+<line x1="274" y1="190" x2="340" y2="196" stroke="#E3DEFF" stroke-width="5" stroke-linecap="round"/>
+<line x1="274" y1="210" x2="340" y2="216" stroke="#E3DEFF" stroke-width="5" stroke-linecap="round"/>
+<line x1="274" y1="232" x2="340" y2="236" stroke="#E3DEFF" stroke-width="5" stroke-linecap="round"/>
+<line x1="290" y1="253" x2="340" y2="256" stroke="#E3DEFF" stroke-width="5" stroke-linecap="round"/>
+</g>
+
+<circle cx="256" cy="290" r="34" fill="#3FCB7E"/>
+<path d="M240 290 L252 302 L274 278" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+
+</svg>

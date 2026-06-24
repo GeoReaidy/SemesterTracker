@@ -385,11 +385,27 @@ void GradesWindow::addCourseGradeRow(
         "background: transparent;"
     );
 
-    auto *detailsLabel = new QLabel(
+    QString detailsText =
         result.hasGrades
             ? QString("Assignment weight entered: %1%")
                   .arg(result.totalWeight)
-            : "Add graded assignments to calculate this course.",
+            : tr("Add graded assignments to calculate this course.");
+
+    if (course.isExcludedFromCGPA())
+    {
+        detailsText += tr(
+            "  •  Historical attempt — excluded from CGPA"
+        );
+    }
+    else if (course.isRetaken())
+    {
+        detailsText += tr(
+            "  •  Retake attempt"
+        );
+    }
+
+    auto *detailsLabel = new QLabel(
+        detailsText,
         textContainer
     );
 

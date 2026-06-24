@@ -154,6 +154,16 @@ void validateCredits(int credits)
         );
     }
 }
+
+void validateOptionalCourseID(int id)
+{
+    if (id == 0 || id < -1)
+    {
+        throw std::invalid_argument(
+            "Retake source course ID must be -1 or a positive value."
+        );
+    }
+}
 }
 
 std::string courseStatusToStorage(CourseStatus status)
@@ -202,16 +212,21 @@ Course::Course(int id,
                std::string code,
                int credits,
                CourseStatus courseStatus,
-               bool isRetaken)
+               bool isRetaken,
+               int sourceCourseID,
+               bool excluded)
     : courseName(validateCourseName(name)),
       courseCode(validateCourseCode(code)),
       creditCount(credits),
       courseID(id),
       status(courseStatus),
-      retaken(isRetaken)
+      retaken(isRetaken),
+      retakeOfCourseID(sourceCourseID),
+      excludedFromCGPA(excluded)
 {
     validateCourseID(courseID);
     validateCredits(creditCount);
+    validateOptionalCourseID(retakeOfCourseID);
 }
 
 int Course::getID() const
@@ -264,6 +279,16 @@ bool Course::isRetaken() const
     return retaken;
 }
 
+int Course::getRetakeOfCourseID() const
+{
+    return retakeOfCourseID;
+}
+
+bool Course::isExcludedFromCGPA() const
+{
+    return excludedFromCGPA;
+}
+
 const std::vector<Assignment> &
 Course::getAssignments() const
 {
@@ -294,6 +319,17 @@ void Course::setStatus(CourseStatus newStatus)
 void Course::setRetaken(bool isRetaken)
 {
     retaken = isRetaken;
+}
+
+void Course::setRetakeOfCourseID(int courseID)
+{
+    validateOptionalCourseID(courseID);
+    retakeOfCourseID = courseID;
+}
+
+void Course::setExcludedFromCGPA(bool excluded)
+{
+    excludedFromCGPA = excluded;
 }
 
 void Course::addAssignment(

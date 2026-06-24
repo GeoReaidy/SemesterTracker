@@ -380,7 +380,8 @@ void CourseEditorDialog::saveCourse()
     {
         showValidationError(
             tr("A course with this code already exists. Check "
-               "'This is a retake' to replace the previous attempt.")
+               "'This is a retake' to keep the previous attempt "
+               "in its semester while replacing it in CGPA.")
         );
         return;
     }

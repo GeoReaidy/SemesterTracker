@@ -211,7 +211,8 @@ double User::calculateCGPA() const
 
         for (const Course &course : semester.getCourses())
         {
-            if (!course.isCompleted() ||
+            if (course.isExcludedFromCGPA() ||
+                !course.isCompleted() ||
                 !course.hasGradedAssignments())
             {
                 continue;
@@ -247,7 +248,8 @@ int User::calculateCompletedCredits() const
 
         for (const Course &course : semester.getCourses())
         {
-            if (course.isCompleted())
+            if (!course.isExcludedFromCGPA() &&
+                course.isCompleted())
             {
                 completedCredits += course.getCredits();
             }

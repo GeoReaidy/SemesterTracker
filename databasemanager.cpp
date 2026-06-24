@@ -223,6 +223,33 @@ CourseStatus defaultCourseStatusForSemester(
     return status;
 }
 
+bool courseIsHistoricalAttempt(
+    sqlite3 *database,
+    int courseID)
+{
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT excluded_from_cgpa "
+            "FROM courses WHERE id = ?;",
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return true;
+    }
+
+    sqlite3_bind_int(statement, 1, courseID);
+
+    const bool historical =
+        sqlite3_step(statement) != SQLITE_ROW ||
+        sqlite3_column_int(statement, 0) == 1;
+
+    sqlite3_finalize(statement);
+    return historical;
+}
+
 bool courseHasCompleteGrade(
     sqlite3 *database,
     int courseID)
@@ -416,7 +443,10 @@ bool DatabaseManager::createTables()
         "credits INTEGER NOT NULL, "
         "status TEXT NOT NULL DEFAULT 'planned', "
         "retaken INTEGER NOT NULL DEFAULT 0, "
-        "FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE"
+        "retake_of_course_id INTEGER DEFAULT NULL, "
+        "excluded_from_cgpa INTEGER NOT NULL DEFAULT 0, "
+        "FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE, "
+        "FOREIGN KEY (retake_of_course_id) REFERENCES courses(id) ON DELETE SET NULL"
         ");"
 
         "CREATE TABLE IF NOT EXISTS assignments ("
@@ -695,6 +725,16 @@ bool DatabaseManager::createTables()
             "retaken",
             "ALTER TABLE courses "
             "ADD COLUMN retaken INTEGER NOT NULL DEFAULT 0;"
+        },
+        {
+            "retake_of_course_id",
+            "ALTER TABLE courses "
+            "ADD COLUMN retake_of_course_id INTEGER DEFAULT NULL;"
+        },
+        {
+            "excluded_from_cgpa",
+            "ALTER TABLE courses "
+            "ADD COLUMN excluded_from_cgpa INTEGER NOT NULL DEFAULT 0;"
         }
     };
 
@@ -3074,12 +3114,33 @@ bool DatabaseManager::retakeCourse(
     if (database == nullptr ||
         existingCourseID <= 0 ||
         newSemesterID <= 0 ||
-        courseCode.empty() ||
-        courseName.empty() ||
-        credits < 1 ||
-        credits > 30 ||
         !semesterAcceptsCourses(database, newSemesterID))
     {
+        return false;
+    }
+
+    const std::string normalizedCode =
+        trimCopy(courseCode);
+
+    const std::string normalizedName =
+        trimCopy(courseName);
+
+    try
+    {
+        const Course candidate(
+            -1,
+            normalizedName,
+            normalizedCode,
+            credits
+        );
+
+        (void)candidate;
+    }
+    catch (const std::exception &error)
+    {
+        std::cout << "Invalid retake course data: "
+                  << error.what()
+                  << std::endl;
         return false;
     }
 
@@ -3087,6 +3148,88 @@ bool DatabaseManager::retakeCourse(
         (letterGrade.empty() ||
          finalPercentage < 0.0 ||
          finalPercentage > 100.0))
+    {
+        return false;
+    }
+
+    sqlite3_stmt *ownershipStatement = nullptr;
+
+    const char *ownershipSql =
+        "SELECT c.semester_id, s.user_id, "
+        "c.excluded_from_cgpa "
+        "FROM courses c "
+        "JOIN semesters s ON s.id = c.semester_id "
+        "WHERE c.id = ?;";
+
+    if (sqlite3_prepare_v2(
+            database,
+            ownershipSql,
+            -1,
+            &ownershipStatement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(
+        ownershipStatement,
+        1,
+        existingCourseID
+    );
+
+    if (sqlite3_step(ownershipStatement) != SQLITE_ROW)
+    {
+        sqlite3_finalize(ownershipStatement);
+        return false;
+    }
+
+    const int existingSemesterID =
+        sqlite3_column_int(ownershipStatement, 0);
+
+    const int existingUserID =
+        sqlite3_column_int(ownershipStatement, 1);
+
+    const bool alreadyHistorical =
+        sqlite3_column_int(ownershipStatement, 2) == 1;
+
+    sqlite3_finalize(ownershipStatement);
+
+    if (alreadyHistorical ||
+        existingSemesterID == newSemesterID)
+    {
+        return false;
+    }
+
+    sqlite3_stmt *newSemesterStatement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT user_id FROM semesters WHERE id = ?;",
+            -1,
+            &newSemesterStatement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(
+        newSemesterStatement,
+        1,
+        newSemesterID
+    );
+
+    const bool newSemesterFound =
+        sqlite3_step(newSemesterStatement) == SQLITE_ROW;
+
+    const int newSemesterUserID =
+        newSemesterFound
+            ? sqlite3_column_int(newSemesterStatement, 0)
+            : -1;
+
+    sqlite3_finalize(newSemesterStatement);
+
+    if (!newSemesterFound ||
+        newSemesterUserID != existingUserID)
     {
         return false;
     }
@@ -3107,37 +3250,6 @@ bool DatabaseManager::retakeCourse(
         return false;
     }
 
-    sqlite3_stmt *deleteAssignmentsStatement = nullptr;
-
-    if (sqlite3_prepare_v2(
-            database,
-            "DELETE FROM assignments WHERE course_id = ?;",
-            -1,
-            &deleteAssignmentsStatement,
-            nullptr) != SQLITE_OK)
-    {
-        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
-        return false;
-    }
-
-    sqlite3_bind_int(
-        deleteAssignmentsStatement,
-        1,
-        existingCourseID
-    );
-
-    const bool assignmentsDeleted =
-        sqlite3_step(deleteAssignmentsStatement) ==
-        SQLITE_DONE;
-
-    sqlite3_finalize(deleteAssignmentsStatement);
-
-    if (!assignmentsDeleted)
-    {
-        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
-        return false;
-    }
-
     const CourseStatus retakeStatus =
         hasFinalGrade
             ? CourseStatus::Completed
@@ -3149,20 +3261,19 @@ bool DatabaseManager::retakeCourse(
     const std::string storedRetakeStatus =
         courseStatusToStorage(retakeStatus);
 
-    sqlite3_stmt *updateCourseStatement = nullptr;
+    sqlite3_stmt *insertCourseStatement = nullptr;
 
-    const char *updateSql =
-        "UPDATE courses "
-        "SET semester_id = ?, course_code = ?, "
-        "course_name = ?, credits = ?, "
-        "status = ?, retaken = 1 "
-        "WHERE id = ?;";
+    const char *insertSql =
+        "INSERT INTO courses "
+        "(semester_id, course_code, course_name, credits, "
+        "status, retaken, retake_of_course_id, excluded_from_cgpa) "
+        "VALUES (?, ?, ?, ?, ?, 1, ?, 0);";
 
     if (sqlite3_prepare_v2(
             database,
-            updateSql,
+            insertSql,
             -1,
-            &updateCourseStatement,
+            &insertCourseStatement,
             nullptr) != SQLITE_OK)
     {
         sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
@@ -3170,54 +3281,54 @@ bool DatabaseManager::retakeCourse(
     }
 
     sqlite3_bind_int(
-        updateCourseStatement,
+        insertCourseStatement,
         1,
         newSemesterID
     );
     sqlite3_bind_text(
-        updateCourseStatement,
+        insertCourseStatement,
         2,
-        courseCode.c_str(),
+        normalizedCode.c_str(),
         -1,
         SQLITE_TRANSIENT
     );
     sqlite3_bind_text(
-        updateCourseStatement,
+        insertCourseStatement,
         3,
-        courseName.c_str(),
+        normalizedName.c_str(),
         -1,
         SQLITE_TRANSIENT
     );
     sqlite3_bind_int(
-        updateCourseStatement,
+        insertCourseStatement,
         4,
         credits
     );
     sqlite3_bind_text(
-        updateCourseStatement,
+        insertCourseStatement,
         5,
         storedRetakeStatus.c_str(),
         -1,
         SQLITE_TRANSIENT
     );
     sqlite3_bind_int(
-        updateCourseStatement,
+        insertCourseStatement,
         6,
         existingCourseID
     );
 
-    const bool courseUpdated =
-        sqlite3_step(updateCourseStatement) ==
-            SQLITE_DONE &&
-        sqlite3_changes(database) == 1;
+    const bool courseInserted =
+        sqlite3_step(insertCourseStatement) == SQLITE_DONE;
 
-    sqlite3_finalize(updateCourseStatement);
+    sqlite3_finalize(insertCourseStatement);
 
-    if (!courseUpdated)
+    if (!courseInserted)
     {
         sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
         return false;
     }
+
+    const int newCourseID = getLastInsertID();
 
     if (hasFinalGrade)
     {
@@ -3247,7 +3358,7 @@ bool DatabaseManager::retakeCourse(
         sqlite3_bind_int(
             gradeStatement,
             1,
-            existingCourseID
+            newCourseID
         );
         sqlite3_bind_text(
             gradeStatement,
@@ -3263,8 +3374,7 @@ bool DatabaseManager::retakeCourse(
         );
 
         const bool gradeSaved =
-            sqlite3_step(gradeStatement) ==
-            SQLITE_DONE;
+            sqlite3_step(gradeStatement) == SQLITE_DONE;
 
         sqlite3_finalize(gradeStatement);
 
@@ -3273,6 +3383,39 @@ bool DatabaseManager::retakeCourse(
             sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
             return false;
         }
+    }
+
+    sqlite3_stmt *excludePreviousStatement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "UPDATE courses "
+            "SET excluded_from_cgpa = 1 "
+            "WHERE id = ?;",
+            -1,
+            &excludePreviousStatement,
+            nullptr) != SQLITE_OK)
+    {
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    sqlite3_bind_int(
+        excludePreviousStatement,
+        1,
+        existingCourseID
+    );
+
+    const bool previousExcluded =
+        sqlite3_step(excludePreviousStatement) == SQLITE_DONE &&
+        sqlite3_changes(database) == 1;
+
+    sqlite3_finalize(excludePreviousStatement);
+
+    if (!previousExcluded)
+    {
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
     }
 
     if (sqlite3_exec(
@@ -3306,114 +3449,18 @@ bool DatabaseManager::updateCourse(
     const std::string &courseName,
     int credits)
 {
-    if (database == nullptr || courseID <= 0)
+    if (database == nullptr ||
+        courseID <= 0 ||
+        courseIsHistoricalAttempt(database, courseID))
     {
         return false;
     }
-
-    const std::string normalizedCode =
-        trimCopy(courseCode);
-
-    const std::string normalizedName =
-        trimCopy(courseName);
-
-    try
-    {
-        const Course candidate(
-            courseID,
-            normalizedName,
-            normalizedCode,
-            credits
-        );
-
-        (void)candidate;
-    }
-    catch (const std::exception &error)
-    {
-        std::cout << "Invalid course data: "
-                  << error.what()
-                  << std::endl;
-        return false;
-    }
-
-    sqlite3_stmt *ownerStatement = nullptr;
-
-    if (sqlite3_prepare_v2(
-            database,
-            "SELECT semester_id FROM courses WHERE id = ?;",
-            -1,
-            &ownerStatement,
-            nullptr) != SQLITE_OK)
-    {
-        return false;
-    }
-
-    sqlite3_bind_int(ownerStatement, 1, courseID);
-
-    if (sqlite3_step(ownerStatement) != SQLITE_ROW)
-    {
-        sqlite3_finalize(ownerStatement);
-        return false;
-    }
-
-    const int semesterID =
-        sqlite3_column_int(ownerStatement, 0);
-
-    sqlite3_finalize(ownerStatement);
-
-    sqlite3_stmt *duplicateStatement = nullptr;
-
-    if (sqlite3_prepare_v2(
-            database,
-            "SELECT 1 FROM courses "
-            "WHERE semester_id = ? "
-            "AND lower(trim(course_code)) = lower(trim(?)) "
-            "AND id != ? LIMIT 1;",
-            -1,
-            &duplicateStatement,
-            nullptr) != SQLITE_OK)
-    {
-        return false;
-    }
-
-    sqlite3_bind_int(
-        duplicateStatement,
-        1,
-        semesterID
-    );
-    sqlite3_bind_text(
-        duplicateStatement,
-        2,
-        normalizedCode.c_str(),
-        -1,
-        SQLITE_TRANSIENT
-    );
-    sqlite3_bind_int(
-        duplicateStatement,
-        3,
-        courseID
-    );
-
-    const bool duplicateExists =
-        sqlite3_step(duplicateStatement) == SQLITE_ROW;
-
-    sqlite3_finalize(duplicateStatement);
-
-    if (duplicateExists)
-    {
-        return false;
-    }
-
-    const char *sql =
-        "UPDATE courses "
-        "SET course_code = ?, course_name = ?, credits = ? "
-        "WHERE id = ?;";
 
     sqlite3_stmt *statement = nullptr;
 
     if (sqlite3_prepare_v2(
             database,
-            sql,
+            "SELECT semester_id FROM courses WHERE id = ?;",
             -1,
             &statement,
             nullptr) != SQLITE_OK)
@@ -3421,30 +3468,31 @@ bool DatabaseManager::updateCourse(
         return false;
     }
 
-    sqlite3_bind_text(
-        statement,
-        1,
-        normalizedCode.c_str(),
-        -1,
-        SQLITE_TRANSIENT
-    );
-    sqlite3_bind_text(
-        statement,
-        2,
-        normalizedName.c_str(),
-        -1,
-        SQLITE_TRANSIENT
-    );
-    sqlite3_bind_int(statement, 3, credits);
-    sqlite3_bind_int(statement, 4, courseID);
+    sqlite3_bind_int(statement, 1, courseID);
 
-    const bool success =
-        sqlite3_step(statement) == SQLITE_DONE;
+    const bool found =
+        sqlite3_step(statement) == SQLITE_ROW;
+
+    const int semesterID =
+        found
+            ? sqlite3_column_int(statement, 0)
+            : -1;
 
     sqlite3_finalize(statement);
-    return success;
-}
 
+    if (!found)
+    {
+        return false;
+    }
+
+    return updateCourseDetails(
+        courseID,
+        semesterID,
+        courseCode,
+        courseName,
+        credits
+    );
+}
 
 bool DatabaseManager::updateCourseDetails(
     int courseID,
@@ -3456,6 +3504,7 @@ bool DatabaseManager::updateCourseDetails(
     if (database == nullptr ||
         courseID <= 0 ||
         semesterID <= 0 ||
+        courseIsHistoricalAttempt(database, courseID) ||
         !semesterAcceptsCourses(database, semesterID))
     {
         return false;
@@ -3517,12 +3566,25 @@ bool DatabaseManager::updateCourseDetails(
     sqlite3_stmt *duplicateStatement = nullptr;
 
     const char *duplicateSql =
+        "WITH RECURSIVE retake_chain(id) AS ("
+            "SELECT ? "
+            "UNION "
+            "SELECT c.retake_of_course_id "
+            "FROM courses c "
+            "JOIN retake_chain r ON c.id = r.id "
+            "WHERE c.retake_of_course_id IS NOT NULL "
+            "UNION "
+            "SELECT c.id "
+            "FROM courses c "
+            "JOIN retake_chain r "
+                "ON c.retake_of_course_id = r.id"
+        ") "
         "SELECT 1 "
         "FROM courses c "
         "JOIN semesters s ON s.id = c.semester_id "
         "WHERE s.user_id = ? "
         "AND lower(trim(c.course_code)) = lower(trim(?)) "
-        "AND c.id != ? "
+        "AND c.id NOT IN (SELECT id FROM retake_chain) "
         "LIMIT 1;";
 
     if (sqlite3_prepare_v2(
@@ -3538,19 +3600,19 @@ bool DatabaseManager::updateCourseDetails(
     sqlite3_bind_int(
         duplicateStatement,
         1,
+        courseID
+    );
+    sqlite3_bind_int(
+        duplicateStatement,
+        2,
         userID
     );
     sqlite3_bind_text(
         duplicateStatement,
-        2,
+        3,
         normalizedCode.c_str(),
         -1,
         SQLITE_TRANSIENT
-    );
-    sqlite3_bind_int(
-        duplicateStatement,
-        3,
-        courseID
     );
 
     const bool duplicateExists =
@@ -3625,7 +3687,9 @@ bool DatabaseManager::setCourseStatus(
     int courseID,
     CourseStatus status)
 {
-    if (database == nullptr || courseID <= 0)
+    if (database == nullptr ||
+        courseID <= 0 ||
+        courseIsHistoricalAttempt(database, courseID))
     {
         return false;
     }
@@ -3679,36 +3743,161 @@ bool DatabaseManager::setCourseStatus(
 
 bool DatabaseManager::deleteCourse(int courseID)
 {
-    const char *sql =
-        "DELETE FROM courses WHERE id = ?;";
-
-    sqlite3_stmt *statement = nullptr;
-
-    int result = sqlite3_prepare_v2(database, sql, -1, &statement, nullptr);
-
-    if (result != SQLITE_OK)
+    if (database == nullptr || courseID <= 0)
     {
-        std::cout << "Failed to prepare deleteCourse statement: "
-                  << sqlite3_errmsg(database) << std::endl;
         return false;
     }
 
-    sqlite3_bind_int(statement, 1, courseID);
+    char *errorMessage = nullptr;
 
-    result = sqlite3_step(statement);
-
-    if (result != SQLITE_DONE)
+    if (sqlite3_exec(
+            database,
+            "BEGIN IMMEDIATE TRANSACTION;",
+            nullptr,
+            nullptr,
+            &errorMessage) != SQLITE_OK)
     {
-        std::cout << "Failed to delete course: "
-                  << sqlite3_errmsg(database) << std::endl;
-
-        sqlite3_finalize(statement);
+        sqlite3_free(errorMessage);
         return false;
     }
 
-    sqlite3_finalize(statement);
+    sqlite3_stmt *relationStatement = nullptr;
 
-    std::cout << "Course deleted successfully. ID: " << courseID << std::endl;
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT retake_of_course_id "
+            "FROM courses WHERE id = ?;",
+            -1,
+            &relationStatement,
+            nullptr) != SQLITE_OK)
+    {
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    sqlite3_bind_int(relationStatement, 1, courseID);
+
+    if (sqlite3_step(relationStatement) != SQLITE_ROW)
+    {
+        sqlite3_finalize(relationStatement);
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    const int sourceCourseID =
+        sqlite3_column_type(relationStatement, 0) == SQLITE_NULL
+            ? -1
+            : sqlite3_column_int(relationStatement, 0);
+
+    sqlite3_finalize(relationStatement);
+
+    sqlite3_stmt *childStatement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT 1 FROM courses "
+            "WHERE retake_of_course_id = ? "
+            "LIMIT 1;",
+            -1,
+            &childStatement,
+            nullptr) != SQLITE_OK)
+    {
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    sqlite3_bind_int(childStatement, 1, courseID);
+
+    const bool hasLaterRetake =
+        sqlite3_step(childStatement) == SQLITE_ROW;
+
+    sqlite3_finalize(childStatement);
+
+    if (hasLaterRetake)
+    {
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    sqlite3_stmt *deleteStatement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "DELETE FROM courses WHERE id = ?;",
+            -1,
+            &deleteStatement,
+            nullptr) != SQLITE_OK)
+    {
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    sqlite3_bind_int(deleteStatement, 1, courseID);
+
+    const bool deleted =
+        sqlite3_step(deleteStatement) == SQLITE_DONE &&
+        sqlite3_changes(database) == 1;
+
+    sqlite3_finalize(deleteStatement);
+
+    if (!deleted)
+    {
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    if (sourceCourseID > 0)
+    {
+        sqlite3_stmt *restoreStatement = nullptr;
+
+        if (sqlite3_prepare_v2(
+                database,
+                "UPDATE courses "
+                "SET excluded_from_cgpa = 0 "
+                "WHERE id = ?;",
+                -1,
+                &restoreStatement,
+                nullptr) != SQLITE_OK)
+        {
+            sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+            return false;
+        }
+
+        sqlite3_bind_int(
+            restoreStatement,
+            1,
+            sourceCourseID
+        );
+
+        const bool restored =
+            sqlite3_step(restoreStatement) == SQLITE_DONE &&
+            sqlite3_changes(database) == 1;
+
+        sqlite3_finalize(restoreStatement);
+
+        if (!restored)
+        {
+            sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+            return false;
+        }
+    }
+
+    if (sqlite3_exec(
+            database,
+            "COMMIT;",
+            nullptr,
+            nullptr,
+            &errorMessage) != SQLITE_OK)
+    {
+        sqlite3_free(errorMessage);
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    std::cout << "Course deleted successfully. ID: "
+              << courseID
+              << std::endl;
+
     return true;
 }
 
@@ -3717,7 +3906,8 @@ std::vector<Course> DatabaseManager::loadCoursesForSemester(int semesterID)
     std::vector<Course> courses;
 
     const char *sql =
-        "SELECT id, course_name, course_code, credits, status, retaken "
+        "SELECT id, course_name, course_code, credits, status, retaken, "
+        "retake_of_course_id, excluded_from_cgpa "
         "FROM courses "
         "WHERE semester_id = ? "
         "ORDER BY id ASC;";
@@ -3760,13 +3950,23 @@ std::vector<Course> DatabaseManager::loadCoursesForSemester(int semesterID)
         const bool retaken =
             sqlite3_column_int(statement, 5) == 1;
 
+        const int retakeOfCourseID =
+            sqlite3_column_type(statement, 6) == SQLITE_NULL
+                ? -1
+                : sqlite3_column_int(statement, 6);
+
+        const bool excludedFromCGPA =
+            sqlite3_column_int(statement, 7) == 1;
+
         Course course(
             courseID,
             courseName,
             courseCode,
             credits,
             courseStatusFromStorage(storedStatus),
-            retaken
+            retaken,
+            retakeOfCourseID,
+            excludedFromCGPA
         );
 
         courses.push_back(course);

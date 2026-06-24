@@ -561,6 +561,14 @@ void CoursesWindow::addCourseRow(
         Qt::UserRole + 5,
         course.isRetaken()
     );
+    item->setData(
+        Qt::UserRole + 6,
+        course.isExcludedFromCGPA()
+    );
+    item->setData(
+        Qt::UserRole + 7,
+        course.getRetakeOfCourseID()
+    );
 
     auto *rowWidget =
         new QWidget(ui->coursesListWidget);
@@ -712,6 +720,7 @@ void CoursesWindow::addCourseRow(
     statusButton->setMenu(statusMenu);
 
     QLabel *retakeBadge = nullptr;
+    QLabel *historicalBadge = nullptr;
 
     if (course.isRetaken())
     {
@@ -736,6 +745,37 @@ void CoursesWindow::addCourseRow(
                 font-weight: 600;
             }
         )");
+    }
+
+    if (course.isExcludedFromCGPA())
+    {
+        historicalBadge = new QLabel(
+            tr("Historical"),
+            rowWidget
+        );
+        historicalBadge->setAlignment(Qt::AlignCenter);
+        historicalBadge->setFixedHeight(28);
+        historicalBadge->setMinimumWidth(78);
+        historicalBadge->setToolTip(
+            tr("This attempt remains in its original semester GPA "
+               "but is excluded from CGPA and completed-credit totals.")
+        );
+        historicalBadge->setStyleSheet(R"(
+            QLabel {
+                color: #9a3412;
+                background-color: #fff7ed;
+                border: 1px solid #fed7aa;
+                border-radius: 8px;
+                padding: 3px 9px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+        )");
+
+        statusButton->setEnabled(false);
+        statusButton->setToolTip(
+            tr("Historical attempts keep their original status.")
+        );
     }
 
     auto *editButton = new QToolButton(rowWidget);
@@ -776,6 +816,19 @@ void CoursesWindow::addCourseRow(
         }
     )");
 
+    if (course.isExcludedFromCGPA())
+    {
+        editButton->setEnabled(false);
+        editButton->setToolTip(
+            tr("Historical attempts are kept read-only.")
+        );
+
+        deleteButton->setEnabled(false);
+        deleteButton->setToolTip(
+            tr("Delete the newest retake first to restore this attempt.")
+        );
+    }
+
     rowLayout->addWidget(
         textContainer,
         1,
@@ -794,6 +847,15 @@ void CoursesWindow::addCourseRow(
     {
         rowLayout->addWidget(
             retakeBadge,
+            0,
+            Qt::AlignVCenter
+        );
+    }
+
+    if (historicalBadge)
+    {
+        rowLayout->addWidget(
+            historicalBadge,
             0,
             Qt::AlignVCenter
         );
@@ -937,6 +999,12 @@ void CoursesWindow::editCourseRow(
             ),
             item->data(
                 Qt::UserRole + 5
+            ).toBool(),
+            item->data(
+                Qt::UserRole + 7
+            ).toInt(),
+            item->data(
+                Qt::UserRole + 6
             ).toBool()
         );
 
