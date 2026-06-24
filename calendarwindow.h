@@ -44,6 +44,7 @@ private:
         int weight = 0;
         bool graded = false;
         double grade = -1.0;
+        bool completed = false;
     };
 
     void loadDeadlines();

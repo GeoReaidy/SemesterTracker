@@ -307,6 +307,7 @@ bool DatabaseManager::createTables()
         "grade REAL NOT NULL, "
         "weight INTEGER NOT NULL, "
         "due_date TEXT NOT NULL DEFAULT '', "
+        "completed INTEGER NOT NULL DEFAULT 0, "
         "FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE"
         ");";
 
@@ -372,6 +373,82 @@ bool DatabaseManager::createTables()
             sqlite3_free(migrationError);
             return false;
         }
+    }
+
+    bool completedColumnExists = false;
+    sqlite3_stmt *completedColumnStatement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "PRAGMA table_info(assignments);",
+            -1,
+            &completedColumnStatement,
+            nullptr) == SQLITE_OK)
+    {
+        while (sqlite3_step(completedColumnStatement) == SQLITE_ROW)
+        {
+            const unsigned char *columnName =
+                sqlite3_column_text(
+                    completedColumnStatement,
+                    1
+                );
+
+            if (columnName != nullptr &&
+                std::string(
+                    reinterpret_cast<const char *>(columnName)
+                ) == "completed")
+            {
+                completedColumnExists = true;
+                break;
+            }
+        }
+    }
+
+    sqlite3_finalize(completedColumnStatement);
+
+    if (!completedColumnExists)
+    {
+        char *migrationError = nullptr;
+
+        const int migrationResult = sqlite3_exec(
+            database,
+            "ALTER TABLE assignments "
+            "ADD COLUMN completed INTEGER NOT NULL DEFAULT 0;",
+            nullptr,
+            nullptr,
+            &migrationError
+        );
+
+        if (migrationResult != SQLITE_OK)
+        {
+            std::cout
+                << "Failed to add assignment completed column: "
+                << (migrationError
+                        ? migrationError
+                        : "Unknown error")
+                << std::endl;
+
+            sqlite3_free(migrationError);
+            return false;
+        }
+    }
+
+    if (sqlite3_exec(
+            database,
+            "UPDATE assignments "
+            "SET completed = 1 "
+            "WHERE completed = 0 "
+            "AND weight = 100 "
+            "AND name LIKE 'Final Course Grade (%';",
+            nullptr,
+            nullptr,
+            nullptr) != SQLITE_OK)
+    {
+        std::cout
+            << "Failed to migrate completed-course assignments: "
+            << sqlite3_errmsg(database)
+            << std::endl;
+        return false;
     }
 
     const struct SemesterColumnMigration
@@ -1734,8 +1811,8 @@ bool DatabaseManager::addCompletedCourse(
 
     const char *assignmentSql =
         "INSERT INTO assignments "
-        "(course_id, name, grade, weight) "
-        "VALUES (?, ?, ?, 100);";
+        "(course_id, name, grade, weight, completed) "
+        "VALUES (?, ?, ?, 100, 1);";
 
     if (sqlite3_prepare_v2(
             database,
@@ -2020,8 +2097,8 @@ bool DatabaseManager::retakeCourse(
 
         const char *gradeSql =
             "INSERT INTO assignments "
-            "(course_id, name, grade, weight) "
-            "VALUES (?, ?, ?, 100);";
+            "(course_id, name, grade, weight, completed) "
+            "VALUES (?, ?, ?, 100, 1);";
 
         if (sqlite3_prepare_v2(
                 database,
@@ -2797,16 +2874,58 @@ bool DatabaseManager::deleteAssignment(int assignmentID)
     return true;
 }
 
+bool DatabaseManager::setAssignmentCompleted(
+    int assignmentID,
+    bool completed)
+{
+    if (database == nullptr || assignmentID <= 0)
+    {
+        return false;
+    }
+
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "UPDATE assignments "
+            "SET completed = ? "
+            "WHERE id = ?;",
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(
+        statement,
+        1,
+        completed ? 1 : 0
+    );
+    sqlite3_bind_int(
+        statement,
+        2,
+        assignmentID
+    );
+
+    const bool success =
+        sqlite3_step(statement) == SQLITE_DONE;
+
+    sqlite3_finalize(statement);
+    return success;
+}
+
 std::vector<Assignment>
 DatabaseManager::loadAssignmentsForCourse(int courseID)
 {
     std::vector<Assignment> assignments;
 
     const char *sql =
-        "SELECT id, name, weight, grade, due_date "
+        "SELECT id, name, weight, grade, due_date, completed "
         "FROM assignments "
         "WHERE course_id = ? "
         "ORDER BY "
+        "completed ASC, "
         "CASE WHEN due_date = '' THEN 1 ELSE 0 END, "
         "due_date ASC, id ASC;";
 
@@ -2859,12 +2978,16 @@ DatabaseManager::loadAssignmentsForCourse(int courseID)
                 ? reinterpret_cast<const char *>(dueDateText)
                 : "";
 
+        const bool completed =
+            sqlite3_column_int(statement, 5) != 0;
+
         assignments.emplace_back(
             assignmentID,
             assignmentName,
             weight,
             grade,
-            dueDate
+            dueDate,
+            completed
         );
     }
 

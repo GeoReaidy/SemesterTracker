@@ -162,6 +162,11 @@ public:
 
     bool deleteAssignment(int assignmentID);
 
+    bool setAssignmentCompleted(
+        int assignmentID,
+        bool completed
+    );
+
     std::vector<Assignment> loadAssignmentsForCourse(int courseID);
 };
 

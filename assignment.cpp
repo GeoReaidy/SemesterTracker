@@ -179,12 +179,14 @@ Assignment::Assignment(int id,
                        std::string name,
                        int weight,
                        double grade,
-                       std::string dueDate)
+                       std::string dueDate,
+                       bool completed)
     : assignmentName(validateAssignmentName(name)),
       assignmentWeight(weight),
       assignmentGrade(grade),
       assignmentID(id),
-      dueDate(validateDueDate(dueDate))
+      dueDate(validateDueDate(dueDate)),
+      completed(completed)
 {
     validateAssignmentID(assignmentID);
     validateWeight(assignmentWeight);
@@ -231,6 +233,11 @@ bool Assignment::hasDueDate() const
     return !dueDate.empty();
 }
 
+bool Assignment::isCompleted() const
+{
+    return completed;
+}
+
 void Assignment::setName(const std::string &name)
 {
     assignmentName = validateAssignmentName(name);
@@ -252,4 +259,9 @@ void Assignment::setDueDate(
     const std::string &date)
 {
     dueDate = validateDueDate(date);
+}
+
+void Assignment::setCompleted(bool value)
+{
+    completed = value;
 }

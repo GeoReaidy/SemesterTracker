@@ -47,6 +47,10 @@ private:
     void addAssignmentRow(const Assignment &assignment);
     void editAssignmentRow(QListWidgetItem *item);
     void deleteAssignmentRow(QListWidgetItem *item);
+    void setAssignmentCompleted(
+        QListWidgetItem *item,
+        bool completed
+    );
     void updateEmptyState();
 
     DatabaseManager &database;

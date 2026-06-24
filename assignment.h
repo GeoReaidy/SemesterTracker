@@ -11,13 +11,15 @@ private:
     double assignmentGrade;
     int assignmentID;
     std::string dueDate;
+    bool completed;
 
 public:
     Assignment(int id,
                std::string name,
                int weight,
                double grade,
-               std::string dueDate = "");
+               std::string dueDate = "",
+               bool completed = false);
 
     int getID() const;
     std::string getName() const;
@@ -27,11 +29,13 @@ public:
     bool hasGrade() const;
     std::string getDueDate() const;
     bool hasDueDate() const;
+    bool isCompleted() const;
 
     void setName(const std::string &name);
     void setWeight(int weight);
     void setGrade(double grade);
     void setDueDate(const std::string &date);
+    void setCompleted(bool completed);
 };
 
 #endif

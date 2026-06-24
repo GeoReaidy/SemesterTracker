@@ -844,7 +844,8 @@ void Dashboard::populateUpcomingAssignments(int semesterID)
 
         for (const Assignment &assignment : assignments)
         {
-            if (!assignment.hasDueDate())
+            if (assignment.isCompleted() ||
+                !assignment.hasDueDate())
             {
                 continue;
             }
@@ -1192,7 +1193,8 @@ void Dashboard::refreshDashboardCalendar()
 
                 for (const Assignment &assignment : assignments)
                 {
-                    if (!assignment.hasDueDate())
+                    if (assignment.isCompleted() ||
+                        !assignment.hasDueDate())
                     {
                         continue;
                     }

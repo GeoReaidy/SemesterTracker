@@ -142,6 +142,9 @@ QLabel#emptyStateLabel {
 }</string>
   </property>
   <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing">
+    <number>16</number>
+   </property>
    <property name="leftMargin">
     <number>24</number>
    </property>
@@ -153,9 +156,6 @@ QLabel#emptyStateLabel {
    </property>
    <property name="bottomMargin">
     <number>24</number>
-   </property>
-   <property name="spacing">
-    <number>16</number>
    </property>
    <item>
     <widget class="QFrame" name="headerCard">
@@ -246,6 +246,9 @@ QLabel#emptyStateLabel {
       </size>
      </property>
      <layout class="QVBoxLayout" name="selectionCardLayout">
+      <property name="spacing">
+       <number>10</number>
+      </property>
       <property name="leftMargin">
        <number>20</number>
       </property>
@@ -257,9 +260,6 @@ QLabel#emptyStateLabel {
       </property>
       <property name="bottomMargin">
        <number>14</number>
-      </property>
-      <property name="spacing">
-       <number>10</number>
       </property>
       <item>
        <widget class="QLabel" name="selectionHelpLabel">
@@ -340,6 +340,9 @@ QLabel#emptyStateLabel {
    <item>
     <widget class="QFrame" name="assignmentsCard">
      <layout class="QVBoxLayout" name="assignmentsCardLayout">
+      <property name="spacing">
+       <number>10</number>
+      </property>
       <property name="leftMargin">
        <number>18</number>
       </property>
@@ -351,9 +354,6 @@ QLabel#emptyStateLabel {
       </property>
       <property name="bottomMargin">
        <number>18</number>
-      </property>
-      <property name="spacing">
-       <number>10</number>
       </property>
       <item>
        <layout class="QHBoxLayout" name="assignmentsSectionLayout">

@@ -2,6 +2,7 @@
 #include "assignmenteditordialog.h"
 #include "ui_assignmentswindow.h"
 
+#include <QAction>
 #include <QColor>
 #include <QComboBox>
 #include <QDialog>
@@ -13,6 +14,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMessageBox>
+#include <QMenu>
 #include <QPainter>
 #include <QPen>
 #include <QPixmap>
@@ -413,6 +415,10 @@ void AssignmentsWindow::addAssignmentRow(
         Qt::UserRole + 4,
         QString::fromStdString(assignment.getDueDate())
     );
+    item->setData(
+        Qt::UserRole + 5,
+        assignment.isCompleted()
+    );
 
     auto *rowWidget =
         new QWidget(ui->assignmentsListWidget);
@@ -495,6 +501,133 @@ void AssignmentsWindow::addAssignmentRow(
     textLayout->addWidget(nameLabel);
     textLayout->addWidget(detailsLabel);
 
+    const bool completed = assignment.isCompleted();
+    const bool overdue =
+        !completed &&
+        dueDate.isValid() &&
+        dueDate < QDate::currentDate();
+
+    auto *statusButton = new QToolButton(rowWidget);
+    statusButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    statusButton->setPopupMode(QToolButton::InstantPopup);
+    statusButton->setCursor(Qt::PointingHandCursor);
+    statusButton->setMinimumWidth(92);
+    statusButton->setFixedHeight(32);
+
+    if (completed)
+    {
+        statusButton->setText("Completed");
+        statusButton->setStyleSheet(R"(
+            QToolButton {
+                color: #166534;
+                background-color: #dcfce7;
+                border: 1px solid #bbf7d0;
+                border-radius: 8px;
+                padding: 4px 10px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            QToolButton:hover {
+                background-color: #bbf7d0;
+            }
+        )");
+    }
+    else if (overdue)
+    {
+        statusButton->setText("Overdue");
+        statusButton->setStyleSheet(R"(
+            QToolButton {
+                color: #b91c1c;
+                background-color: #fee2e2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                padding: 4px 10px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            QToolButton:hover {
+                background-color: #fecaca;
+            }
+        )");
+    }
+    else
+    {
+        statusButton->setText("Pending");
+        statusButton->setStyleSheet(R"(
+            QToolButton {
+                color: #92400e;
+                background-color: #fef3c7;
+                border: 1px solid #fde68a;
+                border-radius: 8px;
+                padding: 4px 10px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            QToolButton:hover {
+                background-color: #fde68a;
+            }
+        )");
+    }
+
+    auto *statusMenu = new QMenu(statusButton);
+
+    statusMenu->setMinimumWidth(175);
+
+    statusMenu->setStyleSheet(R"(
+    QMenu {
+        background-color: white;
+        color: #1f2937;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 5px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    QMenu::item {
+        color: #1f2937;
+        background-color: transparent;
+        border-radius: 6px;
+        padding: 9px 14px;
+        margin: 2px;
+    }
+
+    QMenu::item:selected {
+        color: white;
+        background-color: #2563eb;
+    }
+
+    QMenu::item:pressed {
+        background-color: #1d4ed8;
+    }
+
+    QMenu::item:disabled {
+        color: #94a3b8;
+        background-color: transparent;
+    }
+)");
+
+    QAction *statusAction =
+        statusMenu->addAction(
+            completed
+                ? "Mark as pending"
+                : "Mark as completed"
+        );
+
+    statusButton->setMenu(statusMenu);
+    statusButton->setToolTip(
+        completed
+            ? "Change assignment status to pending"
+            : "Change assignment status to completed"
+    );
+    statusButton->setAccessibleName(
+        QString("Assignment status: %1")
+            .arg(statusButton->text())
+    );
+
     auto *editButton = new QToolButton(rowWidget);
     editButton->setIcon(makePencilIcon());
     editButton->setIconSize(QSize(20, 20));
@@ -540,6 +673,11 @@ void AssignmentsWindow::addAssignmentRow(
     );
     rowLayout->addStretch();
     rowLayout->addWidget(
+        statusButton,
+        0,
+        Qt::AlignVCenter
+    );
+    rowLayout->addWidget(
         editButton,
         0,
         Qt::AlignVCenter
@@ -555,6 +693,19 @@ void AssignmentsWindow::addAssignmentRow(
     ui->assignmentsListWidget->setItemWidget(
         item,
         rowWidget
+    );
+
+    connect(
+        statusAction,
+        &QAction::triggered,
+        this,
+        [this, item, completed]()
+        {
+            setAssignmentCompleted(
+                item,
+                !completed
+            );
+        }
     );
 
     connect(
@@ -599,7 +750,8 @@ void AssignmentsWindow::editAssignmentRow(
             item->data(Qt::UserRole + 3).toDouble(),
             item->data(Qt::UserRole + 4)
                 .toString()
-                .toStdString()
+                .toStdString(),
+            item->data(Qt::UserRole + 5).toBool()
         );
 
         AssignmentEditorDialog dialog(
@@ -663,6 +815,34 @@ void AssignmentsWindow::deleteAssignmentRow(
             this,
             "Database Error",
             "Could not delete the assignment."
+        );
+        return;
+    }
+
+    refreshAssignments();
+    emit assignmentsChanged();
+}
+
+void AssignmentsWindow::setAssignmentCompleted(
+    QListWidgetItem *item,
+    bool completed)
+{
+    if (!item)
+    {
+        return;
+    }
+
+    const int assignmentID =
+        item->data(Qt::UserRole).toInt();
+
+    if (!database.setAssignmentCompleted(
+            assignmentID,
+            completed))
+    {
+        QMessageBox::warning(
+            this,
+            tr("Database Error"),
+            tr("Could not update the assignment status.")
         );
         return;
     }

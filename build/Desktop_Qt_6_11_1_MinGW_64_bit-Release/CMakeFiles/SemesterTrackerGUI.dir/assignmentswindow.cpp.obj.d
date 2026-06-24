@@ -449,6 +449,7 @@ CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpacerItem \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QVBoxLayout \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QWidget \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QAction \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QColor \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QComboBox \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QDate \
@@ -463,6 +464,8 @@ CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMessageBox \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmessagebox.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialogbuttonbox.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMenu \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmenu.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QPainter \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qpainter.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qtextoption.h \

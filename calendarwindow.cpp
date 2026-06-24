@@ -261,7 +261,8 @@ void CalendarWindow::loadDeadlines()
                             assignment.getWeightPercentage()
                         ),
                         assignment.hasGrade(),
-                        assignment.getGrade()
+                        assignment.getGrade(),
+                        assignment.isCompleted()
                     }
                 );
             }
@@ -293,39 +294,56 @@ void CalendarWindow::loadDeadlines()
 void CalendarWindow::applyDeadlineHighlights()
 {
     const QDate today = QDate::currentDate();
+    std::vector<QDate> processedDates;
 
     for (const DeadlineEntry &entry : deadlines)
     {
+        if (std::find(
+                processedDates.begin(),
+                processedDates.end(),
+                entry.dueDate) != processedDates.end())
+        {
+            continue;
+        }
+
+        bool hasPendingAssignment = false;
+
+        for (const DeadlineEntry &sameDateEntry : deadlines)
+        {
+            if (sameDateEntry.dueDate == entry.dueDate &&
+                !sameDateEntry.completed)
+            {
+                hasPendingAssignment = true;
+                break;
+            }
+        }
+
         QTextCharFormat format;
-
         format.setFontWeight(QFont::Bold);
-        format.setForeground(
-            entry.dueDate < today
-                ? QColor("#b91c1c")
-                : QColor("#1d4ed8")
-        );
 
-        format.setBackground(
-            entry.dueDate == today
-                ? QColor("#fee2e2")
-                : QColor("#dbeafe")
-        );
+        if (!hasPendingAssignment)
+        {
+            format.setForeground(QColor("#166534"));
+            format.setBackground(QColor("#dcfce7"));
+        }
+        else if (entry.dueDate <= today)
+        {
+            format.setForeground(QColor("#b91c1c"));
+            format.setBackground(QColor("#fee2e2"));
+        }
+        else
+        {
+            format.setForeground(QColor("#1d4ed8"));
+            format.setBackground(QColor("#dbeafe"));
+        }
 
         ui->calendarWidget->setDateTextFormat(
             entry.dueDate,
             format
         );
 
-        if (std::find(
-                highlightedDates.begin(),
-                highlightedDates.end(),
-                entry.dueDate) ==
-            highlightedDates.end())
-        {
-            highlightedDates.push_back(
-                entry.dueDate
-            );
-        }
+        processedDates.push_back(entry.dueDate);
+        highlightedDates.push_back(entry.dueDate);
     }
 }
 
@@ -378,7 +396,8 @@ void CalendarWindow::populateUpcomingDeadlines()
 
     for (const DeadlineEntry &entry : deadlines)
     {
-        if (entry.dueDate < today)
+        if (entry.completed ||
+            entry.dueDate < today)
         {
             continue;
         }
@@ -485,29 +504,50 @@ void CalendarWindow::addDeadlineRow(
     textLayout->addWidget(courseLabel);
 
     auto *dateLabel = new QLabel(
-        showFullDate
-            ? entry.dueDate.toString("ddd, d MMM")
-            : QString("%1%")
-                  .arg(entry.weight),
+        entry.completed
+            ? "Completed"
+            : showFullDate
+                ? entry.dueDate.toString("ddd, d MMM")
+                : QString("%1%")
+                      .arg(entry.weight),
         row
     );
 
     dateLabel->setAlignment(Qt::AlignCenter);
-    dateLabel->setStyleSheet(
-        entry.dueDate == QDate::currentDate()
-            ? "color:#b91c1c;"
-              "background:#fee2e2;"
-              "border-radius:7px;"
-              "padding:5px 9px;"
-              "font-size:12px;"
-              "font-weight:600;"
-            : "color:#1d4ed8;"
-              "background:#eff6ff;"
-              "border-radius:7px;"
-              "padding:5px 9px;"
-              "font-size:12px;"
-              "font-weight:600;"
-    );
+
+    if (entry.completed)
+    {
+        dateLabel->setStyleSheet(
+            "color:#166534;"
+            "background:#dcfce7;"
+            "border-radius:7px;"
+            "padding:5px 9px;"
+            "font-size:12px;"
+            "font-weight:600;"
+        );
+    }
+    else if (entry.dueDate <= QDate::currentDate())
+    {
+        dateLabel->setStyleSheet(
+            "color:#b91c1c;"
+            "background:#fee2e2;"
+            "border-radius:7px;"
+            "padding:5px 9px;"
+            "font-size:12px;"
+            "font-weight:600;"
+        );
+    }
+    else
+    {
+        dateLabel->setStyleSheet(
+            "color:#1d4ed8;"
+            "background:#eff6ff;"
+            "border-radius:7px;"
+            "padding:5px 9px;"
+            "font-size:12px;"
+            "font-weight:600;"
+        );
+    }
 
     layout->addWidget(
         textContainer,
