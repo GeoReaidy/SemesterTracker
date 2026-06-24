@@ -131,14 +131,15 @@ public:
 "    font-weight: 700;\n"
 "}\n"
 "QPushButton[class=\"navButton\"] {\n"
-"    min-height: 42px;\n"
-"    padding: 0 14px;\n"
+"    min-height: 50px;\n"
+"    padding: 0 16px;\n"
 "    text-align: left;\n"
 "    border: none;\n"
 "    border-radius: 9px;\n"
 "    background-color: transparent;\n"
 "    color: #334155;\n"
-"    font-size: 14px;\n"
+"    font-size: 15px;\n"
+"    font-weight: 500;\n"
 "}\n"
 "QPushButton[class=\"navButton\"]:hover {\n"
 "    background-color: #eff6ff;\n"
@@ -150,15 +151,16 @@ public:
 "    font-weight: 600;\n"
 "}\n"
 "QPushButton#logoutButton {\n"
-"    min-height: 42px;\n"
-"    padding: 0 14px;\n"
+"    min-height: 50px;\n"
+"    padding: 0 16px;\n"
 "    text-align: left;\n"
 "    border: none;\n"
 "    border-radius: 9px;\n"
 "    background-color: transparent;\n"
-"    color: #dc2626;\n"
-"    font-size: "
-                        "14px;\n"
+"    color: #d"
+                        "c2626;\n"
+"    font-size: 15px;\n"
+"    font-weight: 500;\n"
 "}\n"
 "QPushButton#logoutButton:hover {\n"
 "    background-color: #fee2e2;\n"
@@ -199,9 +201,9 @@ public:
 "    color: #1f2937;\n"
 "}\n"
 "QTableWidget {\n"
-"    border: none;\n"
-"    background: transparent"
-                        ";\n"
+""
+                        "    border: none;\n"
+"    background: transparent;\n"
 "    gridline-color: #e5e7eb;\n"
 "    color: #334155;\n"
 "    font-size: 12px;\n"
@@ -690,23 +692,23 @@ public:
         appTitleLabel->setText(QCoreApplication::translate("Dashboard", "Semester\n"
 "Tracker", nullptr));
         dashboardButton->setProperty("class", QVariant(QCoreApplication::translate("Dashboard", "navButton", nullptr)));
-        dashboardButton->setText(QCoreApplication::translate("Dashboard", "\342\214\202   Dashboard", nullptr));
+        dashboardButton->setText(QCoreApplication::translate("Dashboard", "Dashboard", nullptr));
         semestersButton->setProperty("class", QVariant(QCoreApplication::translate("Dashboard", "navButton", nullptr)));
-        semestersButton->setText(QCoreApplication::translate("Dashboard", "\342\226\243   Semesters", nullptr));
+        semestersButton->setText(QCoreApplication::translate("Dashboard", "Semesters", nullptr));
         coursesButton->setProperty("class", QVariant(QCoreApplication::translate("Dashboard", "navButton", nullptr)));
-        coursesButton->setText(QCoreApplication::translate("Dashboard", "\342\226\244   Courses", nullptr));
+        coursesButton->setText(QCoreApplication::translate("Dashboard", "Courses", nullptr));
         assignmentsButton->setProperty("class", QVariant(QCoreApplication::translate("Dashboard", "navButton", nullptr)));
-        assignmentsButton->setText(QCoreApplication::translate("Dashboard", "\342\230\221   Assignments", nullptr));
+        assignmentsButton->setText(QCoreApplication::translate("Dashboard", "Assignments", nullptr));
         calendarButton->setProperty("class", QVariant(QCoreApplication::translate("Dashboard", "navButton", nullptr)));
-        calendarButton->setText(QCoreApplication::translate("Dashboard", "\342\226\246   Calendar", nullptr));
+        calendarButton->setText(QCoreApplication::translate("Dashboard", "Calendar", nullptr));
         gradesButton->setProperty("class", QVariant(QCoreApplication::translate("Dashboard", "navButton", nullptr)));
-        gradesButton->setText(QCoreApplication::translate("Dashboard", "\342\226\245   Grades", nullptr));
+        gradesButton->setText(QCoreApplication::translate("Dashboard", "Grades", nullptr));
         settingsButton->setProperty("class", QVariant(QCoreApplication::translate("Dashboard", "navButton", nullptr)));
-        settingsButton->setText(QCoreApplication::translate("Dashboard", "\342\232\231   Settings", nullptr));
+        settingsButton->setText(QCoreApplication::translate("Dashboard", "Settings", nullptr));
         profileAvatarLabel->setText(QCoreApplication::translate("Dashboard", "U", nullptr));
         profileUsernameLabel->setText(QCoreApplication::translate("Dashboard", "username", nullptr));
         profileRoleLabel->setText(QCoreApplication::translate("Dashboard", "Student", nullptr));
-        logoutButton->setText(QCoreApplication::translate("Dashboard", "\342\206\252   Logout", nullptr));
+        logoutButton->setText(QCoreApplication::translate("Dashboard", "Logout", nullptr));
         headerFrame->setProperty("class", QVariant(QCoreApplication::translate("Dashboard", "card", nullptr)));
         welcomeLabel->setText(QCoreApplication::translate("Dashboard", "Welcome, username", nullptr));
         semesterLabel->setText(QCoreApplication::translate("Dashboard", "Current Semester", nullptr));

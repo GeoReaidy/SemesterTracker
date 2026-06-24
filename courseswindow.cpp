@@ -17,6 +17,8 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QPushButton>
+#include <QSize>
+#include <QSizePolicy>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -564,6 +566,11 @@ void CoursesWindow::addCourseRow(
         new QWidget(ui->coursesListWidget);
 
     rowWidget->setMinimumHeight(88);
+    rowWidget->setSizePolicy(
+        QSizePolicy::Expanding,
+        QSizePolicy::Fixed
+    );
+    rowWidget->setAttribute(Qt::WA_StyledBackground, true);
     rowWidget->setObjectName("courseRow");
     rowWidget->setStyleSheet(R"(
         QWidget#courseRow {
@@ -584,8 +591,8 @@ void CoursesWindow::addCourseRow(
     )");
 
     auto *rowLayout = new QHBoxLayout(rowWidget);
-    rowLayout->setContentsMargins(14, 0, 10, 0);
-    rowLayout->setSpacing(10);
+    rowLayout->setContentsMargins(16, 14, 12, 14);
+    rowLayout->setSpacing(12);
     rowLayout->setAlignment(Qt::AlignVCenter);
 
     auto *textContainer = new QWidget(rowWidget);
@@ -804,7 +811,7 @@ void CoursesWindow::addCourseRow(
         Qt::AlignVCenter
     );
 
-    item->setSizeHint(QSize(0, 88));
+    item->setSizeHint(QSize(0, 96));
 
     ui->coursesListWidget->setItemWidget(
         item,

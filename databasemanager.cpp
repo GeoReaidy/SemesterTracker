@@ -58,6 +58,58 @@ bool isValidUsername(const std::string &value)
     );
 }
 
+
+std::string normalizeEmail(const std::string &value)
+{
+    std::string email = trimCopy(value);
+
+    std::transform(
+        email.begin(),
+        email.end(),
+        email.begin(),
+        [](unsigned char character)
+        {
+            return static_cast<char>(
+                std::tolower(character)
+            );
+        }
+    );
+
+    return email;
+}
+
+bool isValidEmail(const std::string &value)
+{
+    const std::string email =
+        normalizeEmail(value);
+
+    if (email.size() < 5 ||
+        email.size() > 254)
+    {
+        return false;
+    }
+
+    const std::size_t at =
+        email.find('@');
+
+    if (at == std::string::npos ||
+        at == 0 ||
+        at + 1 >= email.size() ||
+        email.find('@', at + 1) !=
+            std::string::npos)
+    {
+        return false;
+    }
+
+    const std::string domain =
+        email.substr(at + 1);
+
+    return domain.find('.') !=
+               std::string::npos &&
+           domain.front() != '.' &&
+           domain.back() != '.';
+}
+
 bool rowExists(
     sqlite3 *database,
     const char *sql,
@@ -330,6 +382,7 @@ bool DatabaseManager::createTables()
         "CREATE TABLE IF NOT EXISTS users ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
         "username TEXT NOT NULL UNIQUE, "
+        "email TEXT NOT NULL DEFAULT '', "
         "password_hash TEXT NOT NULL, "
         "max_credits INTEGER NOT NULL DEFAULT 120"
         ");"
@@ -734,6 +787,73 @@ bool DatabaseManager::createTables()
         }
     }
 
+    bool emailColumnExists = false;
+    sqlite3_stmt *emailColumnStatement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "PRAGMA table_info(users);",
+            -1,
+            &emailColumnStatement,
+            nullptr) == SQLITE_OK)
+    {
+        while (sqlite3_step(emailColumnStatement) == SQLITE_ROW)
+        {
+            const unsigned char *columnName =
+                sqlite3_column_text(
+                    emailColumnStatement,
+                    1
+                );
+
+            if (columnName != nullptr &&
+                std::string(
+                    reinterpret_cast<
+                        const char *>(columnName)
+                ) == "email")
+            {
+                emailColumnExists = true;
+                break;
+            }
+        }
+    }
+
+    sqlite3_finalize(emailColumnStatement);
+
+    if (!emailColumnExists)
+    {
+        if (sqlite3_exec(
+                database,
+                "ALTER TABLE users "
+                "ADD COLUMN email TEXT NOT NULL DEFAULT '';",
+                nullptr,
+                nullptr,
+                nullptr) != SQLITE_OK)
+        {
+            std::cout
+                << "Failed to add users.email: "
+                << sqlite3_errmsg(database)
+                << std::endl;
+            return false;
+        }
+    }
+
+    if (sqlite3_exec(
+            database,
+            "CREATE UNIQUE INDEX IF NOT EXISTS "
+            "idx_users_email_unique "
+            "ON users(lower(email)) "
+            "WHERE trim(email) <> '';",
+            nullptr,
+            nullptr,
+            nullptr) != SQLITE_OK)
+    {
+        std::cout
+            << "Failed to create the email index: "
+            << sqlite3_errmsg(database)
+            << std::endl;
+        return false;
+    }
+
     std::cout << "Tables created successfully." << std::endl;
     return true;
 }
@@ -954,6 +1074,20 @@ bool DatabaseManager::addUser(
     const std::string &passwordHash,
     int maxCredits)
 {
+    return addUser(
+        username,
+        std::string(),
+        passwordHash,
+        maxCredits
+    );
+}
+
+bool DatabaseManager::addUser(
+    const std::string &username,
+    const std::string &email,
+    const std::string &passwordHash,
+    int maxCredits)
+{
     if (database == nullptr)
     {
         return false;
@@ -962,11 +1096,17 @@ bool DatabaseManager::addUser(
     const std::string normalizedUsername =
         trimCopy(username);
 
+    const std::string normalizedEmail =
+        normalizeEmail(email);
+
     if (!isValidUsername(normalizedUsername) ||
         passwordHash.empty() ||
         maxCredits < 1 ||
         maxCredits > 1000 ||
-        userExists(normalizedUsername))
+        userExists(normalizedUsername) ||
+        (!normalizedEmail.empty() &&
+         (!isValidEmail(normalizedEmail) ||
+          emailExists(normalizedEmail))))
     {
         return false;
     }
@@ -991,8 +1131,8 @@ bool DatabaseManager::addUser(
 
     const char *sql =
         "INSERT INTO users "
-        "(username, password_hash, max_credits) "
-        "VALUES (?, ?, ?);";
+        "(username, email, password_hash, max_credits) "
+        "VALUES (?, ?, ?, ?);";
 
     sqlite3_stmt *statement = nullptr;
 
@@ -1017,12 +1157,20 @@ bool DatabaseManager::addUser(
     sqlite3_bind_text(
         statement,
         2,
+        normalizedEmail.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+
+    sqlite3_bind_text(
+        statement,
+        3,
         passwordHash.c_str(),
         -1,
         SQLITE_TRANSIENT
     );
 
-    sqlite3_bind_int(statement, 3, maxCredits);
+    sqlite3_bind_int(statement, 4, maxCredits);
 
     const bool success =
         sqlite3_step(statement) == SQLITE_DONE;
@@ -1199,6 +1347,145 @@ bool DatabaseManager::userExists(const std::string &username)
     sqlite3_finalize(statement);
 
     return exists;
+}
+
+
+bool DatabaseManager::emailExists(
+    const std::string &email)
+{
+    if (database == nullptr)
+    {
+        return false;
+    }
+
+    const std::string normalizedEmail =
+        normalizeEmail(email);
+
+    if (!isValidEmail(normalizedEmail))
+    {
+        return false;
+    }
+
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT 1 FROM users "
+            "WHERE lower(email) = lower(?) "
+            "LIMIT 1;",
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_text(
+        statement,
+        1,
+        normalizedEmail.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+
+    const bool exists =
+        sqlite3_step(statement) == SQLITE_ROW;
+
+    sqlite3_finalize(statement);
+    return exists;
+}
+
+std::string DatabaseManager::getUsernameByEmail(
+    const std::string &email)
+{
+    if (database == nullptr)
+    {
+        return {};
+    }
+
+    const std::string normalizedEmail =
+        normalizeEmail(email);
+
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT username FROM users "
+            "WHERE lower(email) = lower(?) "
+            "LIMIT 1;",
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return {};
+    }
+
+    sqlite3_bind_text(
+        statement,
+        1,
+        normalizedEmail.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+
+    std::string username;
+
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        const unsigned char *text =
+            sqlite3_column_text(statement, 0);
+
+        if (text != nullptr)
+        {
+            username =
+                reinterpret_cast<
+                    const char *>(text);
+        }
+    }
+
+    sqlite3_finalize(statement);
+    return username;
+}
+
+std::string DatabaseManager::getEmailByUserID(
+    int userID)
+{
+    if (database == nullptr || userID <= 0)
+    {
+        return {};
+    }
+
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT email FROM users WHERE id = ?;",
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return {};
+    }
+
+    sqlite3_bind_int(statement, 1, userID);
+
+    std::string email;
+
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        const unsigned char *text =
+            sqlite3_column_text(statement, 0);
+
+        if (text != nullptr)
+        {
+            email =
+                reinterpret_cast<
+                    const char *>(text);
+        }
+    }
+
+    sqlite3_finalize(statement);
+    return email;
 }
 
 int DatabaseManager::getUserIDByUsername(const std::string &username)
@@ -4076,6 +4363,20 @@ bool DatabaseManager::updateUserProfile(
     const std::string &newUsername,
     int maxCredits)
 {
+    return updateUserProfile(
+        userID,
+        newUsername,
+        getEmailByUserID(userID),
+        maxCredits
+    );
+}
+
+bool DatabaseManager::updateUserProfile(
+    int userID,
+    const std::string &newUsername,
+    const std::string &newEmail,
+    int maxCredits)
+{
     if (database == nullptr ||
         userID <= 0 ||
         maxCredits < 1 ||
@@ -4087,7 +4388,11 @@ bool DatabaseManager::updateUserProfile(
     const std::string normalizedUsername =
         trimCopy(newUsername);
 
-    if (!isValidUsername(normalizedUsername))
+    const std::string normalizedEmail =
+        normalizeEmail(newEmail);
+
+    if (!isValidUsername(normalizedUsername) ||
+        !isValidEmail(normalizedEmail))
     {
         return false;
     }
@@ -4144,7 +4449,8 @@ bool DatabaseManager::updateUserProfile(
     if (sqlite3_prepare_v2(
             database,
             "SELECT 1 FROM users "
-            "WHERE lower(username) = lower(?) "
+            "WHERE (lower(username) = lower(?) "
+            "OR lower(email) = lower(?)) "
             "AND id != ? LIMIT 1;",
             -1,
             &duplicateStatement,
@@ -4161,9 +4467,17 @@ bool DatabaseManager::updateUserProfile(
         SQLITE_TRANSIENT
     );
 
-    sqlite3_bind_int(
+    sqlite3_bind_text(
         duplicateStatement,
         2,
+        normalizedEmail.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+
+    sqlite3_bind_int(
+        duplicateStatement,
+        3,
         userID
     );
 
@@ -4182,7 +4496,8 @@ bool DatabaseManager::updateUserProfile(
 
     const char *sql =
         "UPDATE users "
-        "SET username = ?, max_credits = ? "
+        "SET username = ?, email = ?, "
+        "max_credits = ? "
         "WHERE id = ?;";
 
     if (sqlite3_prepare_v2(
@@ -4203,17 +4518,88 @@ bool DatabaseManager::updateUserProfile(
         SQLITE_TRANSIENT
     );
 
-    sqlite3_bind_int(
+    sqlite3_bind_text(
         statement,
         2,
-        maxCredits
+        normalizedEmail.c_str(),
+        -1,
+        SQLITE_TRANSIENT
     );
 
     sqlite3_bind_int(
         statement,
         3,
+        maxCredits
+    );
+
+    sqlite3_bind_int(
+        statement,
+        4,
         userID
     );
+
+    const bool success =
+        sqlite3_step(statement) == SQLITE_DONE &&
+        sqlite3_changes(database) == 1;
+
+    sqlite3_finalize(statement);
+    return success;
+}
+
+bool DatabaseManager::updateEmail(
+    int userID,
+    const std::string &newEmail)
+{
+    if (database == nullptr || userID <= 0)
+    {
+        return false;
+    }
+
+    const std::string normalizedEmail =
+        normalizeEmail(newEmail);
+
+    if (!isValidEmail(normalizedEmail))
+    {
+        return false;
+    }
+
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "UPDATE users SET email = ? "
+            "WHERE id = ? "
+            "AND NOT EXISTS ("
+                "SELECT 1 FROM users "
+                "WHERE lower(email) = lower(?) "
+                "AND id != ?"
+            ");",
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_text(
+        statement,
+        1,
+        normalizedEmail.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+
+    sqlite3_bind_int(statement, 2, userID);
+
+    sqlite3_bind_text(
+        statement,
+        3,
+        normalizedEmail.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+
+    sqlite3_bind_int(statement, 4, userID);
 
     const bool success =
         sqlite3_step(statement) == SQLITE_DONE &&

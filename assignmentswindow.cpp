@@ -20,6 +20,7 @@
 #include <QPixmap>
 #include <QPushButton>
 #include <QSize>
+#include <QSizePolicy>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -423,7 +424,12 @@ void AssignmentsWindow::addAssignmentRow(
     auto *rowWidget =
         new QWidget(ui->assignmentsListWidget);
 
-    rowWidget->setMinimumHeight(78);
+    rowWidget->setMinimumHeight(88);
+    rowWidget->setSizePolicy(
+        QSizePolicy::Expanding,
+        QSizePolicy::Fixed
+    );
+    rowWidget->setAttribute(Qt::WA_StyledBackground, true);
     rowWidget->setObjectName("assignmentRow");
     rowWidget->setStyleSheet(R"(
         QWidget#assignmentRow {
@@ -444,8 +450,9 @@ void AssignmentsWindow::addAssignmentRow(
     )");
 
     auto *rowLayout = new QHBoxLayout(rowWidget);
-    rowLayout->setContentsMargins(14, 8, 10, 8);
-    rowLayout->setSpacing(10);
+    rowLayout->setContentsMargins(16, 14, 12, 14);
+    rowLayout->setSpacing(12);
+    rowLayout->setAlignment(Qt::AlignVCenter);
 
     auto *textContainer = new QWidget(rowWidget);
     textContainer->setStyleSheet(
@@ -511,7 +518,7 @@ void AssignmentsWindow::addAssignmentRow(
     statusButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
     statusButton->setPopupMode(QToolButton::InstantPopup);
     statusButton->setCursor(Qt::PointingHandCursor);
-    statusButton->setMinimumWidth(92);
+    statusButton->setMinimumWidth(108);
     statusButton->setFixedHeight(32);
 
     if (completed)
@@ -688,7 +695,7 @@ void AssignmentsWindow::addAssignmentRow(
         Qt::AlignVCenter
     );
 
-    item->setSizeHint(QSize(0, 88));
+    item->setSizeHint(QSize(0, 96));
 
     ui->assignmentsListWidget->setItemWidget(
         item,

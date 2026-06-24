@@ -51,7 +51,6 @@ private:
     int userID;
     int semesterID;
     bool editMode;
-    SemesterStatus existingStatus;
     bool existingSemesterHasCourses;
     Ui::SemesterEditorDialog *ui;
 };

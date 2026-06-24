@@ -627,6 +627,8 @@ SemesterTrackerGUI_autogen/timestamp: \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/vadefs.h \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/CMakeLists.txt \
+	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/appstyle.cpp \
+	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/appstyle.h \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignment.cpp \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignment.h \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignmenteditordialog.cpp \

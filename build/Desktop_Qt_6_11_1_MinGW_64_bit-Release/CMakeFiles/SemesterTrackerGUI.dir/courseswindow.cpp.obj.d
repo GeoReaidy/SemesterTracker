@@ -469,6 +469,8 @@ CMakeFiles/SemesterTrackerGUI.dir/courseswindow.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qpen.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QSize \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSizePolicy \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QToolButton \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtoolbutton.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QVBoxLayout

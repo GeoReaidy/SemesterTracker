@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/icons">
         <file>semestertracker_icon.png</file>
+	<file>chevron-down-black.svg</file>
     </qresource>
 </RCC>

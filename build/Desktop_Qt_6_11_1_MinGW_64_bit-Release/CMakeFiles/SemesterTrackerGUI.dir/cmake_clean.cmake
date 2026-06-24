@@ -6,6 +6,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp.obj.d"
   "CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/mocs_compilation.cpp.obj"
   "CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/mocs_compilation.cpp.obj.d"
+  "CMakeFiles/SemesterTrackerGUI.dir/appstyle.cpp.obj"
+  "CMakeFiles/SemesterTrackerGUI.dir/appstyle.cpp.obj.d"
   "CMakeFiles/SemesterTrackerGUI.dir/assignment.cpp.obj"
   "CMakeFiles/SemesterTrackerGUI.dir/assignment.cpp.obj.d"
   "CMakeFiles/SemesterTrackerGUI.dir/assignmenteditordialog.cpp.obj"

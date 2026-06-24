@@ -49,69 +49,6 @@ public:
             SemestersWindow->setObjectName("SemestersWindow");
         SemestersWindow->resize(900, 620);
         SemestersWindow->setMinimumSize(QSize(760, 520));
-        SemestersWindow->setStyleSheet(QString::fromUtf8("QWidget#SemestersWindow {\n"
-"    background-color: #f5f7fb;\n"
-"}\n"
-"QFrame#headerCard,\n"
-"QFrame#semestersCard {\n"
-"    background-color: #ffffff;\n"
-"    border: 1px solid #e5e7eb;\n"
-"    border-radius: 12px;\n"
-"}\n"
-"QLabel#semestersTitleLabel {\n"
-"    color: #111827;\n"
-"    font-size: 25px;\n"
-"    font-weight: 700;\n"
-"}\n"
-"QLabel#semestersSubtitleLabel {\n"
-"    color: #64748b;\n"
-"    font-size: 13px;\n"
-"}\n"
-"QPushButton#addSemesterButton {\n"
-"    min-height: 40px;\n"
-"    padding: 0 18px;\n"
-"    border: none;\n"
-"    border-radius: 9px;\n"
-"    background-color: #2563eb;\n"
-"    color: #ffffff;\n"
-"    font-size: 14px;\n"
-"    font-weight: 600;\n"
-"}\n"
-"QPushButton#addSemesterButton:hover { background-color: #1d4ed8; }\n"
-"QPushButton#addSemesterButton:pressed { background-color: #1e40af; }\n"
-"QComboBox#semesterFilterComboBox {\n"
-"    min-height: 36px;\n"
-"    padding: 0 12px;\n"
-"    border: 1px solid #cbd5e1;\n"
-"    border-radius: 8px;\n"
-"    background-color: #ffffff;\n"
-"    color"
-                        ": #334155;\n"
-"    font-size: 13px;\n"
-"}\n"
-"QListWidget#semestersListWidget {\n"
-"    border: none;\n"
-"    background-color: transparent;\n"
-"    outline: none;\n"
-"    color: #1f2937;\n"
-"    font-size: 14px;\n"
-"}\n"
-"QListWidget#semestersListWidget::item {\n"
-"    margin: 4px 0;\n"
-"    border: none;\n"
-"    background-color: transparent;\n"
-"}\n"
-"QListWidget#semestersListWidget::item:hover {\n"
-"    background-color: transparent;\n"
-"}\n"
-"QListWidget#semestersListWidget::item:selected {\n"
-"    background-color: transparent;\n"
-"    color: #1f2937;\n"
-"}\n"
-"QLabel#emptyStateLabel {\n"
-"    color: #94a3b8;\n"
-"    font-size: 14px;\n"
-"}"));
         mainLayout = new QVBoxLayout(SemestersWindow);
         mainLayout->setSpacing(16);
         mainLayout->setObjectName("mainLayout");
@@ -162,7 +99,6 @@ public:
         filterLayout->setObjectName("filterLayout");
         allSemestersLabel = new QLabel(semestersCard);
         allSemestersLabel->setObjectName("allSemestersLabel");
-        allSemestersLabel->setStyleSheet(QString::fromUtf8("color: #111827; font-size: 16px; font-weight: 700;"));
 
         filterLayout->addWidget(allSemestersLabel);
 

@@ -42,6 +42,8 @@ public:
     QFormLayout *profileFormLayout;
     QLabel *usernameLabel;
     QLineEdit *usernameLineEdit;
+    QLabel *emailLabel;
+    QLineEdit *emailLineEdit;
     QLabel *maximumCreditsLabel;
     QLineEdit *maximumCreditsLineEdit;
     QLabel *accountIdLabel;
@@ -103,7 +105,7 @@ public:
         settingsScrollArea->setWidgetResizable(true);
         settingsScrollAreaContents = new QWidget();
         settingsScrollAreaContents->setObjectName("settingsScrollAreaContents");
-        settingsScrollAreaContents->setGeometry(QRect(0, 0, 1038, 920));
+        settingsScrollAreaContents->setGeometry(QRect(0, 0, 1038, 970));
         contentLayout = new QVBoxLayout(settingsScrollAreaContents);
         contentLayout->setSpacing(22);
         contentLayout->setObjectName("contentLayout");
@@ -152,26 +154,37 @@ public:
 
         profileFormLayout->setWidget(0, QFormLayout::ItemRole::FieldRole, usernameLineEdit);
 
+        emailLabel = new QLabel(profileCard);
+        emailLabel->setObjectName("emailLabel");
+
+        profileFormLayout->setWidget(1, QFormLayout::ItemRole::LabelRole, emailLabel);
+
+        emailLineEdit = new QLineEdit(profileCard);
+        emailLineEdit->setObjectName("emailLineEdit");
+        emailLineEdit->setClearButtonEnabled(true);
+
+        profileFormLayout->setWidget(1, QFormLayout::ItemRole::FieldRole, emailLineEdit);
+
         maximumCreditsLabel = new QLabel(profileCard);
         maximumCreditsLabel->setObjectName("maximumCreditsLabel");
 
-        profileFormLayout->setWidget(1, QFormLayout::ItemRole::LabelRole, maximumCreditsLabel);
+        profileFormLayout->setWidget(2, QFormLayout::ItemRole::LabelRole, maximumCreditsLabel);
 
         maximumCreditsLineEdit = new QLineEdit(profileCard);
         maximumCreditsLineEdit->setObjectName("maximumCreditsLineEdit");
 
-        profileFormLayout->setWidget(1, QFormLayout::ItemRole::FieldRole, maximumCreditsLineEdit);
+        profileFormLayout->setWidget(2, QFormLayout::ItemRole::FieldRole, maximumCreditsLineEdit);
 
         accountIdLabel = new QLabel(profileCard);
         accountIdLabel->setObjectName("accountIdLabel");
 
-        profileFormLayout->setWidget(2, QFormLayout::ItemRole::LabelRole, accountIdLabel);
+        profileFormLayout->setWidget(3, QFormLayout::ItemRole::LabelRole, accountIdLabel);
 
         accountIdValueLabel = new QLabel(profileCard);
         accountIdValueLabel->setObjectName("accountIdValueLabel");
         accountIdValueLabel->setStyleSheet(QString::fromUtf8("color: #64748b;"));
 
-        profileFormLayout->setWidget(2, QFormLayout::ItemRole::FieldRole, accountIdValueLabel);
+        profileFormLayout->setWidget(3, QFormLayout::ItemRole::FieldRole, accountIdValueLabel);
 
 
         profileCardLayout->addLayout(profileFormLayout);
@@ -385,9 +398,11 @@ public:
         pageTitleLabel->setText(QCoreApplication::translate("SettingsWindow", "Settings", nullptr));
         pageSubtitleLabel->setText(QCoreApplication::translate("SettingsWindow", "Manage your profile, security, and application preferences.", nullptr));
         profileTitleLabel->setText(QCoreApplication::translate("SettingsWindow", "Profile", nullptr));
-        profileDescriptionLabel->setText(QCoreApplication::translate("SettingsWindow", "Update your username and degree credit target.", nullptr));
+        profileDescriptionLabel->setText(QCoreApplication::translate("SettingsWindow", "Update your username, recovery email, and degree credit target.", nullptr));
         usernameLabel->setText(QCoreApplication::translate("SettingsWindow", "Username", nullptr));
         usernameLineEdit->setPlaceholderText(QCoreApplication::translate("SettingsWindow", "Enter username", nullptr));
+        emailLabel->setText(QCoreApplication::translate("SettingsWindow", "Email", nullptr));
+        emailLineEdit->setPlaceholderText(QCoreApplication::translate("SettingsWindow", "you@example.com", nullptr));
         maximumCreditsLabel->setText(QCoreApplication::translate("SettingsWindow", "Maximum credits", nullptr));
         maximumCreditsLineEdit->setPlaceholderText(QCoreApplication::translate("SettingsWindow", "Example: 120", nullptr));
         accountIdLabel->setText(QCoreApplication::translate("SettingsWindow", "Account ID", nullptr));

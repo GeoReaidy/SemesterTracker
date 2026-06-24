@@ -70,6 +70,57 @@ bool isValidUsername(const std::string &value)
     );
 }
 
+std::string normalizeEmail(const std::string &value)
+{
+    std::string email = trimCopy(value);
+
+    std::transform(
+        email.begin(),
+        email.end(),
+        email.begin(),
+        [](unsigned char character)
+        {
+            return static_cast<char>(
+                std::tolower(character)
+            );
+        }
+    );
+
+    return email;
+}
+
+bool isValidEmail(const std::string &value)
+{
+    const std::string email =
+        normalizeEmail(value);
+
+    if (email.size() < 5 ||
+        email.size() > 254)
+    {
+        return false;
+    }
+
+    const std::size_t at =
+        email.find('@');
+
+    if (at == std::string::npos ||
+        at == 0 ||
+        at + 1 >= email.size() ||
+        email.find('@', at + 1) !=
+            std::string::npos)
+    {
+        return false;
+    }
+
+    const std::string domain =
+        email.substr(at + 1);
+
+    return domain.find('.') !=
+               std::string::npos &&
+           domain.front() != '.' &&
+           domain.back() != '.';
+}
+
 bool isValidPassword(const std::string &password)
 {
     if (password.size() < MinimumPasswordLength ||
@@ -192,13 +243,39 @@ bool AuthService::registerUser(
     const std::string &password,
     int maxCredits)
 {
+    return registerUser(
+        username,
+        std::string(),
+        password,
+        maxCredits
+    );
+}
+
+bool AuthService::registerUser(
+    const std::string &username,
+    const std::string &email,
+    const std::string &password,
+    int maxCredits)
+{
     const std::string normalizedUsername =
         trimCopy(username);
+
+    const std::string normalizedEmail =
+        normalizeEmail(email);
 
     if (!isValidUsername(normalizedUsername))
     {
         std::cout
             << "Username must contain 3-40 valid characters."
+            << std::endl;
+        return false;
+    }
+
+    if (!normalizedEmail.empty() &&
+        !isValidEmail(normalizedEmail))
+    {
+        std::cout
+            << "A valid email address is required."
             << std::endl;
         return false;
     }
@@ -221,9 +298,13 @@ bool AuthService::registerUser(
         return false;
     }
 
-    if (database.userExists(normalizedUsername))
+    if (database.userExists(normalizedUsername) ||
+        (!normalizedEmail.empty() &&
+         database.emailExists(normalizedEmail)))
     {
-        std::cout << "Username already exists." << std::endl;
+        std::cout
+            << "Username or email already exists."
+            << std::endl;
         return false;
     }
 
@@ -242,6 +323,7 @@ bool AuthService::registerUser(
 
         return database.addUser(
             normalizedUsername,
+            normalizedEmail,
             passwordHash,
             maxCredits
         );
@@ -256,23 +338,38 @@ bool AuthService::registerUser(
 }
 
 bool AuthService::loginUser(
-    const std::string &username,
+    const std::string &identifier,
     const std::string &password,
     User &loggedInUser)
 {
-    const std::string normalizedUsername =
-        trimCopy(username);
+    const std::string normalizedIdentifier =
+        trimCopy(identifier);
 
-    if (!isValidUsername(normalizedUsername) ||
+    if (normalizedIdentifier.empty() ||
         password.empty())
     {
         std::cout
-            << "A valid username and password are required."
+            << "An account identifier and password are required."
             << std::endl;
         return false;
     }
 
-    if (!database.userExists(normalizedUsername))
+    std::string username =
+        normalizedIdentifier;
+
+    if (normalizedIdentifier.find('@') !=
+        std::string::npos)
+    {
+        username =
+            database.getUsernameByEmail(
+                normalizeEmail(
+                    normalizedIdentifier
+                )
+            );
+    }
+
+    if (!isValidUsername(username) ||
+        !database.userExists(username))
     {
         std::cout << "User does not exist." << std::endl;
         return false;
@@ -280,7 +377,7 @@ bool AuthService::loginUser(
 
     const std::string storedHash =
         database.getPasswordHashByUsername(
-            normalizedUsername
+            username
         );
 
     if (!verifyPassword(password, storedHash))
@@ -293,7 +390,7 @@ bool AuthService::loginUser(
     {
         loggedInUser =
             database.loadFullUserByUsername(
-                normalizedUsername
+                username
             );
 
         return true;

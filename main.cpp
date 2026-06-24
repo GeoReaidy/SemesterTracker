@@ -1,5 +1,6 @@
 #include "guiapp.h"
 #include "mainwindow.h"
+#include "appstyle.h"
 
 #include <QApplication>
 #include <QIcon>
@@ -9,6 +10,8 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    app.setStyleSheet(AppStyle::globalStyleSheet());
 
     if (sodium_init() < 0)
     {

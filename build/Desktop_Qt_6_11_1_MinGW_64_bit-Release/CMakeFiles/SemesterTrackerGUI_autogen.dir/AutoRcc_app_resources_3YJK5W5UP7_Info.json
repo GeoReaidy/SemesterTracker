@@ -9,6 +9,7 @@
 	"INCLUDE_DIR" : "C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/build/Desktop_Qt_6_11_1_MinGW_64_bit-Release/SemesterTrackerGUI_autogen/include",
 	"INPUTS" : 
 	[
+		"C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/resources/chevron-down-black.svg",
 		"C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/resources/semestertracker_icon.png"
 	],
 	"LOCK_FILE" : "C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/build/Desktop_Qt_6_11_1_MinGW_64_bit-Release/CMakeFiles/SemesterTrackerGUI_autogen.dir/AutoRcc_app_resources_3YJK5W5UP7_Lock.lock",

@@ -247,6 +247,30 @@ SemesterTrackerGUI_autogen/mocs_compilation.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/mocs_compilation.cpp.s
 .PHONY : SemesterTrackerGUI_autogen/mocs_compilation.cpp.s
 
+appstyle.obj: appstyle.cpp.obj
+.PHONY : appstyle.obj
+
+# target to build an object file
+appstyle.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/appstyle.cpp.obj
+.PHONY : appstyle.cpp.obj
+
+appstyle.i: appstyle.cpp.i
+.PHONY : appstyle.i
+
+# target to preprocess a source file
+appstyle.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/appstyle.cpp.i
+.PHONY : appstyle.cpp.i
+
+appstyle.s: appstyle.cpp.s
+.PHONY : appstyle.s
+
+# target to generate assembly for a file
+appstyle.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/appstyle.cpp.s
+.PHONY : appstyle.cpp.s
+
 assignment.obj: assignment.cpp.obj
 .PHONY : assignment.obj
 
@@ -804,6 +828,9 @@ help:
 	@echo ... SemesterTrackerGUI_autogen/mocs_compilation.obj
 	@echo ... SemesterTrackerGUI_autogen/mocs_compilation.i
 	@echo ... SemesterTrackerGUI_autogen/mocs_compilation.s
+	@echo ... appstyle.obj
+	@echo ... appstyle.i
+	@echo ... appstyle.s
 	@echo ... assignment.obj
 	@echo ... assignment.i
 	@echo ... assignment.s

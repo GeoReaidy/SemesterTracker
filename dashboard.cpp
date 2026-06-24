@@ -6,6 +6,7 @@
 #include "settingswindow.h"
 #include "calendarwindow.h"
 #include "ui_dashboard.h"
+#include "appicons.h"
 
 #include <QDate>
 #include <QTableWidgetItem>
@@ -19,6 +20,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QScrollBar>
+#include <QSize>
 #include <QVBoxLayout>
 
 #include <algorithm>
@@ -32,6 +34,69 @@ Dashboard::Dashboard(
       ui(new Ui::Dashboard)
 {
     ui->setupUi(this);
+
+    const QSize sidebarIconSize(22, 22);
+
+    const auto configureNavigationButton =
+        [sidebarIconSize](
+            QPushButton *button,
+            const QString &title,
+            AppIcons::SidebarIcon icon)
+        {
+            button->setText(title);
+            button->setIcon(AppIcons::sidebar(icon));
+            button->setIconSize(sidebarIconSize);
+            button->setMinimumHeight(50);
+            button->setCursor(Qt::PointingHandCursor);
+        };
+
+    configureNavigationButton(
+        ui->dashboardButton,
+        tr("Dashboard"),
+        AppIcons::SidebarIcon::Dashboard
+    );
+
+    configureNavigationButton(
+        ui->semestersButton,
+        tr("Semesters"),
+        AppIcons::SidebarIcon::Semesters
+    );
+
+    configureNavigationButton(
+        ui->coursesButton,
+        tr("Courses"),
+        AppIcons::SidebarIcon::Courses
+    );
+
+    configureNavigationButton(
+        ui->assignmentsButton,
+        tr("Assignments"),
+        AppIcons::SidebarIcon::Assignments
+    );
+
+    configureNavigationButton(
+        ui->calendarButton,
+        tr("Calendar"),
+        AppIcons::SidebarIcon::Calendar
+    );
+
+    configureNavigationButton(
+        ui->gradesButton,
+        tr("Grades"),
+        AppIcons::SidebarIcon::Grades
+    );
+
+    configureNavigationButton(
+        ui->settingsButton,
+        tr("Settings"),
+        AppIcons::SidebarIcon::Settings
+    );
+
+    configureNavigationButton(
+        ui->logoutButton,
+        tr("Logout"),
+        AppIcons::SidebarIcon::Logout
+    );
 
     const QString dashboardListStyle = R"(
         QListWidget {
@@ -541,7 +606,7 @@ void Dashboard::createCalendarPage()
 
 void Dashboard::refreshUserFromDatabase()
 {
-    if (currentUsername.empty())
+    if (currentUserID <= 0)
     {
         return;
     }
@@ -549,8 +614,8 @@ void Dashboard::refreshUserFromDatabase()
     try
     {
         const User refreshedUser =
-            database.loadFullUserByUsername(
-                currentUsername
+            database.loadFullUserByID(
+                currentUserID
             );
 
         setUserData(refreshedUser);

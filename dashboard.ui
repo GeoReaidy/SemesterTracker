@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <ui version="4.0">
  <class>Dashboard</class>
  <widget class="QWidget" name="Dashboard">
@@ -33,14 +33,15 @@ QLabel#appTitleLabel {
     font-weight: 700;
 }
 QPushButton[class="navButton"] {
-    min-height: 42px;
-    padding: 0 14px;
+    min-height: 50px;
+    padding: 0 16px;
     text-align: left;
     border: none;
     border-radius: 9px;
     background-color: transparent;
     color: #334155;
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 500;
 }
 QPushButton[class="navButton"]:hover {
     background-color: #eff6ff;
@@ -52,14 +53,15 @@ QPushButton[class="navButton"]:checked {
     font-weight: 600;
 }
 QPushButton#logoutButton {
-    min-height: 42px;
-    padding: 0 14px;
+    min-height: 50px;
+    padding: 0 16px;
     text-align: left;
     border: none;
     border-radius: 9px;
     background-color: transparent;
     color: #dc2626;
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 500;
 }
 QPushButton#logoutButton:hover {
     background-color: #fee2e2;
@@ -203,7 +205,7 @@ Tracker</string>
          <string>navButton</string>
         </property>
         <property name="text">
-         <string>⌂   Dashboard</string>
+         <string>Dashboard</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -222,7 +224,7 @@ Tracker</string>
          <string>navButton</string>
         </property>
         <property name="text">
-         <string>▣   Semesters</string>
+         <string>Semesters</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -238,7 +240,7 @@ Tracker</string>
          <string>navButton</string>
         </property>
         <property name="text">
-         <string>▤   Courses</string>
+         <string>Courses</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -254,7 +256,7 @@ Tracker</string>
          <string>navButton</string>
         </property>
         <property name="text">
-         <string>☑   Assignments</string>
+         <string>Assignments</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -270,7 +272,7 @@ Tracker</string>
          <string>navButton</string>
         </property>
         <property name="text">
-         <string>▦   Calendar</string>
+         <string>Calendar</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -286,7 +288,7 @@ Tracker</string>
          <string>navButton</string>
         </property>
         <property name="text">
-         <string>▥   Grades</string>
+         <string>Grades</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -302,7 +304,7 @@ Tracker</string>
          <string>navButton</string>
         </property>
         <property name="text">
-         <string>⚙   Settings</string>
+         <string>Settings</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -404,7 +406,7 @@ Tracker</string>
       <item>
        <widget class="QPushButton" name="logoutButton">
         <property name="text">
-         <string>↪   Logout</string>
+         <string>Logout</string>
         </property>
        </widget>
       </item>
@@ -1123,6 +1125,6 @@ Tracker</string>
    </item>
   </layout>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

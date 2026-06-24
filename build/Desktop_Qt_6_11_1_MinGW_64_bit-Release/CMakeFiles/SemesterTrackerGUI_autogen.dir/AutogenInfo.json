@@ -388,6 +388,12 @@
 	"HEADERS" : 
 	[
 		[
+			"C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/appstyle.h",
+			"MU",
+			"EWIEGA46WW/moc_appstyle.cpp",
+			null
+		],
+		[
 			"C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignment.h",
 			"MU",
 			"EWIEGA46WW/moc_assignment.cpp",
@@ -590,6 +596,11 @@
 	"SETTINGS_FILE" : "C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/build/Desktop_Qt_6_11_1_MinGW_64_bit-Release/CMakeFiles/SemesterTrackerGUI_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
+		[
+			"C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/appstyle.cpp",
+			"MU",
+			null
+		],
 		[
 			"C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignment.cpp",
 			"MU",

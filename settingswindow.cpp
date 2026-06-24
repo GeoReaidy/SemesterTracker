@@ -9,6 +9,7 @@
 #include <QIntValidator>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include <QSettings>
 
 #include <exception>
@@ -312,10 +313,20 @@ void SettingsWindow::setUserData(const User &user)
 {
     currentUserID = user.getID();
     currentUsername = user.getUsername();
+    currentEmail =
+        database.getEmailByUserID(
+            currentUserID
+        );
 
     ui->usernameLineEdit->setText(
         QString::fromStdString(
             currentUsername
+        )
+    );
+
+    ui->emailLineEdit->setText(
+        QString::fromStdString(
+            currentEmail
         )
     );
 
@@ -347,6 +358,29 @@ void SettingsWindow::saveProfile()
 
     const QString username =
         ui->usernameLineEdit->text().trimmed();
+
+    const QString email =
+        ui->emailLineEdit
+            ->text()
+            .trimmed()
+            .toLower();
+
+    static const QRegularExpression emailPattern(
+        QStringLiteral(
+            "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+        )
+    );
+
+    if (email.size() > 254 ||
+        !emailPattern.match(email).hasMatch())
+    {
+        QMessageBox::warning(
+            this,
+            "Invalid Email",
+            "Enter a valid email address."
+        );
+        return;
+    }
 
     bool creditsAccepted = false;
 
@@ -393,17 +427,20 @@ void SettingsWindow::saveProfile()
     if (!database.updateUserProfile(
             currentUserID,
             username.toStdString(),
+            email.toStdString(),
             maximumCredits))
     {
         QMessageBox::warning(
             this,
             "Profile Not Updated",
-            "The username may already be used, or the values may be invalid."
+            "The username or email may already be used, "
+            "or the values may be invalid."
         );
         return;
     }
 
     currentUsername = username.toStdString();
+    currentEmail = email.toStdString();
 
     QMessageBox::information(
         this,
@@ -566,6 +603,7 @@ void SettingsWindow::deleteAccount()
 
     currentUserID = -1;
     currentUsername.clear();
+    currentEmail.clear();
 
     QSettings settings(
         "SemesterTracker",

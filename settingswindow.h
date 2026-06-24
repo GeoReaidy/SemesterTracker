@@ -49,6 +49,7 @@ private:
 
     int currentUserID = -1;
     std::string currentUsername;
+    std::string currentEmail;
 
     Ui::SettingsWindow *ui;
 };

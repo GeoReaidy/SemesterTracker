@@ -27,6 +27,8 @@ public:
     // Utility
     int getLastInsertID() const;
     std::string getPasswordHashByUsername(const std::string &username);
+    std::string getEmailByUserID(int userID);
+    std::string getUsernameByEmail(const std::string &email);
 
     bool saveLoginSession(
         int userID,
@@ -48,8 +50,14 @@ public:
                  const std::string &passwordHash,
                  int maxCredits);
 
+    bool addUser(const std::string &username,
+                 const std::string &email,
+                 const std::string &passwordHash,
+                 int maxCredits);
+
     bool deleteUser(int userID);
     bool userExists(const std::string &username);
+    bool emailExists(const std::string &email);
     int getUserIDByUsername(const std::string &username);
 
     User loadUserByUsername(const std::string &username);
@@ -62,6 +70,14 @@ public:
     bool updateUserProfile(int userID,
                            const std::string &newUsername,
                            int maxCredits);
+
+    bool updateUserProfile(int userID,
+                           const std::string &newUsername,
+                           const std::string &newEmail,
+                           int maxCredits);
+
+    bool updateEmail(int userID,
+                     const std::string &newEmail);
 
     bool updatePasswordHash(int userID,
                             const std::string &newPasswordHash);

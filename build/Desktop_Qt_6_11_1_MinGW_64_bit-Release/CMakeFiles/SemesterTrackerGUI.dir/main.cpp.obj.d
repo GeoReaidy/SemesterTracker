@@ -401,6 +401,7 @@ CMakeFiles/SemesterTrackerGUI.dir/main.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qcursor.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qbitmap.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtabwidget.h \
+ C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\appstyle.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QApplication \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qapplication.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qcoreapplication.h \

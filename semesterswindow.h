@@ -39,10 +39,6 @@ private slots:
 
 private:
     void addSemesterRow(const Semester &semester);
-    void setSemesterStatus(
-        QListWidgetItem *item,
-        SemesterStatus status
-    );
     void editSemesterRow(QListWidgetItem *item);
     void deleteSemesterRow(QListWidgetItem *item);
     void updateEmptyState();
@@ -50,6 +46,11 @@ private:
     DatabaseManager &database;
     int userID;
     Ui::SemestersWindow *ui;
+
+    void setSemesterStatus(
+        QListWidgetItem *item,
+        SemesterStatus status
+        );
 };
 
 #endif // SEMESTERSWINDOW_H

@@ -17,6 +17,7 @@ class MainWindow;
 class Dashboard;
 class QSystemTrayIcon;
 class UpdateManager;
+class QWidget;
 
 class GUIApp : public QObject
 {
@@ -57,6 +58,17 @@ private:
     std::vector<DeadlineReminder>
     collectNearbyDeadlines(int reminderDays);
 
+    void showAuthPage(QWidget *page);
+    void showAuthMessage(
+        const QString &message,
+        bool success = false
+    );
+    void clearAuthMessage();
+    void createSessionAndOpenDashboard(User user);
+    bool validEmail(const QString &email) const;
+    bool validPassword(const QString &password) const;
+    void resetAuthenticationFields();
+
     MainWindow &window;
     DatabaseManager database;
     AuthService authService;
@@ -64,6 +76,7 @@ private:
     std::unique_ptr<User> loggedInUser;
     std::unique_ptr<Dashboard> dashboard;
     std::string activeSessionToken;
+
 
     QSystemTrayIcon *trayIcon = nullptr;
     UpdateManager *updateManager = nullptr;

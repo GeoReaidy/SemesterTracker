@@ -445,6 +445,13 @@ CMakeFiles/SemesterTrackerGUI.dir/guiapp.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qpushbutton.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractbutton.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpacerItem \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpinBox \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qspinbox.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractspinbox.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qvalidator.h \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/qregularexpression.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStackedWidget \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstackedwidget.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStatusBar \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstatusbar.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QVBoxLayout \
@@ -454,16 +461,13 @@ CMakeFiles/SemesterTrackerGUI.dir/guiapp.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QApplication \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QDebug \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QIcon \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QInputDialog \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qinputdialog.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialog.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLineEdit \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMessageBox \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmessagebox.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialog.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialogbuttonbox.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QRegularExpression \
- C:/Qt/6.11.1/mingw_64/include/QtCore/qregularexpression.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QSettings \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qsettings.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStyle \

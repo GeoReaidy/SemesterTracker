@@ -27,7 +27,14 @@ public:
         const std::string &username,
         const std::string &password,
         int maxCredits = 120
-        );
+    );
+
+    bool registerUser(
+        const std::string &username,
+        const std::string &email,
+        const std::string &password,
+        int maxCredits = 120
+    );
 
     bool loginUser(const std::string &username,
                    const std::string &password,
@@ -51,6 +58,7 @@ public:
                         const std::string &username,
                         const std::string &currentPassword,
                         const std::string &newPassword);
+
 };
 
 #endif

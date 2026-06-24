@@ -465,9 +465,20 @@ CMakeFiles/SemesterTrackerGUI.dir/dashboard.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtableview.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QVBoxLayout \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QWidget \
+ C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\appicons.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QColor \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QIcon \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QPainter \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qpainter.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qtextoption.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qpen.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QPainterPath \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qpainterpath.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QPen \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QRectF \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QTableWidgetItem \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QHeaderView \
- C:/Qt/6.11.1/mingw_64/include/QtGui/QColor \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QBrush \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QDebug \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
@@ -477,4 +488,5 @@ CMakeFiles/SemesterTrackerGUI.dir/dashboard.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QListWidgetItem \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QScrollBar \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qscrollbar.h \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QSize \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QVBoxLayout

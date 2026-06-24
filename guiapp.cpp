@@ -8,7 +8,6 @@
 #include <QApplication>
 #include <QDebug>
 #include <QIcon>
-#include <QInputDialog>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
@@ -34,25 +33,113 @@ GUIApp::GUIApp(
         );
 
     connect(
-        window.ui->loginButton,
+        this->window.ui->getStartedButton,
+        &QPushButton::clicked,
+        this,
+        [this]()
+        {
+            showAuthPage(
+                this->window.ui->accountChoicePage
+            );
+        }
+    );
+
+    connect(
+        this->window.ui->choiceBackButton,
+        &QPushButton::clicked,
+        this,
+        [this]()
+        {
+            showAuthPage(
+                this->window.ui->welcomePage
+            );
+        }
+    );
+
+    connect(
+        this->window.ui->chooseSignInButton,
+        &QPushButton::clicked,
+        this,
+        [this]()
+        {
+            showAuthPage(
+                this->window.ui->signInPage
+            );
+
+            this->window.ui
+                ->loginIdentifierLineEdit
+                ->setFocus();
+        }
+    );
+
+    connect(
+        this->window.ui->chooseCreateAccountButton,
+        &QPushButton::clicked,
+        this,
+        [this]()
+        {
+            showAuthPage(
+                this->window.ui->createAccountPage
+            );
+
+            this->window.ui
+                ->registerUsernameLineEdit
+                ->setFocus();
+        }
+    );
+
+    connect(
+        this->window.ui->loginBackButton,
+        &QPushButton::clicked,
+        this,
+        [this]()
+        {
+            showAuthPage(
+                this->window.ui->accountChoicePage
+            );
+        }
+    );
+
+    connect(
+        this->window.ui->registerBackButton,
+        &QPushButton::clicked,
+        this,
+        [this]()
+        {
+            showAuthPage(
+                this->window.ui->accountChoicePage
+            );
+        }
+    );
+
+    connect(
+        this->window.ui->loginButton,
         &QPushButton::clicked,
         this,
         &GUIApp::handleLogin
     );
 
     connect(
-        window.ui->passwordLineEdit,
+        this->window.ui->loginPasswordLineEdit,
         &QLineEdit::returnPressed,
         this,
         &GUIApp::handleLogin
     );
 
     connect(
-        window.ui->createAccountButton,
+        this->window.ui->registerButton,
         &QPushButton::clicked,
         this,
         &GUIApp::handleCreateAccount
     );
+
+    connect(
+        this->window.ui->registerConfirmPasswordLineEdit,
+        &QLineEdit::returnPressed,
+        this,
+        &GUIApp::handleCreateAccount
+    );
+
 }
 
 GUIApp::~GUIApp() = default;
@@ -82,7 +169,13 @@ bool GUIApp::initialize()
     }
 
     setupNotificationTray();
-    restoreSavedLogin();
+
+    if (!restoreSavedLogin())
+    {
+        showAuthPage(
+            window.ui->welcomePage
+        );
+    }
 
     QTimer::singleShot(
         1800,
@@ -99,6 +192,128 @@ bool GUIApp::initialize()
 bool GUIApp::hasActiveSession() const
 {
     return loggedInUser != nullptr;
+}
+
+
+void GUIApp::showAuthPage(QWidget *page)
+{
+    clearAuthMessage();
+
+    window.ui->authStackedWidget
+        ->setCurrentWidget(page);
+}
+
+void GUIApp::showAuthMessage(
+    const QString &message,
+    bool success)
+{
+    if (message.trimmed().isEmpty())
+    {
+        clearAuthMessage();
+        return;
+    }
+
+    window.ui->authMessageLabel
+        ->setStyleSheet(
+            success
+                ? QStringLiteral(
+                      "color: #166534;"
+                      "background-color: #f0fdf4;"
+                      "border: 1px solid #bbf7d0;"
+                      "border-radius: 8px;"
+                      "padding: 9px 10px;"
+                  )
+                : QStringLiteral(
+                      "color: #b91c1c;"
+                      "background-color: #fef2f2;"
+                      "border: 1px solid #fecaca;"
+                      "border-radius: 8px;"
+                      "padding: 9px 10px;"
+                  )
+        );
+
+    window.ui->authMessageLabel
+        ->setText(message);
+
+    window.ui->authMessageLabel
+        ->show();
+}
+
+void GUIApp::clearAuthMessage()
+{
+    window.ui->authMessageLabel->clear();
+    window.ui->authMessageLabel->hide();
+}
+
+bool GUIApp::validEmail(
+    const QString &email) const
+{
+    static const QRegularExpression pattern(
+        QStringLiteral(
+            "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+        )
+    );
+
+    return email.size() <= 254 &&
+           pattern.match(
+               email.trimmed()
+           ).hasMatch();
+}
+
+bool GUIApp::validPassword(
+    const QString &password) const
+{
+    return password.size() >= 8 &&
+           password.size() <= 128 &&
+           password.contains(
+               QRegularExpression(
+                   QStringLiteral("[A-Za-z]")
+               )
+           ) &&
+           password.contains(
+               QRegularExpression(
+                   QStringLiteral("[0-9]")
+               )
+           );
+}
+
+void GUIApp::createSessionAndOpenDashboard(
+    User user)
+{
+    std::string sessionToken;
+
+    if (authService.createPersistentSession(
+            user.getID(),
+            sessionToken))
+    {
+        saveLoginToken(sessionToken);
+    }
+    else
+    {
+        clearSavedLogin();
+    }
+
+    openDashboardForUser(
+        std::move(user)
+    );
+}
+
+void GUIApp::resetAuthenticationFields()
+{
+    window.ui->loginIdentifierLineEdit->clear();
+    window.ui->loginPasswordLineEdit->clear();
+
+    window.ui->registerUsernameLineEdit->clear();
+    window.ui->registerEmailLineEdit->clear();
+    window.ui->registerPasswordLineEdit->clear();
+    window.ui
+        ->registerConfirmPasswordLineEdit
+        ->clear();
+
+    window.ui->registerMaxCreditsSpinBox
+        ->setValue(120);
+
+    clearAuthMessage();
 }
 
 void GUIApp::saveLoginToken(
@@ -247,59 +462,63 @@ void GUIApp::setupNotificationTray()
 
 void GUIApp::handleLogin()
 {
-    const QString username =
-        window.ui->usernameLineEdit->text().trimmed();
+    clearAuthMessage();
+
+    const QString identifier =
+        window.ui
+            ->loginIdentifierLineEdit
+            ->text()
+            .trimmed();
 
     const QString password =
-        window.ui->passwordLineEdit->text();
+        window.ui
+            ->loginPasswordLineEdit
+            ->text();
 
-    if (username.isEmpty() || password.isEmpty())
+    if (identifier.isEmpty() ||
+        password.isEmpty())
     {
-        QMessageBox::warning(
-            &window,
-            "Missing Information",
-            "Enter both your username and password."
+        showAuthMessage(
+            tr(
+                "Enter your username or email and password."
+            )
         );
-
         return;
     }
 
-    User user(-1, username.toStdString());
+    User user(-1, "temporary");
 
-    const bool success = authService.loginUser(
-        username.toStdString(),
-        password.toStdString(),
-        user
-    );
+    const bool success =
+        authService.loginUser(
+            identifier.toStdString(),
+            password.toStdString(),
+            user
+        );
 
     if (!success)
     {
-        QMessageBox::warning(
-            &window,
-            "Login Failed",
-            "Incorrect username or password."
+        showAuthMessage(
+            tr(
+                "The username/email or password is incorrect."
+            )
         );
 
-        window.ui->passwordLineEdit->clear();
+        window.ui
+            ->loginPasswordLineEdit
+            ->clear();
+
+        window.ui
+            ->loginPasswordLineEdit
+            ->setFocus();
+
         return;
     }
 
-    std::string sessionToken;
+    window.ui
+        ->loginPasswordLineEdit
+        ->clear();
 
-    if (authService.createPersistentSession(
-            user.getID(),
-            sessionToken))
-    {
-        saveLoginToken(sessionToken);
-    }
-    else
-    {
-        clearSavedLogin();
-    }
-
-    window.ui->passwordLineEdit->clear();
-
-    openDashboardForUser(
+    createSessionAndOpenDashboard(
         std::move(user)
     );
 }
@@ -561,125 +780,158 @@ void GUIApp::openPendingDeadline()
 
 void GUIApp::handleCreateAccount()
 {
+    clearAuthMessage();
+
     const QString username =
-        window.ui->usernameLineEdit->text().trimmed();
+        window.ui
+            ->registerUsernameLineEdit
+            ->text()
+            .trimmed();
+
+    const QString email =
+        window.ui
+            ->registerEmailLineEdit
+            ->text()
+            .trimmed()
+            .toLower();
 
     const QString password =
-        window.ui->passwordLineEdit->text();
+        window.ui
+            ->registerPasswordLineEdit
+            ->text();
 
-    if (username.isEmpty() || password.isEmpty())
-    {
-        QMessageBox::warning(
-            &window,
-            "Missing Information",
-            "Enter both a username and password."
-        );
+    const QString confirmedPassword =
+        window.ui
+            ->registerConfirmPasswordLineEdit
+            ->text();
 
-        return;
-    }
+    const int maxCredits =
+        window.ui
+            ->registerMaxCreditsSpinBox
+            ->value();
 
     const QRegularExpression usernamePattern(
-        "^[A-Za-z0-9._-]{3,40}$"
+        QStringLiteral(
+            "^[A-Za-z0-9._-]{3,40}$"
+        )
     );
 
-    if (!usernamePattern.match(username).hasMatch())
+    if (!usernamePattern
+             .match(username)
+             .hasMatch())
     {
-        QMessageBox::warning(
-            &window,
-            "Invalid Username",
-            "Username must contain 3 to 40 characters and may only use "
-            "letters, numbers, periods, underscores, and hyphens."
+        showAuthMessage(
+            tr(
+                "Username must contain 3–40 letters, "
+                "numbers, periods, underscores, or hyphens."
+            )
         );
-
         return;
     }
 
-    if (database.userExists(username.toStdString()))
+    if (!validEmail(email))
     {
-        QMessageBox::warning(
-            &window,
-            "Username Already Used",
-            "An account with this username already exists."
+        showAuthMessage(
+            tr("Enter a valid email address.")
         );
-
         return;
     }
 
-    if (password.length() < 8 ||
-        password.length() > 128)
+    if (!validPassword(password))
     {
-        QMessageBox::warning(
-            &window,
-            "Invalid Password",
-            "Password must contain between 8 and 128 characters."
+        showAuthMessage(
+            tr(
+                "Password must contain 8–128 characters, "
+                "including at least one letter and one number."
+            )
         );
-
         return;
     }
 
-    const bool hasLetter =
-        password.contains(
-            QRegularExpression("[A-Za-z]")
-        );
-
-    const bool hasNumber =
-        password.contains(
-            QRegularExpression("[0-9]")
-        );
-
-    if (!hasLetter || !hasNumber)
+    if (password != confirmedPassword)
     {
-        QMessageBox::warning(
-            &window,
-            "Invalid Password",
-            "Password must include at least one letter and one number."
+        showAuthMessage(
+            tr("The password confirmation does not match.")
         );
-
         return;
     }
 
-    bool accepted = false;
+    if (database.userExists(
+            username.toStdString()))
+    {
+        showAuthMessage(
+            tr("That username is already used.")
+        );
+        return;
+    }
 
-    const int maxCredits = QInputDialog::getInt(
-        &window,
-        "Maximum Credits",
-        "Enter the total credits required for your degree:",
-        120,
-        1,
-        1000,
-        1,
-        &accepted
+    if (database.emailExists(
+            email.toStdString()))
+    {
+        showAuthMessage(
+            tr("That email is already linked to an account.")
+        );
+        return;
+    }
+
+    window.ui->registerButton->setEnabled(
+        false
     );
 
-    if (!accepted)
+    const bool registered =
+        authService.registerUser(
+            username.toStdString(),
+            email.toStdString(),
+            password.toStdString(),
+            maxCredits
+        );
+
+    window.ui->registerButton->setEnabled(
+        true
+    );
+
+    if (!registered)
     {
+        showAuthMessage(
+            tr(
+                "The account could not be created. "
+                "Check the information and try again."
+            )
+        );
         return;
     }
 
-    const bool success = authService.registerUser(
-        username.toStdString(),
-        password.toStdString(),
-        maxCredits
-    );
+    User user(-1, "temporary");
 
-    if (!success)
+    if (!authService.loginUser(
+            username.toStdString(),
+            password.toStdString(),
+            user))
     {
-        QMessageBox::warning(
-            &window,
-            "Registration Failed",
-            "The account could not be created because of a database error."
+        showAuthPage(
+            window.ui->signInPage
+        );
+
+        window.ui
+            ->loginIdentifierLineEdit
+            ->setText(username);
+
+        showAuthMessage(
+            tr(
+                "The account was created. "
+                "Sign in to continue."
+            ),
+            true
         );
 
         return;
     }
 
-    QMessageBox::information(
-        &window,
-        "Account Created",
-        "Your account was created successfully."
-    );
+    resetAuthenticationFields();
 
-    window.ui->passwordLineEdit->clear();
+    createSessionAndOpenDashboard(
+        std::move(user)
+    );
 }
 
 void GUIApp::handleLogout()
@@ -701,12 +953,15 @@ void GUIApp::handleLogout()
         dashboard->hide();
     }
 
-    window.ui->usernameLineEdit->clear();
-    window.ui->passwordLineEdit->clear();
+    resetAuthenticationFields();
+
+    showAuthPage(
+        window.ui->welcomePage
+    );
 
     window.show();
     window.raise();
     window.activateWindow();
 
-    window.ui->usernameLineEdit->setFocus();
+    window.ui->getStartedButton->setFocus();
 }

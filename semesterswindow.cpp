@@ -5,13 +5,20 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QComboBox>
+#include <QColor>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QLabel>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMenu>
 #include <QMessageBox>
+#include <QPainter>
+#include <QPen>
+#include <QPixmap>
 #include <QPushButton>
+#include <QSize>
+#include <QSizePolicy>
 #include <QStringList>
 #include <QToolButton>
 
@@ -19,6 +26,53 @@
 
 namespace
 {
+QIcon makePencilIcon()
+{
+    QPixmap pixmap(24, 24);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    QPen pen(QColor("#2563eb"));
+    pen.setWidth(2);
+    pen.setCapStyle(Qt::RoundCap);
+    painter.setPen(pen);
+
+    painter.drawLine(6, 18, 17, 7);
+    painter.drawLine(8, 20, 19, 9);
+    painter.drawLine(6, 18, 8, 20);
+    painter.drawLine(17, 7, 19, 9);
+    painter.drawLine(5, 21, 9, 20);
+
+    return QIcon(pixmap);
+}
+
+QIcon makeBinIcon()
+{
+    QPixmap pixmap(24, 24);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    QPen pen(QColor("#dc2626"));
+    pen.setWidth(2);
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setJoinStyle(Qt::RoundJoin);
+    painter.setPen(pen);
+
+    painter.drawLine(6, 7, 18, 7);
+    painter.drawLine(9, 4, 15, 4);
+    painter.drawLine(10, 4, 10, 7);
+    painter.drawLine(14, 4, 14, 7);
+    painter.drawRoundedRect(7, 8, 10, 12, 2, 2);
+    painter.drawLine(10, 11, 10, 17);
+    painter.drawLine(14, 11, 14, 17);
+
+    return QIcon(pixmap);
+}
+
 QString semesterStatusText(SemesterStatus status)
 {
     switch (status)
@@ -34,125 +88,19 @@ QString semesterStatusText(SemesterStatus status)
     return QObject::tr("Planned");
 }
 
-QString semesterStatusButtonStyle(SemesterStatus status)
+QString semesterStatusProperty(SemesterStatus status)
 {
     switch (status)
     {
     case SemesterStatus::Planned:
-        return R"(
-            QToolButton {
-                color: #475569;
-                background-color: #f1f5f9;
-                border: 1px solid #cbd5e1;
-                border-radius: 8px;
-                padding: 5px 24px 5px 10px;
-                font-size: 12px;
-                font-weight: 600;
-            }
-
-            QToolButton:hover {
-                background-color: #e2e8f0;
-            }
-
-            QToolButton::menu-indicator {
-                subcontrol-origin: padding;
-                subcontrol-position: center right;
-                right: 7px;
-            }
-        )";
-
+        return QStringLiteral("planned");
     case SemesterStatus::Active:
-        return R"(
-            QToolButton {
-                color: #166534;
-                background-color: #dcfce7;
-                border: 1px solid #bbf7d0;
-                border-radius: 8px;
-                padding: 5px 24px 5px 10px;
-                font-size: 12px;
-                font-weight: 600;
-            }
-
-            QToolButton:hover {
-                background-color: #bbf7d0;
-            }
-
-            QToolButton::menu-indicator {
-                subcontrol-origin: padding;
-                subcontrol-position: center right;
-                right: 7px;
-            }
-        )";
-
+        return QStringLiteral("active");
     case SemesterStatus::Completed:
-        return R"(
-            QToolButton {
-                color: #1d4ed8;
-                background-color: #dbeafe;
-                border: 1px solid #bfdbfe;
-                border-radius: 8px;
-                padding: 5px 24px 5px 10px;
-                font-size: 12px;
-                font-weight: 600;
-            }
-
-            QToolButton:hover {
-                background-color: #bfdbfe;
-            }
-
-            QToolButton:disabled {
-                color: #1d4ed8;
-                background-color: #dbeafe;
-                border: 1px solid #bfdbfe;
-            }
-
-            QToolButton::menu-indicator {
-                subcontrol-origin: padding;
-                subcontrol-position: center right;
-                right: 7px;
-            }
-        )";
+        return QStringLiteral("completed");
     }
 
-    return {};
-}
-
-QString statusMenuStyle()
-{
-    return R"(
-        QMenu {
-            background-color: white;
-            color: #1f2937;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 5px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        QMenu::item {
-            color: #1f2937;
-            background-color: transparent;
-            border-radius: 6px;
-            padding: 9px 14px;
-            margin: 2px;
-        }
-
-        QMenu::item:selected {
-            color: white;
-            background-color: #2563eb;
-        }
-
-        QMenu::item:disabled {
-            color: #94a3b8;
-            background-color: transparent;
-        }
-
-        QMenu::indicator {
-            width: 14px;
-            height: 14px;
-        }
-    )";
+    return QStringLiteral("planned");
 }
 }
 
@@ -167,44 +115,15 @@ SemestersWindow::SemestersWindow(
 {
     ui->setupUi(this);
 
-    ui->semestersListWidget->setStyleSheet(R"(
-        QListWidget {
-            background-color: #ffffff;
-            color: #1f2937;
-            border: none;
-        }
-
-        QListWidget::item {
-            background-color: #ffffff;
-            color: #1f2937;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 10px;
-            margin: 4px;
-        }
-
-        QListWidget::item:selected {
-            background-color: #eff6ff;
-            color: #1f2937;
-        }
-    )");
-
-    ui->semesterFilterComboBox->setStyleSheet(R"(
-        QComboBox {
-            background-color: #ffffff;
-            color: #1f2937;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 6px 10px;
-        }
-
-        QComboBox QAbstractItemView {
-            background-color: #ffffff;
-            color: #1f2937;
-            selection-background-color: #dbeafe;
-            selection-color: #1f2937;
-        }
-    )");
+    setProperty("page", true);
+    ui->headerCard->setProperty("card", true);
+    ui->semestersCard->setProperty("card", true);
+    ui->semestersTitleLabel->setProperty("role", "pageTitle");
+    ui->semestersSubtitleLabel->setProperty("role", "pageSubtitle");
+    ui->allSemestersLabel->setProperty("role", "sectionTitle");
+    ui->emptyStateLabel->setProperty("role", "emptyState");
+    ui->semestersListWidget->setProperty("cardList", true);
+    ui->addSemesterButton->setProperty("role", "primary");
 
     connect(
         ui->addSemesterButton,
@@ -340,10 +259,17 @@ void SemestersWindow::addSemesterRow(
     auto *rowWidget = new QWidget(
         ui->semestersListWidget
     );
+    rowWidget->setProperty("rowCard", true);
+    rowWidget->setAttribute(Qt::WA_StyledBackground, true);
+    rowWidget->setMinimumHeight(88);
+    rowWidget->setSizePolicy(
+        QSizePolicy::Expanding,
+        QSizePolicy::Fixed
+    );
 
     auto *layout = new QHBoxLayout(rowWidget);
-    layout->setContentsMargins(14, 0, 10, 0);
-    layout->setSpacing(10);
+    layout->setContentsMargins(16, 14, 12, 14);
+    layout->setSpacing(12);
     layout->setAlignment(Qt::AlignVCenter);
 
     const QString term =
@@ -356,11 +282,7 @@ void SemestersWindow::addSemesterRow(
         rowWidget
     );
 
-    semesterLabel->setStyleSheet(
-        "color: #111827;"
-        "font-size: 15px;"
-        "font-weight: 600;"
-    );
+    semesterLabel->setProperty("role", "rowTitle");
 
     semesterLabel->setAlignment(
         Qt::AlignLeft | Qt::AlignVCenter
@@ -378,16 +300,7 @@ void SemestersWindow::addSemesterRow(
         );
 
         summaryDetailsLabel->setAlignment(Qt::AlignCenter);
-        summaryDetailsLabel->setStyleSheet(R"(
-            QLabel {
-                color: #475569;
-                background-color: #f8fafc;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                padding: 4px 9px;
-                font-size: 12px;
-            }
-        )");
+        summaryDetailsLabel->setProperty("role", "summaryPill");
     }
 
     auto *statusButton = new QToolButton(rowWidget);
@@ -398,12 +311,9 @@ void SemestersWindow::addSemesterRow(
     statusButton->setToolButtonStyle(
         Qt::ToolButtonTextOnly
     );
-    statusButton->setMinimumWidth(108);
-    statusButton->setFixedHeight(32);
-    statusButton->setStyleSheet(
-        semesterStatusButtonStyle(
-            semester.getStatus()
-        )
+    statusButton->setProperty(
+        "status",
+        semesterStatusProperty(semester.getStatus())
     );
     statusButton->setAccessibleName(
         tr("Semester status: %1")
@@ -430,7 +340,6 @@ void SemestersWindow::addSemesterRow(
 
         auto *statusMenu = new QMenu(statusButton);
         statusMenu->setMinimumWidth(165);
-        statusMenu->setStyleSheet(statusMenuStyle());
 
         auto *statusGroup =
             new QActionGroup(statusMenu);
@@ -477,17 +386,17 @@ void SemestersWindow::addSemesterRow(
     }
 
     auto *editButton = new QToolButton(rowWidget);
-    editButton->setText("✎");
+    editButton->setIcon(makePencilIcon());
+    editButton->setIconSize(QSize(20, 20));
     editButton->setToolTip("Edit semester");
+    editButton->setAccessibleName("Edit semester");
     editButton->setCursor(Qt::PointingHandCursor);
+    editButton->setFixedSize(36, 36);
     editButton->setStyleSheet(R"(
         QToolButton {
             border: none;
-            border-radius: 7px;
-            padding: 6px;
-            color: #2563eb;
+            border-radius: 8px;
             background-color: #eff6ff;
-            font-size: 16px;
         }
 
         QToolButton:hover {
@@ -496,17 +405,17 @@ void SemestersWindow::addSemesterRow(
     )");
 
     auto *deleteButton = new QToolButton(rowWidget);
-    deleteButton->setText("🗑");
+    deleteButton->setIcon(makeBinIcon());
+    deleteButton->setIconSize(QSize(20, 20));
     deleteButton->setToolTip("Delete semester");
+    deleteButton->setAccessibleName("Delete semester");
     deleteButton->setCursor(Qt::PointingHandCursor);
+    deleteButton->setFixedSize(36, 36);
     deleteButton->setStyleSheet(R"(
         QToolButton {
             border: none;
-            border-radius: 7px;
-            padding: 6px;
-            color: #dc2626;
+            border-radius: 8px;
             background-color: #fef2f2;
-            font-size: 15px;
         }
 
         QToolButton:hover {
@@ -549,7 +458,7 @@ void SemestersWindow::addSemesterRow(
         Qt::AlignVCenter
     );
 
-    item->setSizeHint(QSize(0, 64));
+    item->setSizeHint(QSize(0, 96));
 
     ui->semestersListWidget->setItemWidget(
         item,
