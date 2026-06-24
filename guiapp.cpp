@@ -475,6 +475,11 @@ GUIApp::collectNearbyDeadlines(
 
             for (const Assignment &assignment : assignments)
             {
+                if (assignment.isCompleted())
+                {
+                    continue;
+                }
+
                 if (!assignment.hasDueDate())
                 {
                     continue;
