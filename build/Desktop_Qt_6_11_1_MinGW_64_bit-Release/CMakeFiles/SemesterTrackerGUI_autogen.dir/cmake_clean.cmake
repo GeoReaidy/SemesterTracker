@@ -6,6 +6,7 @@ file(REMOVE_RECURSE
   "SemesterTrackerGUI_autogen/include/ui_dashboard.h"
   "SemesterTrackerGUI_autogen/include/ui_gradeswindow.h"
   "SemesterTrackerGUI_autogen/include/ui_mainwindow.h"
+  "SemesterTrackerGUI_autogen/include/ui_semestereditordialog.h"
   "SemesterTrackerGUI_autogen/include/ui_semesterswindow.h"
   "SemesterTrackerGUI_autogen/include/ui_settingswindow.h"
   "SemesterTrackerGUI_autogen/mocs_compilation.cpp"

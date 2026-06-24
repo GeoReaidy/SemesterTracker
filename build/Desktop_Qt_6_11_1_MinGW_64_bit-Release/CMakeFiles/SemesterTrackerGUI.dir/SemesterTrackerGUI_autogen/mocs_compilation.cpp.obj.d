@@ -417,6 +417,10 @@ CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/mocs_compilation.cp
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMainWindow \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmainwindow.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtabwidget.h \
+ C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\EWIEGA46WW/moc_semestereditordialog.cpp \
+ C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semestereditordialog.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDialog \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialog.h \
  C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\EWIEGA46WW/moc_semesterswindow.cpp \
  C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/semesterswindow.h \
  C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\EWIEGA46WW/moc_settingswindow.cpp \

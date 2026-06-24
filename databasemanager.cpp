@@ -1252,6 +1252,209 @@ bool DatabaseManager::updateSemester(
     return success;
 }
 
+bool DatabaseManager::updateSemesterDetails(
+    int semesterID,
+    const std::string &name,
+    int year,
+    bool inProgress,
+    bool summaryOnly,
+    int summaryCredits,
+    double summaryGPA)
+{
+    if (database == nullptr || semesterID <= 0)
+    {
+        return false;
+    }
+
+    const std::string normalizedName = trimCopy(name);
+    const bool effectiveInProgress =
+        summaryOnly ? false : inProgress;
+    const int effectiveSummaryCredits =
+        summaryOnly ? summaryCredits : 0;
+    const double effectiveSummaryGPA =
+        summaryOnly ? summaryGPA : 0.0;
+
+    try
+    {
+        const Semester candidate(
+            semesterID,
+            normalizedName,
+            year,
+            effectiveInProgress,
+            summaryOnly,
+            effectiveSummaryCredits,
+            effectiveSummaryGPA
+        );
+
+        (void)candidate;
+    }
+    catch (const std::exception &error)
+    {
+        std::cout << "Invalid semester data: "
+                  << error.what()
+                  << std::endl;
+        return false;
+    }
+
+    sqlite3_stmt *ownerStatement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT user_id FROM semesters WHERE id = ?;",
+            -1,
+            &ownerStatement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(ownerStatement, 1, semesterID);
+
+    if (sqlite3_step(ownerStatement) != SQLITE_ROW)
+    {
+        sqlite3_finalize(ownerStatement);
+        return false;
+    }
+
+    const int userID = sqlite3_column_int(ownerStatement, 0);
+    sqlite3_finalize(ownerStatement);
+
+    if (rowExists(
+            database,
+            "SELECT 1 FROM semesters "
+            "WHERE user_id = ? "
+            "AND lower(trim(name)) = lower(trim(?)) "
+            "AND year = ? AND id != ? LIMIT 1;",
+            userID,
+            normalizedName,
+            year,
+            semesterID))
+    {
+        return false;
+    }
+
+    if (summaryOnly)
+    {
+        sqlite3_stmt *courseStatement = nullptr;
+
+        if (sqlite3_prepare_v2(
+                database,
+                "SELECT 1 FROM courses "
+                "WHERE semester_id = ? LIMIT 1;",
+                -1,
+                &courseStatement,
+                nullptr) != SQLITE_OK)
+        {
+            return false;
+        }
+
+        sqlite3_bind_int(courseStatement, 1, semesterID);
+        const bool hasCourses =
+            sqlite3_step(courseStatement) == SQLITE_ROW;
+        sqlite3_finalize(courseStatement);
+
+        if (hasCourses)
+        {
+            return false;
+        }
+    }
+
+    if (sqlite3_exec(
+            database,
+            "BEGIN IMMEDIATE TRANSACTION;",
+            nullptr,
+            nullptr,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    if (effectiveInProgress)
+    {
+        sqlite3_stmt *clearStatement = nullptr;
+
+        if (sqlite3_prepare_v2(
+                database,
+                "UPDATE semesters "
+                "SET in_progress = 0 "
+                "WHERE user_id = ?;",
+                -1,
+                &clearStatement,
+                nullptr) != SQLITE_OK)
+        {
+            sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+            return false;
+        }
+
+        sqlite3_bind_int(clearStatement, 1, userID);
+        const bool cleared =
+            sqlite3_step(clearStatement) == SQLITE_DONE;
+        sqlite3_finalize(clearStatement);
+
+        if (!cleared)
+        {
+            sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+            return false;
+        }
+    }
+
+    const char *sql =
+        "UPDATE semesters "
+        "SET name = ?, year = ?, in_progress = ?, "
+        "summary_only = ?, summary_credits = ?, summary_gpa = ? "
+        "WHERE id = ?;";
+
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            sql,
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    sqlite3_bind_text(
+        statement,
+        1,
+        normalizedName.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+    sqlite3_bind_int(statement, 2, year);
+    sqlite3_bind_int(statement, 3, effectiveInProgress ? 1 : 0);
+    sqlite3_bind_int(statement, 4, summaryOnly ? 1 : 0);
+    sqlite3_bind_int(statement, 5, effectiveSummaryCredits);
+    sqlite3_bind_double(statement, 6, effectiveSummaryGPA);
+    sqlite3_bind_int(statement, 7, semesterID);
+
+    const bool updated =
+        sqlite3_step(statement) == SQLITE_DONE;
+    sqlite3_finalize(statement);
+
+    if (!updated || sqlite3_changes(database) != 1)
+    {
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    if (sqlite3_exec(
+            database,
+            "COMMIT;",
+            nullptr,
+            nullptr,
+            nullptr) != SQLITE_OK)
+    {
+        sqlite3_exec(database, "ROLLBACK;", nullptr, nullptr, nullptr);
+        return false;
+    }
+
+    return true;
+}
+
 bool DatabaseManager::deleteSemester(int semesterID)
 {
     const char *sql =

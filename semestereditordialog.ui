@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SemesterEditorDialog</class>
+ <widget class="QDialog" name="SemesterEditorDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>520</width>
+    <height>520</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Semester</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog#SemesterEditorDialog {
+    background-color: #f8fafc;
+}
+QFrame#contentCard {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+QLabel#dialogTitleLabel {
+    color: #0f172a;
+    font-size: 22px;
+    font-weight: 700;
+}
+QLabel#dialogSubtitleLabel {
+    color: #64748b;
+    font-size: 13px;
+}
+QLabel#termLabel,
+QLabel#yearLabel,
+QLabel#completedCreditsLabel,
+QLabel#semesterGpaLabel {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+QComboBox,
+QSpinBox,
+QDoubleSpinBox {
+    min-height: 38px;
+    padding: 0 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #1f2937;
+}
+QComboBox:focus,
+QSpinBox:focus,
+QDoubleSpinBox:focus {
+    border-color: #2563eb;
+}
+QComboBox QAbstractItemView {
+    background-color: #ffffff;
+    color: #1f2937;
+    selection-background-color: #dbeafe;
+    selection-color: #1f2937;
+    border: 1px solid #cbd5e1;
+    outline: none;
+}
+QCheckBox {
+    color: #334155;
+    spacing: 8px;
+}
+QCheckBox:disabled {
+    color: #94a3b8;
+}
+QFrame#completedFieldsFrame {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 9px;
+}
+QLabel#conversionNoticeLabel {
+    color: #92400e;
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 7px;
+    padding: 8px;
+}
+QLabel#validationLabel {
+    color: #b91c1c;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 7px;
+    padding: 8px;
+}
+QDialogButtonBox QPushButton {
+    min-width: 96px;
+    min-height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+QDialogButtonBox QPushButton[text="Save"] {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+}
+QDialogButtonBox QPushButton[text="Save"]:hover {
+    background-color: #1d4ed8;
+}
+QDialogButtonBox QPushButton[text="Cancel"] {
+    background-color: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="leftMargin">
+    <number>22</number>
+   </property>
+   <property name="topMargin">
+    <number>22</number>
+   </property>
+   <property name="rightMargin">
+    <number>22</number>
+   </property>
+   <property name="bottomMargin">
+    <number>22</number>
+   </property>
+   <property name="spacing">
+    <number>14</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="dialogTitleLabel">
+     <property name="text">
+      <string>Semester</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="dialogSubtitleLabel">
+     <property name="text">
+      <string>Enter semester details.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="contentCard">
+     <layout class="QVBoxLayout" name="contentLayout">
+      <property name="leftMargin">
+       <number>18</number>
+      </property>
+      <property name="topMargin">
+       <number>18</number>
+      </property>
+      <property name="rightMargin">
+       <number>18</number>
+      </property>
+      <property name="bottomMargin">
+       <number>18</number>
+      </property>
+      <property name="spacing">
+       <number>12</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="termLabel">
+        <property name="text">
+         <string>Semester term</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="termComboBox">
+        <item>
+         <property name="text">
+          <string>Spring</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Summer</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Fall</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="yearLabel">
+        <property name="text">
+         <string>Year</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="yearSpinBox">
+        <property name="minimum">
+         <number>1900</number>
+        </property>
+        <property name="maximum">
+         <number>2100</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="completedCheckBox">
+        <property name="text">
+         <string>This semester is already completed (summary only)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="completedFieldsFrame">
+        <layout class="QFormLayout" name="completedFieldsLayout">
+         <property name="leftMargin">
+          <number>12</number>
+         </property>
+         <property name="topMargin">
+          <number>12</number>
+         </property>
+         <property name="rightMargin">
+          <number>12</number>
+         </property>
+         <property name="bottomMargin">
+          <number>12</number>
+         </property>
+         <property name="horizontalSpacing">
+          <number>12</number>
+         </property>
+         <property name="verticalSpacing">
+          <number>10</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="completedCreditsLabel">
+           <property name="text">
+            <string>Completed credits</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QSpinBox" name="completedCreditsSpinBox">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>300</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="semesterGpaLabel">
+           <property name="text">
+            <string>Semester GPA</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="semesterGpaSpinBox">
+           <property name="decimals">
+            <number>2</number>
+           </property>
+           <property name="minimum">
+            <double>0.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>4.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.050000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="currentCheckBox">
+        <property name="text">
+         <string>Set as the current semester</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="conversionNoticeLabel">
+        <property name="text">
+         <string>Notice</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="validationLabel">
+        <property name="text">
+         <string>Validation error</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Save</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

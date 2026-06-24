@@ -1,58 +1,20 @@
 #include "semesterswindow.h"
+#include "semestereditordialog.h"
 #include "ui_semesterswindow.h"
 
 #include <QAbstractItemView>
 #include <QComboBox>
 #include <QHBoxLayout>
-#include <QInputDialog>
 #include <QLabel>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QStringList>
 #include <QToolButton>
 
 #include <exception>
 
 
-namespace
-{
-bool semesterAlreadyExists(
-    DatabaseManager &database,
-    int userID,
-    const QString &term,
-    int year,
-    int ignoredSemesterID = -1)
-{
-    const std::vector<Semester> semesters =
-        database.loadSemestersForUser(userID);
-
-    const QString normalizedTerm =
-        term.trimmed().toCaseFolded();
-
-    for (const Semester &semester : semesters)
-    {
-        if (semester.getID() == ignoredSemesterID)
-        {
-            continue;
-        }
-
-        const QString existingTerm =
-            QString::fromStdString(
-                semester.getName()
-            ).trimmed().toCaseFolded();
-
-        if (existingTerm == normalizedTerm &&
-            semester.getYear() == year)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-}
 
 SemestersWindow::SemestersWindow(
     DatabaseManager &database,
@@ -152,8 +114,13 @@ void SemestersWindow::refreshSemesters()
     {
         const bool showSemester =
             selectedFilter == "All" ||
-            (selectedFilter == "Current" && semester.isInProgress()) ||
-            (selectedFilter == "Upcoming" && !semester.isInProgress());
+            (selectedFilter == "Current" &&
+             semester.isInProgress()) ||
+            (selectedFilter == "Completed" &&
+             semester.isSummaryOnly()) ||
+            (selectedFilter == "Upcoming" &&
+             !semester.isInProgress() &&
+             !semester.isSummaryOnly());
 
         if (showSemester)
         {
@@ -170,188 +137,20 @@ void SemestersWindow::handleAddSemester()
     {
         QMessageBox::warning(
             this,
-            "No User",
-            "No logged-in user is available."
+            tr("No User"),
+            tr("No logged-in user is available.")
         );
         return;
     }
 
-    const QStringList terms{
-        "Spring",
-        "Summer",
-        "Fall"
-    };
-
-    bool termAccepted = false;
-
-    const QString term = QInputDialog::getItem(
-        this,
-        "Add Semester",
-        "Semester term:",
-        terms,
-        0,
-        false,
-        &termAccepted
+    SemesterEditorDialog dialog(
+        database,
+        userID,
+        this
     );
 
-    if (!termAccepted)
+    if (dialog.exec() != QDialog::Accepted)
     {
-        return;
-    }
-
-    bool yearAccepted = false;
-
-    const int year = QInputDialog::getInt(
-        this,
-        "Add Semester",
-        "Year:",
-        2026,
-        1900,
-        2100,
-        1,
-        &yearAccepted
-    );
-
-    if (!yearAccepted)
-    {
-        return;
-    }
-
-    const QMessageBox::StandardButton completedAnswer =
-        QMessageBox::question(
-            this,
-            "Semester Status",
-            "Is this semester already completed?",
-            QMessageBox::Yes | QMessageBox::No,
-            QMessageBox::No
-        );
-
-    const bool isCompleted =
-        completedAnswer == QMessageBox::Yes;
-
-    int completedCredits = 0;
-    double completedGPA = 0.0;
-    bool isCurrent = false;
-
-    if (isCompleted)
-    {
-        bool creditsAccepted = false;
-        completedCredits = QInputDialog::getInt(
-            this,
-            "Completed Semester",
-            "Total completed credits:",
-            15,
-            1,
-            300,
-            1,
-            &creditsAccepted
-        );
-
-        if (!creditsAccepted)
-        {
-            return;
-        }
-
-        bool gpaAccepted = false;
-        completedGPA = QInputDialog::getDouble(
-            this,
-            "Completed Semester",
-            "Semester GPA:",
-            3.00,
-            0.00,
-            4.00,
-            2,
-            &gpaAccepted
-        );
-
-        if (!gpaAccepted)
-        {
-            return;
-        }
-    }
-    else
-    {
-        const QMessageBox::StandardButton currentAnswer =
-            QMessageBox::question(
-                this,
-                "Current Semester",
-                "Set this as the current semester?",
-                QMessageBox::Yes | QMessageBox::No,
-                QMessageBox::No
-            );
-
-        isCurrent = currentAnswer == QMessageBox::Yes;
-    }
-
-    try
-    {
-        const Semester candidate(
-            -1,
-            term.toStdString(),
-            year,
-            isCurrent,
-            isCompleted,
-            completedCredits,
-            completedGPA
-        );
-
-        Q_UNUSED(candidate);
-    }
-    catch (const std::exception &error)
-    {
-        QMessageBox::warning(
-            this,
-            "Invalid Semester",
-            error.what()
-        );
-        return;
-    }
-
-    if (semesterAlreadyExists(
-            database,
-            userID,
-            term,
-            year))
-    {
-        QMessageBox::warning(
-            this,
-            "Duplicate Semester",
-            "This semester already exists."
-        );
-        return;
-    }
-
-    if (isCurrent &&
-        !database.clearCurrentSemesterForUser(userID))
-    {
-        QMessageBox::warning(
-            this,
-            "Database Error",
-            "Could not clear the previous current semester."
-        );
-        return;
-    }
-
-    const bool saved = isCompleted
-        ? database.addCompletedSemester(
-              userID,
-              term.toStdString(),
-              year,
-              completedCredits,
-              completedGPA)
-        : database.addSemester(
-              userID,
-              term.toStdString(),
-              year,
-              isCurrent);
-
-    if (!saved)
-    {
-        QMessageBox::warning(
-            this,
-            "Database Error",
-            "Could not save the semester."
-        );
         return;
     }
 
@@ -553,142 +352,38 @@ void SemestersWindow::editSemesterRow(
         return;
     }
 
-    const int semesterID =
-        item->data(Qt::UserRole).toInt();
-
-    const QString currentTerm =
-        item->data(Qt::UserRole + 1).toString();
-
-    const int currentYear =
-        item->data(Qt::UserRole + 2).toInt();
-
-    const bool currentlyCurrent =
-        item->data(Qt::UserRole + 3).toBool();
-
-    const bool summaryOnly =
-        item->data(Qt::UserRole + 4).toBool();
-
-    const QStringList terms{
-        "Spring",
-        "Summer",
-        "Fall"
-    };
-
-    bool termAccepted = false;
-
-    const int currentTermIndex =
-        terms.contains(currentTerm)
-            ? terms.indexOf(currentTerm)
-            : 0;
-
-    const QString newTerm = QInputDialog::getItem(
-        this,
-        "Edit Semester",
-        "Semester term:",
-        terms,
-        currentTermIndex,
-        false,
-        &termAccepted
-    );
-
-    if (!termAccepted)
-    {
-        return;
-    }
-
-    bool yearAccepted = false;
-
-    const int newYear = QInputDialog::getInt(
-        this,
-        "Edit Semester",
-        "Year:",
-        currentYear,
-        1900,
-        2100,
-        1,
-        &yearAccepted
-    );
-
-    if (!yearAccepted)
-    {
-        return;
-    }
-
-    bool newIsCurrent = false;
-
-    if (!summaryOnly)
-    {
-        const QMessageBox::StandardButton currentAnswer =
-            QMessageBox::question(
-                this,
-                "Current Semester",
-                "Set this as the current semester?",
-                QMessageBox::Yes | QMessageBox::No,
-                currentlyCurrent
-                    ? QMessageBox::Yes
-                    : QMessageBox::No
-            );
-
-        newIsCurrent = currentAnswer == QMessageBox::Yes;
-    }
-
     try
     {
-        const Semester candidate(
-            semesterID,
-            newTerm.toStdString(),
-            newYear,
-            newIsCurrent
+        const Semester semester(
+            item->data(Qt::UserRole).toInt(),
+            item->data(Qt::UserRole + 1)
+                .toString()
+                .toStdString(),
+            item->data(Qt::UserRole + 2).toInt(),
+            item->data(Qt::UserRole + 3).toBool(),
+            item->data(Qt::UserRole + 4).toBool(),
+            item->data(Qt::UserRole + 5).toInt(),
+            item->data(Qt::UserRole + 6).toDouble()
         );
 
-        Q_UNUSED(candidate);
+        SemesterEditorDialog dialog(
+            database,
+            userID,
+            semester,
+            this
+        );
+
+        if (dialog.exec() != QDialog::Accepted)
+        {
+            return;
+        }
     }
     catch (const std::exception &error)
     {
         QMessageBox::warning(
             this,
-            "Invalid Semester",
-            error.what()
-        );
-        return;
-    }
-
-    if (semesterAlreadyExists(
-            database,
-            userID,
-            newTerm,
-            newYear,
-            semesterID))
-    {
-        QMessageBox::warning(
-            this,
-            "Duplicate Semester",
-            "Another semester with this term and year already exists."
-        );
-        return;
-    }
-
-    if (newIsCurrent &&
-        !database.clearCurrentSemesterForUser(userID))
-    {
-        QMessageBox::warning(
-            this,
-            "Database Error",
-            "Could not clear the previous current semester."
-        );
-        return;
-    }
-
-    if (!database.updateSemester(
-            semesterID,
-            newTerm.toStdString(),
-            newYear,
-            newIsCurrent))
-    {
-        QMessageBox::warning(
-            this,
-            "Database Error",
-            "Could not update the semester."
+            tr("Invalid Semester"),
+            QString::fromUtf8(error.what())
         );
         return;
     }

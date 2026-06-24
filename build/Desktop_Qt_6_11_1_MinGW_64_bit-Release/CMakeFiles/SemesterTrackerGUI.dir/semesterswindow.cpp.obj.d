@@ -390,6 +390,9 @@ CMakeFiles/SemesterTrackerGUI.dir/semesterswindow.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qsizepolicy.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qcursor.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qbitmap.h \
+ C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\semestereditordialog.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDialog \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialog.h \
  C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/build/Desktop_Qt_6_11_1_MinGW_64_bit-Release/SemesterTrackerGUI_autogen/include/ui_semesterswindow.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QVariant \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QApplication \
@@ -448,14 +451,6 @@ CMakeFiles/SemesterTrackerGUI.dir/semesterswindow.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QAbstractItemView \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QComboBox \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QHBoxLayout \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QInputDialog \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qinputdialog.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlineedit.h \
- C:/Qt/6.11.1/mingw_64/include/QtGui/qtextcursor.h \
- C:/Qt/6.11.1/mingw_64/include/QtGui/qtextformat.h \
- C:/Qt/6.11.1/mingw_64/include/QtGui/qpen.h \
- C:/Qt/6.11.1/mingw_64/include/QtGui/qtextoption.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialog.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLabel \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QListWidget \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QListWidgetItem \
@@ -463,6 +458,5 @@ CMakeFiles/SemesterTrackerGUI.dir/semesterswindow.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmessagebox.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialogbuttonbox.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
- C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QToolButton \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtoolbutton.h

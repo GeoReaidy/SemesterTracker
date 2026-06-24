@@ -83,6 +83,16 @@ public:
                         int year,
                         bool inProgress);
 
+    bool updateSemesterDetails(
+        int semesterID,
+        const std::string &name,
+        int year,
+        bool inProgress,
+        bool summaryOnly,
+        int summaryCredits,
+        double summaryGPA
+    );
+
     bool deleteSemester(int semesterID);
     bool clearCurrentSemesterForUser(int userID);
 

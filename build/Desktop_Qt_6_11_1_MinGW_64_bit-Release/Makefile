@@ -591,6 +591,30 @@ semester.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/semester.cpp.s
 .PHONY : semester.cpp.s
 
+semestereditordialog.obj: semestereditordialog.cpp.obj
+.PHONY : semestereditordialog.obj
+
+# target to build an object file
+semestereditordialog.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/semestereditordialog.cpp.obj
+.PHONY : semestereditordialog.cpp.obj
+
+semestereditordialog.i: semestereditordialog.cpp.i
+.PHONY : semestereditordialog.i
+
+# target to preprocess a source file
+semestereditordialog.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/semestereditordialog.cpp.i
+.PHONY : semestereditordialog.cpp.i
+
+semestereditordialog.s: semestereditordialog.cpp.s
+.PHONY : semestereditordialog.s
+
+# target to generate assembly for a file
+semestereditordialog.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/semestereditordialog.cpp.s
+.PHONY : semestereditordialog.cpp.s
+
 semesterswindow.obj: semesterswindow.cpp.obj
 .PHONY : semesterswindow.obj
 
@@ -775,6 +799,9 @@ help:
 	@echo ... semester.obj
 	@echo ... semester.i
 	@echo ... semester.s
+	@echo ... semestereditordialog.obj
+	@echo ... semestereditordialog.i
+	@echo ... semestereditordialog.s
 	@echo ... semesterswindow.obj
 	@echo ... semesterswindow.i
 	@echo ... semesterswindow.s

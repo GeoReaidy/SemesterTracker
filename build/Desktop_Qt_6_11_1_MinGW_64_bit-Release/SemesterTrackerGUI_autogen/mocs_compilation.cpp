@@ -6,6 +6,7 @@
 #include "EWIEGA46WW/moc_gradeswindow.cpp"
 #include "EWIEGA46WW/moc_guiapp.cpp"
 #include "EWIEGA46WW/moc_mainwindow.cpp"
+#include "EWIEGA46WW/moc_semestereditordialog.cpp"
 #include "EWIEGA46WW/moc_semesterswindow.cpp"
 #include "EWIEGA46WW/moc_settingswindow.cpp"
 #include "EWIEGA46WW/moc_updatemanager.cpp"

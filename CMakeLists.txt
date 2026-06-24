@@ -111,6 +111,8 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
         dashboard.h dashboard.cpp
         semesterswindow.ui
         semesterswindow.h semesterswindow.cpp
+        semestereditordialog.ui
+        semestereditordialog.h semestereditordialog.cpp
         courseswindow.h courseswindow.cpp
         courseswindow.ui
         assignmentswindow.ui
@@ -121,8 +123,6 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
         calendarwindow.cpp calendarwindow.h calendarwindow.ui
         updatemanager.cpp updatemanager.h
         ${APP_RESOURCE_FILES}
-        README.md
-        gitignore
     )
 else()
     if(ANDROID)

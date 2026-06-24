@@ -35,6 +35,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/SemesterTrackerGUI.dir/resources/app_icon.rc.obj"
   "CMakeFiles/SemesterTrackerGUI.dir/semester.cpp.obj"
   "CMakeFiles/SemesterTrackerGUI.dir/semester.cpp.obj.d"
+  "CMakeFiles/SemesterTrackerGUI.dir/semestereditordialog.cpp.obj"
+  "CMakeFiles/SemesterTrackerGUI.dir/semestereditordialog.cpp.obj.d"
   "CMakeFiles/SemesterTrackerGUI.dir/semesterswindow.cpp.obj"
   "CMakeFiles/SemesterTrackerGUI.dir/semesterswindow.cpp.obj.d"
   "CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.obj"
