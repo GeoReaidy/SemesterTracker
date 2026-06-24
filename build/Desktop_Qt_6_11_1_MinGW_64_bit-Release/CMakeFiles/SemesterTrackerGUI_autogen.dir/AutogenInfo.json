@@ -558,6 +558,12 @@
 			null
 		],
 		[
+			"C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordialog.h",
+			"MU",
+			"EWIEGA46WW/moc_courseeditordialog.cpp",
+			null
+		],
+		[
 			"C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseswindow.h",
 			"MU",
 			"EWIEGA46WW/moc_courseswindow.cpp",
@@ -739,6 +745,11 @@
 		],
 		[
 			"C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/course.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordialog.cpp",
 			"MU",
 			null
 		],

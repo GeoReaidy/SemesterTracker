@@ -2235,6 +2235,182 @@ bool DatabaseManager::updateCourse(
     return success;
 }
 
+
+bool DatabaseManager::updateCourseDetails(
+    int courseID,
+    int semesterID,
+    const std::string &courseCode,
+    const std::string &courseName,
+    int credits)
+{
+    if (database == nullptr ||
+        courseID <= 0 ||
+        semesterID <= 0 ||
+        !semesterAcceptsCourses(database, semesterID))
+    {
+        return false;
+    }
+
+    const std::string normalizedCode =
+        trimCopy(courseCode);
+
+    const std::string normalizedName =
+        trimCopy(courseName);
+
+    try
+    {
+        const Course candidate(
+            courseID,
+            normalizedName,
+            normalizedCode,
+            credits
+        );
+
+        (void)candidate;
+    }
+    catch (const std::exception &error)
+    {
+        std::cout << "Invalid course data: "
+                  << error.what()
+                  << std::endl;
+        return false;
+    }
+
+    sqlite3_stmt *userStatement = nullptr;
+
+    const char *userSql =
+        "SELECT user_id FROM semesters WHERE id = ?;";
+
+    if (sqlite3_prepare_v2(
+            database,
+            userSql,
+            -1,
+            &userStatement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(userStatement, 1, semesterID);
+
+    if (sqlite3_step(userStatement) != SQLITE_ROW)
+    {
+        sqlite3_finalize(userStatement);
+        return false;
+    }
+
+    const int userID =
+        sqlite3_column_int(userStatement, 0);
+
+    sqlite3_finalize(userStatement);
+
+    sqlite3_stmt *duplicateStatement = nullptr;
+
+    const char *duplicateSql =
+        "SELECT 1 "
+        "FROM courses c "
+        "JOIN semesters s ON s.id = c.semester_id "
+        "WHERE s.user_id = ? "
+        "AND lower(trim(c.course_code)) = lower(trim(?)) "
+        "AND c.id != ? "
+        "LIMIT 1;";
+
+    if (sqlite3_prepare_v2(
+            database,
+            duplicateSql,
+            -1,
+            &duplicateStatement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(
+        duplicateStatement,
+        1,
+        userID
+    );
+    sqlite3_bind_text(
+        duplicateStatement,
+        2,
+        normalizedCode.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+    sqlite3_bind_int(
+        duplicateStatement,
+        3,
+        courseID
+    );
+
+    const bool duplicateExists =
+        sqlite3_step(duplicateStatement) == SQLITE_ROW;
+
+    sqlite3_finalize(duplicateStatement);
+
+    if (duplicateExists)
+    {
+        return false;
+    }
+
+    sqlite3_stmt *statement = nullptr;
+
+    const char *sql =
+        "UPDATE courses "
+        "SET semester_id = ?, "
+        "course_code = ?, "
+        "course_name = ?, "
+        "credits = ? "
+        "WHERE id = ?;";
+
+    if (sqlite3_prepare_v2(
+            database,
+            sql,
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(
+        statement,
+        1,
+        semesterID
+    );
+    sqlite3_bind_text(
+        statement,
+        2,
+        normalizedCode.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+    sqlite3_bind_text(
+        statement,
+        3,
+        normalizedName.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+    sqlite3_bind_int(
+        statement,
+        4,
+        credits
+    );
+    sqlite3_bind_int(
+        statement,
+        5,
+        courseID
+    );
+
+    const bool success =
+        sqlite3_step(statement) == SQLITE_DONE &&
+        sqlite3_changes(database) == 1;
+
+    sqlite3_finalize(statement);
+    return success;
+}
+
 bool DatabaseManager::deleteCourse(int courseID)
 {
     const char *sql =

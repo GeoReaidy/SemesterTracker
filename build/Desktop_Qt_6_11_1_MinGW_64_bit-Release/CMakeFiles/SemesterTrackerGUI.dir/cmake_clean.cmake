@@ -18,6 +18,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/SemesterTrackerGUI.dir/consoleapp.cpp.obj.d"
   "CMakeFiles/SemesterTrackerGUI.dir/course.cpp.obj"
   "CMakeFiles/SemesterTrackerGUI.dir/course.cpp.obj.d"
+  "CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj"
+  "CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj.d"
   "CMakeFiles/SemesterTrackerGUI.dir/courseswindow.cpp.obj"
   "CMakeFiles/SemesterTrackerGUI.dir/courseswindow.cpp.obj.d"
   "CMakeFiles/SemesterTrackerGUI.dir/dashboard.cpp.obj"

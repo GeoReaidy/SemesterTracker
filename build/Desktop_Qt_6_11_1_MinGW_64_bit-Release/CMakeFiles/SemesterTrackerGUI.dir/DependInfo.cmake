@@ -53,6 +53,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/calendarwindow.cpp" "CMakeFiles/SemesterTrackerGUI.dir/calendarwindow.cpp.obj" "gcc" "CMakeFiles/SemesterTrackerGUI.dir/calendarwindow.cpp.obj.d"
   "C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/consoleapp.cpp" "CMakeFiles/SemesterTrackerGUI.dir/consoleapp.cpp.obj" "gcc" "CMakeFiles/SemesterTrackerGUI.dir/consoleapp.cpp.obj.d"
   "C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/course.cpp" "CMakeFiles/SemesterTrackerGUI.dir/course.cpp.obj" "gcc" "CMakeFiles/SemesterTrackerGUI.dir/course.cpp.obj.d"
+  "C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordialog.cpp" "CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj" "gcc" "CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj.d"
   "C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseswindow.cpp" "CMakeFiles/SemesterTrackerGUI.dir/courseswindow.cpp.obj" "gcc" "CMakeFiles/SemesterTrackerGUI.dir/courseswindow.cpp.obj.d"
   "C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/dashboard.cpp" "CMakeFiles/SemesterTrackerGUI.dir/dashboard.cpp.obj" "gcc" "CMakeFiles/SemesterTrackerGUI.dir/dashboard.cpp.obj.d"
   "C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/databasemanager.cpp" "CMakeFiles/SemesterTrackerGUI.dir/databasemanager.cpp.obj" "gcc" "CMakeFiles/SemesterTrackerGUI.dir/databasemanager.cpp.obj.d"

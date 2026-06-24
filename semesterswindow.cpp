@@ -2,7 +2,6 @@
 #include "semestereditordialog.h"
 #include "ui_semesterswindow.h"
 
-#include <QAbstractItemView>
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QLabel>

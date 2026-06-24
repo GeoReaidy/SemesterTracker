@@ -323,11 +323,26 @@ CMakeFiles/SemesterTrackerGUI.dir/courseswindow.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/SemesterTrackerGUI.dir/courseswindow.cpp.s"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\courseswindow.cpp -o CMakeFiles\SemesterTrackerGUI.dir\courseswindow.cpp.s
 
+CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/flags.make
+CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/includes_CXX.rsp
+CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj: C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordialog.cpp
+CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj -MF CMakeFiles\SemesterTrackerGUI.dir\courseeditordialog.cpp.obj.d -o CMakeFiles\SemesterTrackerGUI.dir\courseeditordialog.cpp.obj -c C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\courseeditordialog.cpp
+
+CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\courseeditordialog.cpp > CMakeFiles\SemesterTrackerGUI.dir\courseeditordialog.cpp.i
+
+CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\courseeditordialog.cpp -o CMakeFiles\SemesterTrackerGUI.dir\courseeditordialog.cpp.s
+
 CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/flags.make
 CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/includes_CXX.rsp
 CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj: C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignmentswindow.cpp
 CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj -MF CMakeFiles\SemesterTrackerGUI.dir\assignmentswindow.cpp.obj.d -o CMakeFiles\SemesterTrackerGUI.dir\assignmentswindow.cpp.obj -c C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\assignmentswindow.cpp
 
 CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.i: cmake_force
@@ -342,7 +357,7 @@ CMakeFiles/SemesterTrackerGUI.dir/gradeswindow.cpp.obj: CMakeFiles/SemesterTrack
 CMakeFiles/SemesterTrackerGUI.dir/gradeswindow.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/includes_CXX.rsp
 CMakeFiles/SemesterTrackerGUI.dir/gradeswindow.cpp.obj: C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/gradeswindow.cpp
 CMakeFiles/SemesterTrackerGUI.dir/gradeswindow.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/gradeswindow.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/gradeswindow.cpp.obj"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SemesterTrackerGUI.dir/gradeswindow.cpp.obj -MF CMakeFiles\SemesterTrackerGUI.dir\gradeswindow.cpp.obj.d -o CMakeFiles\SemesterTrackerGUI.dir\gradeswindow.cpp.obj -c C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\gradeswindow.cpp
 
 CMakeFiles/SemesterTrackerGUI.dir/gradeswindow.cpp.i: cmake_force
@@ -357,7 +372,7 @@ CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.obj: CMakeFiles/SemesterTra
 CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/includes_CXX.rsp
 CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.obj: C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/settingswindow.cpp
 CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.obj"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.obj -MF CMakeFiles\SemesterTrackerGUI.dir\settingswindow.cpp.obj.d -o CMakeFiles\SemesterTrackerGUI.dir\settingswindow.cpp.obj -c C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\settingswindow.cpp
 
 CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.i: cmake_force
@@ -372,7 +387,7 @@ CMakeFiles/SemesterTrackerGUI.dir/calendarwindow.cpp.obj: CMakeFiles/SemesterTra
 CMakeFiles/SemesterTrackerGUI.dir/calendarwindow.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/includes_CXX.rsp
 CMakeFiles/SemesterTrackerGUI.dir/calendarwindow.cpp.obj: C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/calendarwindow.cpp
 CMakeFiles/SemesterTrackerGUI.dir/calendarwindow.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/calendarwindow.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/calendarwindow.cpp.obj"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SemesterTrackerGUI.dir/calendarwindow.cpp.obj -MF CMakeFiles\SemesterTrackerGUI.dir\calendarwindow.cpp.obj.d -o CMakeFiles\SemesterTrackerGUI.dir\calendarwindow.cpp.obj -c C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\calendarwindow.cpp
 
 CMakeFiles/SemesterTrackerGUI.dir/calendarwindow.cpp.i: cmake_force
@@ -387,7 +402,7 @@ CMakeFiles/SemesterTrackerGUI.dir/updatemanager.cpp.obj: CMakeFiles/SemesterTrac
 CMakeFiles/SemesterTrackerGUI.dir/updatemanager.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/includes_CXX.rsp
 CMakeFiles/SemesterTrackerGUI.dir/updatemanager.cpp.obj: C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/updatemanager.cpp
 CMakeFiles/SemesterTrackerGUI.dir/updatemanager.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/updatemanager.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/updatemanager.cpp.obj"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SemesterTrackerGUI.dir/updatemanager.cpp.obj -MF CMakeFiles\SemesterTrackerGUI.dir\updatemanager.cpp.obj.d -o CMakeFiles\SemesterTrackerGUI.dir\updatemanager.cpp.obj -c C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\updatemanager.cpp
 
 CMakeFiles/SemesterTrackerGUI.dir/updatemanager.cpp.i: cmake_force
@@ -400,14 +415,14 @@ CMakeFiles/SemesterTrackerGUI.dir/updatemanager.cpp.s: cmake_force
 
 CMakeFiles/SemesterTrackerGUI.dir/resources/app_icon.rc.obj: CMakeFiles/SemesterTrackerGUI.dir/flags.make
 CMakeFiles/SemesterTrackerGUI.dir/resources/app_icon.rc.obj: C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/resources/app_icon.rc
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building RC object CMakeFiles/SemesterTrackerGUI.dir/resources/app_icon.rc.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building RC object CMakeFiles/SemesterTrackerGUI.dir/resources/app_icon.rc.obj"
 	C:\Qt\Tools\mingw1310_64\bin\windres.exe -O coff $(RC_DEFINES) $(RC_INCLUDES) $(RC_FLAGS) C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\resources\app_icon.rc CMakeFiles\SemesterTrackerGUI.dir\resources\app_icon.rc.obj
 
 CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/flags.make
 CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/includes_CXX.rsp
 CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp.obj: SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp
 CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp.obj: CMakeFiles/SemesterTrackerGUI.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp.obj"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp.obj -MF CMakeFiles\SemesterTrackerGUI.dir\SemesterTrackerGUI_autogen\3YJK5W5UP7\qrc_app_resources.cpp.obj.d -o CMakeFiles\SemesterTrackerGUI.dir\SemesterTrackerGUI_autogen\3YJK5W5UP7\qrc_app_resources.cpp.obj -c C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\SemesterTrackerGUI_autogen\3YJK5W5UP7\qrc_app_resources.cpp
 
 CMakeFiles/SemesterTrackerGUI.dir/SemesterTrackerGUI_autogen/3YJK5W5UP7/qrc_app_resources.cpp.i: cmake_force
@@ -436,6 +451,7 @@ SemesterTrackerGUI_OBJECTS = \
 "CMakeFiles/SemesterTrackerGUI.dir/semesterswindow.cpp.obj" \
 "CMakeFiles/SemesterTrackerGUI.dir/semestereditordialog.cpp.obj" \
 "CMakeFiles/SemesterTrackerGUI.dir/courseswindow.cpp.obj" \
+"CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj" \
 "CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj" \
 "CMakeFiles/SemesterTrackerGUI.dir/gradeswindow.cpp.obj" \
 "CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.obj" \
@@ -463,6 +479,7 @@ SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/dashboard.cpp.obj
 SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/semesterswindow.cpp.obj
 SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/semestereditordialog.cpp.obj
 SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/courseswindow.cpp.obj
+SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj
 SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/assignmentswindow.cpp.obj
 SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/gradeswindow.cpp.obj
 SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/settingswindow.cpp.obj
@@ -481,7 +498,7 @@ SemesterTrackerGUI.exe: SemesterTrackerGUI.exe.manifest
 SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/linkLibs.rsp
 SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/objects1.rsp
 SemesterTrackerGUI.exe: CMakeFiles/SemesterTrackerGUI.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Linking CXX executable SemesterTrackerGUI.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\Users\96171\OneDrive\Documents\QtProjects\SemesterTrackerGUI\build\Desktop_Qt_6_11_1_MinGW_64_bit-Release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Linking CXX executable SemesterTrackerGUI.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\SemesterTrackerGUI.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

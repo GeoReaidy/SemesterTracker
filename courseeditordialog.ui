@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CourseEditorDialog</class>
+ <widget class="QDialog" name="CourseEditorDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>560</width>
+    <height>640</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>520</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Course</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog#CourseEditorDialog {
+    background-color: #f8fafc;
+}
+QFrame#contentCard {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+QLabel#dialogTitleLabel {
+    color: #0f172a;
+    font-size: 22px;
+    font-weight: 700;
+}
+QLabel#dialogSubtitleLabel {
+    color: #64748b;
+    font-size: 13px;
+}
+QLabel#semesterLabel,
+QLabel#courseCodeLabel,
+QLabel#courseNameLabel,
+QLabel#creditsLabel,
+QLabel#finalGradeLabel {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+QLineEdit,
+QComboBox,
+QSpinBox {
+    min-height: 38px;
+    padding: 0 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #1f2937;
+}
+QLineEdit:focus,
+QComboBox:focus,
+QSpinBox:focus {
+    border-color: #2563eb;
+}
+QComboBox QAbstractItemView {
+    background-color: #ffffff;
+    color: #1f2937;
+    selection-background-color: #dbeafe;
+    selection-color: #1f2937;
+    border: 1px solid #cbd5e1;
+    outline: none;
+}
+QFrame#retakeFrame {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 9px;
+}
+QCheckBox#retakeCheckBox {
+    color: #1e3a8a;
+    font-weight: 600;
+    spacing: 8px;
+}
+QLabel#retakeHelpLabel {
+    color: #475569;
+    font-size: 12px;
+}
+QLabel#editNoticeLabel {
+    color: #475569;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    padding: 8px;
+}
+QLabel#validationLabel {
+    color: #b91c1c;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 7px;
+    padding: 8px;
+}
+QDialogButtonBox QPushButton {
+    min-width: 96px;
+    min-height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+QDialogButtonBox QPushButton[text="Save"] {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+}
+QDialogButtonBox QPushButton[text="Save"]:hover {
+    background-color: #1d4ed8;
+}
+QDialogButtonBox QPushButton[text="Cancel"] {
+    background-color: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="leftMargin">
+    <number>22</number>
+   </property>
+   <property name="topMargin">
+    <number>22</number>
+   </property>
+   <property name="rightMargin">
+    <number>22</number>
+   </property>
+   <property name="bottomMargin">
+    <number>22</number>
+   </property>
+   <property name="spacing">
+    <number>14</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="dialogTitleLabel">
+     <property name="text">
+      <string>Course</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="dialogSubtitleLabel">
+     <property name="text">
+      <string>Enter course details.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="contentCard">
+     <layout class="QVBoxLayout" name="contentLayout">
+      <property name="leftMargin">
+       <number>18</number>
+      </property>
+      <property name="topMargin">
+       <number>18</number>
+      </property>
+      <property name="rightMargin">
+       <number>18</number>
+      </property>
+      <property name="bottomMargin">
+       <number>18</number>
+      </property>
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="semesterLabel">
+        <property name="text">
+         <string>Semester</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="semesterComboBox"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="courseCodeLabel">
+        <property name="text">
+         <string>Course code</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="courseCodeEdit">
+        <property name="placeholderText">
+         <string>Example: MATH201</string>
+        </property>
+        <property name="maxLength">
+         <number>30</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="courseNameLabel">
+        <property name="text">
+         <string>Course name</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="courseNameEdit">
+        <property name="placeholderText">
+         <string>Example: Calculus II</string>
+        </property>
+        <property name="maxLength">
+         <number>120</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="creditsLabel">
+        <property name="text">
+         <string>Credit hours</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="creditsSpinBox">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>30</number>
+        </property>
+        <property name="value">
+         <number>3</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="finalGradeLabel">
+        <property name="text">
+         <string>Final letter grade (optional)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="finalGradeComboBox">
+        <item>
+         <property name="text">
+          <string>No final grade yet</string>
+         </property>
+        </item>
+        <item><property name="text"><string>A</string></property></item>
+        <item><property name="text"><string>A-</string></property></item>
+        <item><property name="text"><string>B+</string></property></item>
+        <item><property name="text"><string>B</string></property></item>
+        <item><property name="text"><string>B-</string></property></item>
+        <item><property name="text"><string>C+</string></property></item>
+        <item><property name="text"><string>C</string></property></item>
+        <item><property name="text"><string>C-</string></property></item>
+        <item><property name="text"><string>D+</string></property></item>
+        <item><property name="text"><string>D</string></property></item>
+        <item><property name="text"><string>F</string></property></item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="retakeFrame">
+        <layout class="QVBoxLayout" name="retakeLayout">
+         <property name="leftMargin">
+          <number>12</number>
+         </property>
+         <property name="topMargin">
+          <number>10</number>
+         </property>
+         <property name="rightMargin">
+          <number>12</number>
+         </property>
+         <property name="bottomMargin">
+          <number>10</number>
+         </property>
+         <property name="spacing">
+          <number>5</number>
+         </property>
+         <item>
+          <widget class="QCheckBox" name="retakeCheckBox">
+           <property name="text">
+            <string>This is a retake of an existing course</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="retakeHelpLabel">
+           <property name="text">
+            <string>The previous attempt, assignments, and grade will be replaced by this new attempt.</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="editNoticeLabel">
+        <property name="text">
+         <string>Existing assignments and grades will be kept.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="validationLabel">
+        <property name="text">
+         <string>Validation message</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>10</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Save</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

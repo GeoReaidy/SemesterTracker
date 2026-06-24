@@ -115,6 +115,8 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
         semestereditordialog.h semestereditordialog.cpp
         courseswindow.h courseswindow.cpp
         courseswindow.ui
+        courseeditordialog.h courseeditordialog.cpp
+        courseeditordialog.ui
         assignmentswindow.ui
         assignmentswindow.h assignmentswindow.cpp
         gradeswindow.ui

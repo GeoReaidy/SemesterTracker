@@ -448,7 +448,6 @@ CMakeFiles/SemesterTrackerGUI.dir/semesterswindow.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpacerItem \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QVBoxLayout \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QWidget \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/QAbstractItemView \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QComboBox \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QHBoxLayout \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLabel \

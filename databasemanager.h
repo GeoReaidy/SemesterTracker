@@ -135,6 +135,14 @@ public:
                       const std::string &courseName,
                       int credits);
 
+    bool updateCourseDetails(
+        int courseID,
+        int semesterID,
+        const std::string &courseCode,
+        const std::string &courseName,
+        int credits
+    );
+
     bool deleteCourse(int courseID);
 
     std::vector<Course> loadCoursesForSemester(int semesterID);

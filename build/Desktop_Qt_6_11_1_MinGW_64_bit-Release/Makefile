@@ -391,6 +391,30 @@ course.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/course.cpp.s
 .PHONY : course.cpp.s
 
+courseeditordialog.obj: courseeditordialog.cpp.obj
+.PHONY : courseeditordialog.obj
+
+# target to build an object file
+courseeditordialog.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.obj
+.PHONY : courseeditordialog.cpp.obj
+
+courseeditordialog.i: courseeditordialog.cpp.i
+.PHONY : courseeditordialog.i
+
+# target to preprocess a source file
+courseeditordialog.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.i
+.PHONY : courseeditordialog.cpp.i
+
+courseeditordialog.s: courseeditordialog.cpp.s
+.PHONY : courseeditordialog.s
+
+# target to generate assembly for a file
+courseeditordialog.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SemesterTrackerGUI.dir\build.make CMakeFiles/SemesterTrackerGUI.dir/courseeditordialog.cpp.s
+.PHONY : courseeditordialog.cpp.s
+
 courseswindow.obj: courseswindow.cpp.obj
 .PHONY : courseswindow.obj
 
@@ -774,6 +798,9 @@ help:
 	@echo ... course.obj
 	@echo ... course.i
 	@echo ... course.s
+	@echo ... courseeditordialog.obj
+	@echo ... courseeditordialog.i
+	@echo ... courseeditordialog.s
 	@echo ... courseswindow.obj
 	@echo ... courseswindow.i
 	@echo ... courseswindow.s

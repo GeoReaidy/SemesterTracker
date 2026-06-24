@@ -1,21 +1,23 @@
 #include "courseswindow.h"
+#include "courseeditordialog.h"
 #include "ui_courseswindow.h"
 
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QIcon>
-#include <QInputDialog>
 #include <QLabel>
 #include <QListView>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QDialog>
 #include <QMessageBox>
 #include <QPainter>
 #include <QPixmap>
 #include <QPushButton>
-#include <QStringList>
 #include <QToolButton>
 #include <QVBoxLayout>
+
+#include <exception>
 
 namespace
 {
@@ -64,24 +66,6 @@ QIcon makeBinIcon()
     painter.drawLine(14, 11, 14, 17);
 
     return QIcon(pixmap);
-}
-
-double percentageForLetterGrade(
-    const QString &letterGrade)
-{
-    if (letterGrade == "A")  return 90.0;
-    if (letterGrade == "A-") return 87.0;
-    if (letterGrade == "B+") return 83.0;
-    if (letterGrade == "B")  return 80.0;
-    if (letterGrade == "B-") return 77.0;
-    if (letterGrade == "C+") return 73.0;
-    if (letterGrade == "C")  return 70.0;
-    if (letterGrade == "C-") return 67.0;
-    if (letterGrade == "D+") return 63.0;
-    if (letterGrade == "D")  return 60.0;
-    if (letterGrade == "F")  return 0.0;
-
-    return -1.0;
 }
 }
 
@@ -328,8 +312,8 @@ void CoursesWindow::handleAddCourse()
     {
         QMessageBox::warning(
             this,
-            "No Semester Selected",
-            "Select or create a semester before adding a course."
+            tr("No Semester Selected"),
+            tr("Select or create a semester before adding a course.")
         );
         return;
     }
@@ -338,220 +322,22 @@ void CoursesWindow::handleAddCourse()
     {
         QMessageBox::information(
             this,
-            "Completed Semester",
-            "This semester stores a credits-and-GPA summary and is read-only for courses."
+            tr("Completed Semester"),
+            tr("This semester stores a credits-and-GPA summary and "
+               "is read-only for courses.")
         );
         return;
     }
 
-    bool codeAccepted = false;
+    CourseEditorDialog dialog(
+        database,
+        userID,
+        semesterID,
+        this
+    );
 
-    const QString courseCode =
-        QInputDialog::getText(
-            this,
-            "Add Course",
-            "Course code:",
-            QLineEdit::Normal,
-            QString(),
-            &codeAccepted
-        ).trimmed();
-
-    if (!codeAccepted)
+    if (dialog.exec() != QDialog::Accepted)
     {
-        return;
-    }
-
-    if (courseCode.isEmpty())
-    {
-        QMessageBox::warning(
-            this,
-            "Invalid Course",
-            "Course code cannot be empty."
-        );
-        return;
-    }
-
-    bool nameAccepted = false;
-
-    const QString courseName =
-        QInputDialog::getText(
-            this,
-            "Add Course",
-            "Course name:",
-            QLineEdit::Normal,
-            QString(),
-            &nameAccepted
-        ).trimmed();
-
-    if (!nameAccepted)
-    {
-        return;
-    }
-
-    if (courseName.isEmpty())
-    {
-        QMessageBox::warning(
-            this,
-            "Invalid Course",
-            "Course name cannot be empty."
-        );
-        return;
-    }
-
-    bool creditsAccepted = false;
-
-    const int credits =
-        QInputDialog::getInt(
-            this,
-            "Add Course",
-            "Credit hours:",
-            3,
-            1,
-            30,
-            1,
-            &creditsAccepted
-        );
-
-    if (!creditsAccepted)
-    {
-        return;
-    }
-
-    try
-    {
-        const Course candidate(
-            -1,
-            courseName.toStdString(),
-            courseCode.toStdString(),
-            credits
-        );
-
-        (void)candidate;
-    }
-    catch (const std::exception &error)
-    {
-        QMessageBox::warning(
-            this,
-            "Invalid Course",
-            error.what()
-        );
-        return;
-    }
-
-    const QStringList gradeOptions = {
-        "No final grade yet",
-        "A",
-        "A-",
-        "B+",
-        "B",
-        "B-",
-        "C+",
-        "C",
-        "C-",
-        "D+",
-        "D",
-        "F"
-    };
-
-    bool gradeAccepted = false;
-
-    const QString selectedGrade =
-        QInputDialog::getItem(
-            this,
-            "Course Final Grade",
-            "Select the final letter grade if it is already available:",
-            gradeOptions,
-            0,
-            false,
-            &gradeAccepted
-        );
-
-    if (!gradeAccepted)
-    {
-        return;
-    }
-
-    const bool hasFinalGrade =
-        selectedGrade != "No final grade yet";
-
-    const double finalPercentage =
-        hasFinalGrade
-            ? percentageForLetterGrade(selectedGrade)
-            : -1.0;
-
-    const int existingCourseID =
-        database.findCourseByCodeForUser(
-            userID,
-            courseCode.toStdString()
-        );
-
-    bool saved = false;
-
-    if (existingCourseID >= 0)
-    {
-        const QMessageBox::StandardButton retakeAnswer =
-            QMessageBox::question(
-                this,
-                "Course Already Exists",
-                QString(
-                    "%1 already exists in your academic history.\n\n"
-                    "Are you adding it as a retaken course?\n\n"
-                    "If you continue, its previous assignments and grade "
-                    "will be removed and replaced by this new attempt."
-                ).arg(courseCode),
-                QMessageBox::Yes | QMessageBox::No,
-                QMessageBox::No
-            );
-
-        if (retakeAnswer != QMessageBox::Yes)
-        {
-            QMessageBox::information(
-                this,
-                "Course Not Added",
-                "Duplicate courses are blocked unless the course is being retaken."
-            );
-            return;
-        }
-
-        saved = database.retakeCourse(
-            existingCourseID,
-            semesterID,
-            courseCode.toStdString(),
-            courseName.toStdString(),
-            credits,
-            hasFinalGrade,
-            selectedGrade.toStdString(),
-            finalPercentage
-        );
-    }
-    else if (hasFinalGrade)
-    {
-        saved = database.addCompletedCourse(
-            semesterID,
-            courseCode.toStdString(),
-            courseName.toStdString(),
-            credits,
-            selectedGrade.toStdString(),
-            finalPercentage
-        );
-    }
-    else
-    {
-        saved = database.addCourse(
-            semesterID,
-            courseCode.toStdString(),
-            courseName.toStdString(),
-            credits
-        );
-    }
-
-    if (!saved)
-    {
-        QMessageBox::warning(
-            this,
-            "Database Error",
-            "Could not save the course or complete the retake operation."
-        );
         return;
     }
 
@@ -768,105 +554,43 @@ void CoursesWindow::editCourseRow(
         return;
     }
 
-    const int courseID =
-        item->data(Qt::UserRole).toInt();
-
-    const QString currentCode =
-        item->data(Qt::UserRole + 1).toString();
-
-    const QString currentName =
-        item->data(Qt::UserRole + 2).toString();
-
-    const int currentCredits =
-        item->data(Qt::UserRole + 3).toInt();
-
-    bool codeAccepted = false;
-
-    const QString newCode =
-        QInputDialog::getText(
-            this,
-            "Edit Course",
-            "Course code:",
-            QLineEdit::Normal,
-            currentCode,
-            &codeAccepted
-        ).trimmed();
-
-    if (!codeAccepted)
+    try
     {
-        return;
-    }
+        const Course course(
+            item->data(Qt::UserRole).toInt(),
+            item->data(Qt::UserRole + 2)
+                .toString()
+                .toStdString(),
+            item->data(Qt::UserRole + 1)
+                .toString()
+                .toStdString(),
+            item->data(Qt::UserRole + 3).toInt()
+        );
 
-    if (newCode.isEmpty())
+        CourseEditorDialog dialog(
+            database,
+            userID,
+            selectedSemesterID(),
+            course,
+            this
+        );
+
+        if (dialog.exec() != QDialog::Accepted)
+        {
+            return;
+        }
+    }
+    catch (const std::exception &error)
     {
         QMessageBox::warning(
             this,
-            "Invalid Course",
-            "Course code cannot be empty."
+            tr("Invalid Course"),
+            QString::fromUtf8(error.what())
         );
         return;
     }
 
-    bool nameAccepted = false;
-
-    const QString newName =
-        QInputDialog::getText(
-            this,
-            "Edit Course",
-            "Course name:",
-            QLineEdit::Normal,
-            currentName,
-            &nameAccepted
-        ).trimmed();
-
-    if (!nameAccepted)
-    {
-        return;
-    }
-
-    if (newName.isEmpty())
-    {
-        QMessageBox::warning(
-            this,
-            "Invalid Course",
-            "Course name cannot be empty."
-        );
-        return;
-    }
-
-    bool creditsAccepted = false;
-
-    const int newCredits =
-        QInputDialog::getInt(
-            this,
-            "Edit Course",
-            "Credit hours:",
-            currentCredits,
-            1,
-            30,
-            1,
-            &creditsAccepted
-        );
-
-    if (!creditsAccepted)
-    {
-        return;
-    }
-
-    if (!database.updateCourse(
-            courseID,
-            newCode.toStdString(),
-            newName.toStdString(),
-            newCredits))
-    {
-        QMessageBox::warning(
-            this,
-            "Database Error",
-            "Could not update the course."
-        );
-        return;
-    }
-
+    refreshSemesters();
     refreshCourses();
     emit coursesChanged();
 }

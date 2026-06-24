@@ -728,6 +728,8 @@ SemesterTrackerGUI_autogen/timestamp: \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/consoleapp.h \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/course.cpp \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/course.h \
+	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordialog.cpp \
+	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordialog.h \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseswindow.cpp \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseswindow.h \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/dashboard.cpp \
@@ -758,6 +760,7 @@ SemesterTrackerGUI_autogen/timestamp: \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/user.h \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/assignmentswindow.ui \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/calendarwindow.ui \
+	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseeditordialog.ui \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/courseswindow.ui \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/dashboard.ui \
 	C:/Users/96171/OneDrive/Documents/QtProjects/SemesterTrackerGUI/gradeswindow.ui \
