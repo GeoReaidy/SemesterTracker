@@ -141,6 +141,69 @@ bool semesterAcceptsCourses(sqlite3 *database, int semesterID)
     return accepts;
 }
 
+CourseStatus defaultCourseStatusForSemester(
+    sqlite3 *database,
+    int semesterID)
+{
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT in_progress FROM semesters WHERE id = ?;",
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return CourseStatus::Planned;
+    }
+
+    sqlite3_bind_int(statement, 1, semesterID);
+
+    CourseStatus status = CourseStatus::Planned;
+
+    if (sqlite3_step(statement) == SQLITE_ROW &&
+        sqlite3_column_int(statement, 0) == 1)
+    {
+        status = CourseStatus::InProgress;
+    }
+
+    sqlite3_finalize(statement);
+    return status;
+}
+
+bool courseHasCompleteGrade(
+    sqlite3 *database,
+    int courseID)
+{
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "SELECT COALESCE(SUM(weight), 0) "
+            "FROM assignments "
+            "WHERE course_id = ? "
+            "AND grade >= 0;",
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(statement, 1, courseID);
+
+    bool hasCompleteGrade = false;
+
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        hasCompleteGrade =
+            sqlite3_column_int(statement, 0) == 100;
+    }
+
+    sqlite3_finalize(statement);
+    return hasCompleteGrade;
+}
+
 int assignmentWeightTotal(
     sqlite3 *database,
     int courseID,
@@ -297,6 +360,8 @@ bool DatabaseManager::createTables()
         "course_code TEXT NOT NULL, "
         "course_name TEXT NOT NULL, "
         "credits INTEGER NOT NULL, "
+        "status TEXT NOT NULL DEFAULT 'planned', "
+        "retaken INTEGER NOT NULL DEFAULT 0, "
         "FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE"
         ");"
 
@@ -489,6 +554,114 @@ bool DatabaseManager::createTables()
         {
             std::cout << "Failed to add semester column " << migration.name
                       << ": " << sqlite3_errmsg(database) << std::endl;
+            return false;
+        }
+    }
+
+    bool courseStatusColumnAdded = false;
+
+    const struct CourseColumnMigration
+    {
+        const char *name;
+        const char *sql;
+    } courseMigrations[] = {
+        {
+            "status",
+            "ALTER TABLE courses "
+            "ADD COLUMN status TEXT NOT NULL DEFAULT 'planned';"
+        },
+        {
+            "retaken",
+            "ALTER TABLE courses "
+            "ADD COLUMN retaken INTEGER NOT NULL DEFAULT 0;"
+        }
+    };
+
+    for (const CourseColumnMigration &migration : courseMigrations)
+    {
+        bool exists = false;
+        sqlite3_stmt *courseColumnStatement = nullptr;
+
+        if (sqlite3_prepare_v2(
+                database,
+                "PRAGMA table_info(courses);",
+                -1,
+                &courseColumnStatement,
+                nullptr) == SQLITE_OK)
+        {
+            while (sqlite3_step(courseColumnStatement) == SQLITE_ROW)
+            {
+                const unsigned char *columnName =
+                    sqlite3_column_text(courseColumnStatement, 1);
+
+                if (columnName != nullptr &&
+                    std::string(
+                        reinterpret_cast<const char *>(columnName)
+                    ) == migration.name)
+                {
+                    exists = true;
+                    break;
+                }
+            }
+        }
+
+        sqlite3_finalize(courseColumnStatement);
+
+        if (!exists)
+        {
+            if (sqlite3_exec(
+                    database,
+                    migration.sql,
+                    nullptr,
+                    nullptr,
+                    nullptr) != SQLITE_OK)
+            {
+                std::cout
+                    << "Failed to add course column "
+                    << migration.name
+                    << ": "
+                    << sqlite3_errmsg(database)
+                    << std::endl;
+                return false;
+            }
+
+            if (std::string(migration.name) == "status")
+            {
+                courseStatusColumnAdded = true;
+            }
+        }
+    }
+
+    if (courseStatusColumnAdded)
+    {
+        const char *statusMigrationSql =
+            "UPDATE courses "
+            "SET status = CASE "
+            "WHEN EXISTS ("
+                "SELECT 1 FROM assignments a "
+                "WHERE a.course_id = courses.id "
+                "AND a.weight = 100 "
+                "AND a.name LIKE 'Final Course Grade (%'"
+            ") THEN 'completed' "
+            "WHEN EXISTS ("
+                "SELECT 1 FROM semesters s "
+                "WHERE s.id = courses.semester_id "
+                "AND s.in_progress = 1"
+            ") THEN 'in_progress' "
+            "ELSE 'completed' "
+            "END;";
+
+        if (sqlite3_exec(
+                database,
+                statusMigrationSql,
+                nullptr,
+                nullptr,
+                nullptr) != SQLITE_OK)
+        {
+            std::cout
+                << "Failed to migrate existing course statuses: "
+                << sqlite3_errmsg(database)
+                << std::endl;
             return false;
         }
     }
@@ -1709,10 +1882,19 @@ bool DatabaseManager::addCourse(
         return false;
     }
 
+    const CourseStatus initialStatus =
+        defaultCourseStatusForSemester(
+            database,
+            semesterID
+        );
+
+    const std::string storedStatus =
+        courseStatusToStorage(initialStatus);
+
     const char *sql =
         "INSERT INTO courses "
-        "(semester_id, course_code, course_name, credits) "
-        "VALUES (?, ?, ?, ?);";
+        "(semester_id, course_code, course_name, credits, status, retaken) "
+        "VALUES (?, ?, ?, ?, ?, 0);";
 
     sqlite3_stmt *statement = nullptr;
 
@@ -1742,6 +1924,13 @@ bool DatabaseManager::addCourse(
         SQLITE_TRANSIENT
     );
     sqlite3_bind_int(statement, 4, credits);
+    sqlite3_bind_text(
+        statement,
+        5,
+        storedStatus.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
 
     const bool success =
         sqlite3_step(statement) == SQLITE_DONE;
@@ -1801,6 +1990,51 @@ bool DatabaseManager::addCompletedCourse(
     }
 
     const int courseID = getLastInsertID();
+
+    sqlite3_stmt *statusStatement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "UPDATE courses "
+            "SET status = 'completed' "
+            "WHERE id = ?;",
+            -1,
+            &statusStatement,
+            nullptr) != SQLITE_OK)
+    {
+        sqlite3_exec(
+            database,
+            "ROLLBACK;",
+            nullptr,
+            nullptr,
+            nullptr
+        );
+        return false;
+    }
+
+    sqlite3_bind_int(
+        statusStatement,
+        1,
+        courseID
+    );
+
+    const bool statusSaved =
+        sqlite3_step(statusStatement) == SQLITE_DONE &&
+        sqlite3_changes(database) == 1;
+
+    sqlite3_finalize(statusStatement);
+
+    if (!statusSaved)
+    {
+        sqlite3_exec(
+            database,
+            "ROLLBACK;",
+            nullptr,
+            nullptr,
+            nullptr
+        );
+        return false;
+    }
 
     const std::string assignmentName =
         "Final Course Grade (" +
@@ -2024,12 +2258,24 @@ bool DatabaseManager::retakeCourse(
         return false;
     }
 
+    const CourseStatus retakeStatus =
+        hasFinalGrade
+            ? CourseStatus::Completed
+            : defaultCourseStatusForSemester(
+                  database,
+                  newSemesterID
+              );
+
+    const std::string storedRetakeStatus =
+        courseStatusToStorage(retakeStatus);
+
     sqlite3_stmt *updateCourseStatement = nullptr;
 
     const char *updateSql =
         "UPDATE courses "
         "SET semester_id = ?, course_code = ?, "
-        "course_name = ?, credits = ? "
+        "course_name = ?, credits = ?, "
+        "status = ?, retaken = 1 "
         "WHERE id = ?;";
 
     if (sqlite3_prepare_v2(
@@ -2067,9 +2313,16 @@ bool DatabaseManager::retakeCourse(
         4,
         credits
     );
-    sqlite3_bind_int(
+    sqlite3_bind_text(
         updateCourseStatement,
         5,
+        storedRetakeStatus.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+    sqlite3_bind_int(
+        updateCourseStatement,
+        6,
         existingCourseID
     );
 
@@ -2488,6 +2741,62 @@ bool DatabaseManager::updateCourseDetails(
     return success;
 }
 
+bool DatabaseManager::setCourseStatus(
+    int courseID,
+    CourseStatus status)
+{
+    if (database == nullptr || courseID <= 0)
+    {
+        return false;
+    }
+
+    if (status == CourseStatus::Completed &&
+        !courseHasCompleteGrade(
+            database,
+            courseID
+        ))
+    {
+        return false;
+    }
+
+    const std::string storedStatus =
+        courseStatusToStorage(status);
+
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "UPDATE courses "
+            "SET status = ? "
+            "WHERE id = ?;",
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_bind_text(
+        statement,
+        1,
+        storedStatus.c_str(),
+        -1,
+        SQLITE_TRANSIENT
+    );
+    sqlite3_bind_int(
+        statement,
+        2,
+        courseID
+    );
+
+    const bool success =
+        sqlite3_step(statement) == SQLITE_DONE &&
+        sqlite3_changes(database) == 1;
+
+    sqlite3_finalize(statement);
+    return success;
+}
+
 bool DatabaseManager::deleteCourse(int courseID)
 {
     const char *sql =
@@ -2528,7 +2837,8 @@ std::vector<Course> DatabaseManager::loadCoursesForSemester(int semesterID)
     std::vector<Course> courses;
 
     const char *sql =
-        "SELECT id, course_name, course_code, credits FROM courses "
+        "SELECT id, course_name, course_code, credits, status, retaken "
+        "FROM courses "
         "WHERE semester_id = ? "
         "ORDER BY id ASC;";
 
@@ -2559,7 +2869,26 @@ std::vector<Course> DatabaseManager::loadCoursesForSemester(int semesterID)
 
         int credits = sqlite3_column_int(statement, 3);
 
-        Course course(courseID, courseName, courseCode, credits);
+        const unsigned char *statusText =
+            sqlite3_column_text(statement, 4);
+
+        const std::string storedStatus =
+            statusText
+                ? reinterpret_cast<const char *>(statusText)
+                : "in_progress";
+
+        const bool retaken =
+            sqlite3_column_int(statement, 5) == 1;
+
+        Course course(
+            courseID,
+            courseName,
+            courseCode,
+            credits,
+            courseStatusFromStorage(storedStatus),
+            retaken
+        );
+
         courses.push_back(course);
     }
 

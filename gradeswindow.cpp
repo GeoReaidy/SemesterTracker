@@ -521,9 +521,20 @@ void GradesWindow::updateSummary(
 
     double percentageTotal = 0.0;
     int gradedCourseCount = 0;
+    int completedCourseCount = 0;
 
     for (const Course &course : courses)
     {
+        if (course.isCompleted())
+        {
+            ++completedCourseCount;
+        }
+
+        if (course.isWithdrawn())
+        {
+            continue;
+        }
+
         const CourseGradeResult result =
             calculateCourseGrade(course);
 
@@ -545,7 +556,7 @@ void GradesWindow::updateSummary(
     }
 
     ui->completedCoursesValueLabel->setText(
-        QString::number(courses.size())
+        QString::number(completedCourseCount)
     );
 
     if (gradedCourseCount == 0)

@@ -786,24 +786,32 @@ void Dashboard::populateCurrentCourses(int semesterID)
     const std::vector<Course> courses =
         database.loadCoursesForSemester(semesterID);
 
-    if (courses.empty())
+    int visibleCourseCount = 0;
+
+    for (const Course &course : courses)
+    {
+        if (course.isWithdrawn())
+        {
+            continue;
+        }
+
+        addCurrentCourseRow(course);
+        ++visibleCourseCount;
+    }
+
+    if (visibleCourseCount == 0)
     {
         auto *item =
             new QListWidgetItem(
-                "No courses in the current semester",
+                "No active courses in the current semester",
                 ui->currentCoursesListWidget
             );
 
         item->setTextAlignment(Qt::AlignCenter);
         item->setFlags(Qt::NoItemFlags);
-        return;
-    }
-
-    for (const Course &course : courses)
-    {
-        addCurrentCourseRow(course);
     }
 }
+
 
 void Dashboard::populateUpcomingAssignments(int semesterID)
 {
@@ -837,6 +845,12 @@ void Dashboard::populateUpcomingAssignments(int semesterID)
 
     for (const Course &course : courses)
     {
+        if (course.isCompleted() ||
+            course.isWithdrawn())
+        {
+            continue;
+        }
+
         const std::vector<Assignment> assignments =
             database.loadAssignmentsForCourse(
                 course.getID()
@@ -1186,6 +1200,12 @@ void Dashboard::refreshDashboardCalendar()
 
             for (const Course &course : courses)
             {
+                if (course.isCompleted() ||
+                    course.isWithdrawn())
+                {
+                    continue;
+                }
+
                 const std::vector<Assignment> assignments =
                     database.loadAssignmentsForCourse(
                         course.getID()

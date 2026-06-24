@@ -211,7 +211,8 @@ double User::calculateCGPA() const
 
         for (const Course &course : semester.getCourses())
         {
-            if (!course.hasGradedAssignments())
+            if (!course.isCompleted() ||
+                !course.hasGradedAssignments())
             {
                 continue;
             }
@@ -246,7 +247,10 @@ int User::calculateCompletedCredits() const
 
         for (const Course &course : semester.getCourses())
         {
-            completedCredits += course.getCredits();
+            if (course.isCompleted())
+            {
+                completedCredits += course.getCredits();
+            }
         }
     }
 
@@ -269,7 +273,7 @@ void User::setMaxCredits(int credits)
     {
         throw std::invalid_argument(
             "Maximum credits cannot be lower than "
-            "the credits already registered."
+            "the credits already completed."
         );
     }
 

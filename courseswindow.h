@@ -42,6 +42,10 @@ private:
     int selectedSemesterID() const;
     bool selectedSemesterIsSummaryOnly() const;
     void addCourseRow(const Course &course);
+    void setCourseStatus(
+        QListWidgetItem *item,
+        CourseStatus status
+    );
     void editCourseRow(QListWidgetItem *item);
     void deleteCourseRow(QListWidgetItem *item);
     void updateEmptyState();

@@ -2,6 +2,8 @@
 #include "courseeditordialog.h"
 #include "ui_courseswindow.h"
 
+#include <QAction>
+#include <QActionGroup>
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QIcon>
@@ -10,6 +12,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QDialog>
+#include <QMenu>
 #include <QMessageBox>
 #include <QPainter>
 #include <QPixmap>
@@ -66,6 +69,153 @@ QIcon makeBinIcon()
     painter.drawLine(14, 11, 14, 17);
 
     return QIcon(pixmap);
+}
+
+QString courseStatusText(CourseStatus status)
+{
+    switch (status)
+    {
+    case CourseStatus::Planned:
+        return QObject::tr("Planned");
+    case CourseStatus::InProgress:
+        return QObject::tr("In progress");
+    case CourseStatus::Completed:
+        return QObject::tr("Completed");
+    case CourseStatus::Withdrawn:
+        return QObject::tr("Withdrawn");
+    }
+
+    return QObject::tr("In progress");
+}
+
+QString courseStatusButtonStyle(CourseStatus status)
+{
+    switch (status)
+    {
+    case CourseStatus::Planned:
+        return R"(
+            QToolButton {
+                color: #475569;
+                background-color: #f1f5f9;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                padding: 5px 24px 5px 10px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            QToolButton:hover {
+                background-color: #e2e8f0;
+            }
+
+            QToolButton::menu-indicator {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                right: 7px;
+            }
+        )";
+    case CourseStatus::InProgress:
+        return R"(
+            QToolButton {
+                color: #1d4ed8;
+                background-color: #eff6ff;
+                border: 1px solid #bfdbfe;
+                border-radius: 8px;
+                padding: 5px 24px 5px 10px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            QToolButton:hover {
+                background-color: #dbeafe;
+            }
+
+            QToolButton::menu-indicator {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                right: 7px;
+            }
+        )";
+    case CourseStatus::Completed:
+        return R"(
+            QToolButton {
+                color: #166534;
+                background-color: #dcfce7;
+                border: 1px solid #bbf7d0;
+                border-radius: 8px;
+                padding: 5px 24px 5px 10px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            QToolButton:hover {
+                background-color: #bbf7d0;
+            }
+
+            QToolButton::menu-indicator {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                right: 7px;
+            }
+        )";
+    case CourseStatus::Withdrawn:
+        return R"(
+            QToolButton {
+                color: #991b1b;
+                background-color: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                padding: 5px 24px 5px 10px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            QToolButton:hover {
+                background-color: #fee2e2;
+            }
+
+            QToolButton::menu-indicator {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                right: 7px;
+            }
+        )";
+    }
+
+    return {};
+}
+
+QString statusMenuStyle()
+{
+    return R"(
+        QMenu {
+            background-color: white;
+            color: #1f2937;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 5px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        QMenu::item {
+            color: #1f2937;
+            background-color: transparent;
+            border-radius: 6px;
+            padding: 9px 14px;
+            margin: 2px;
+        }
+
+        QMenu::item:selected {
+            color: white;
+            background-color: #2563eb;
+        }
+
+        QMenu::indicator {
+            width: 14px;
+            height: 14px;
+        }
+    )";
 }
 }
 
@@ -389,6 +539,14 @@ void CoursesWindow::addCourseRow(
         Qt::UserRole + 3,
         course.getCredits()
     );
+    item->setData(
+        Qt::UserRole + 4,
+        static_cast<int>(course.getStatus())
+    );
+    item->setData(
+        Qt::UserRole + 5,
+        course.isRetaken()
+    );
 
     auto *rowWidget =
         new QWidget(ui->coursesListWidget);
@@ -460,6 +618,107 @@ void CoursesWindow::addCourseRow(
     textLayout->addWidget(courseTitleLabel);
     textLayout->addWidget(creditsLabel);
 
+    auto *statusButton = new QToolButton(rowWidget);
+    statusButton->setText(
+        courseStatusText(course.getStatus())
+    );
+    statusButton->setCursor(Qt::PointingHandCursor);
+    statusButton->setPopupMode(QToolButton::InstantPopup);
+    statusButton->setToolButtonStyle(
+        Qt::ToolButtonTextOnly
+    );
+    statusButton->setMinimumWidth(118);
+    statusButton->setFixedHeight(32);
+    statusButton->setStyleSheet(
+        courseStatusButtonStyle(
+            course.getStatus()
+        )
+    );
+    statusButton->setToolTip(
+        tr("Change course status")
+    );
+    statusButton->setAccessibleName(
+        tr("Course status: %1")
+            .arg(courseStatusText(
+                course.getStatus()
+            ))
+    );
+
+    auto *statusMenu = new QMenu(statusButton);
+    statusMenu->setMinimumWidth(175);
+    statusMenu->setStyleSheet(statusMenuStyle());
+
+    auto *statusGroup =
+        new QActionGroup(statusMenu);
+    statusGroup->setExclusive(true);
+
+    const struct StatusOption
+    {
+        CourseStatus status;
+        const char *label;
+    } statusOptions[] = {
+        {CourseStatus::Planned, "Planned"},
+        {CourseStatus::InProgress, "In progress"},
+        {CourseStatus::Completed, "Completed"},
+        {CourseStatus::Withdrawn, "Withdrawn"}
+    };
+
+    for (const StatusOption &option : statusOptions)
+    {
+        QAction *action =
+            statusMenu->addAction(
+                tr(option.label)
+            );
+
+        action->setCheckable(true);
+        action->setChecked(
+            option.status == course.getStatus()
+        );
+        statusGroup->addAction(action);
+
+        connect(
+            action,
+            &QAction::triggered,
+            this,
+            [this, item, option]()
+            {
+                setCourseStatus(
+                    item,
+                    option.status
+                );
+            }
+        );
+    }
+
+    statusButton->setMenu(statusMenu);
+
+    QLabel *retakeBadge = nullptr;
+
+    if (course.isRetaken())
+    {
+        retakeBadge = new QLabel(
+            tr("Retake"),
+            rowWidget
+        );
+        retakeBadge->setAlignment(Qt::AlignCenter);
+        retakeBadge->setFixedHeight(28);
+        retakeBadge->setMinimumWidth(62);
+        retakeBadge->setToolTip(
+            tr("This course replaced a previous attempt")
+        );
+        retakeBadge->setStyleSheet(R"(
+            QLabel {
+                color: #7c3aed;
+                background-color: #f5f3ff;
+                border: 1px solid #ddd6fe;
+                border-radius: 8px;
+                padding: 3px 9px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+        )");
+    }
+
     auto *editButton = new QToolButton(rowWidget);
     editButton->setIcon(makePencilIcon());
     editButton->setIconSize(QSize(20, 20));
@@ -507,6 +766,21 @@ void CoursesWindow::addCourseRow(
     rowLayout->addStretch();
 
     rowLayout->addWidget(
+        statusButton,
+        0,
+        Qt::AlignVCenter
+    );
+
+    if (retakeBadge)
+    {
+        rowLayout->addWidget(
+            retakeBadge,
+            0,
+            Qt::AlignVCenter
+        );
+    }
+
+    rowLayout->addWidget(
         editButton,
         0,
         Qt::AlignVCenter
@@ -546,6 +820,78 @@ void CoursesWindow::addCourseRow(
     );
 }
 
+void CoursesWindow::setCourseStatus(
+    QListWidgetItem *item,
+    CourseStatus status)
+{
+    if (!item)
+    {
+        return;
+    }
+
+    const CourseStatus currentStatus =
+        static_cast<CourseStatus>(
+            item->data(
+                Qt::UserRole + 4
+            ).toInt()
+        );
+
+    if (status == currentStatus)
+    {
+        return;
+    }
+
+    const int courseID =
+        item->data(Qt::UserRole).toInt();
+
+    if (status == CourseStatus::Completed)
+    {
+        const std::vector<Assignment> assignments =
+            database.loadAssignmentsForCourse(
+                courseID
+            );
+
+        int gradedWeight = 0;
+
+        for (const Assignment &assignment : assignments)
+        {
+            if (assignment.hasGrade())
+            {
+                gradedWeight += static_cast<int>(
+                    assignment.getWeightPercentage()
+                );
+            }
+        }
+
+        if (gradedWeight != 100)
+        {
+            QMessageBox::information(
+                this,
+                tr("Complete Grade Required"),
+                tr("Graded assignments must cover exactly 100% of "
+                   "the course weight before the course can be "
+                   "marked as completed.")
+            );
+            return;
+        }
+    }
+
+    if (!database.setCourseStatus(
+            courseID,
+            status))
+    {
+        QMessageBox::warning(
+            this,
+            tr("Database Error"),
+            tr("The course status could not be updated.")
+        );
+        return;
+    }
+
+    refreshCourses();
+    emit coursesChanged();
+}
+
 void CoursesWindow::editCourseRow(
     QListWidgetItem *item)
 {
@@ -564,7 +910,15 @@ void CoursesWindow::editCourseRow(
             item->data(Qt::UserRole + 1)
                 .toString()
                 .toStdString(),
-            item->data(Qt::UserRole + 3).toInt()
+            item->data(Qt::UserRole + 3).toInt(),
+            static_cast<CourseStatus>(
+                item->data(
+                    Qt::UserRole + 4
+                ).toInt()
+            ),
+            item->data(
+                Qt::UserRole + 5
+            ).toBool()
         );
 
         CourseEditorDialog dialog(

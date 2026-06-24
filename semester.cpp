@@ -284,7 +284,8 @@ double Semester::calculateSemesterGPA() const
 
     for (const Course &course : courses)
     {
-        if (!course.hasGradedAssignments())
+        if (!course.isCompleted() ||
+            !course.hasGradedAssignments())
         {
             continue;
         }

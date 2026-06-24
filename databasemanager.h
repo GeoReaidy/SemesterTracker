@@ -143,6 +143,11 @@ public:
         int credits
     );
 
+    bool setCourseStatus(
+        int courseID,
+        CourseStatus status
+    );
+
     bool deleteCourse(int courseID);
 
     std::vector<Course> loadCoursesForSemester(int semesterID);

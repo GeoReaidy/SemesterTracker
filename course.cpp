@@ -56,6 +56,23 @@ std::string upperCopy(std::string value)
     return value;
 }
 
+std::string lowerCopy(std::string value)
+{
+    std::transform(
+        value.begin(),
+        value.end(),
+        value.begin(),
+        [](unsigned char character)
+        {
+            return static_cast<char>(
+                std::tolower(character)
+            );
+        }
+    );
+
+    return value;
+}
+
 void validateCourseID(int id)
 {
     if (id < -1)
@@ -139,14 +156,59 @@ void validateCredits(int credits)
 }
 }
 
+std::string courseStatusToStorage(CourseStatus status)
+{
+    switch (status)
+    {
+    case CourseStatus::Planned:
+        return "planned";
+    case CourseStatus::InProgress:
+        return "in_progress";
+    case CourseStatus::Completed:
+        return "completed";
+    case CourseStatus::Withdrawn:
+        return "withdrawn";
+    }
+
+    return "in_progress";
+}
+
+CourseStatus courseStatusFromStorage(
+    const std::string &value)
+{
+    const std::string normalized =
+        lowerCopy(trimCopy(value));
+
+    if (normalized == "planned")
+    {
+        return CourseStatus::Planned;
+    }
+
+    if (normalized == "completed")
+    {
+        return CourseStatus::Completed;
+    }
+
+    if (normalized == "withdrawn")
+    {
+        return CourseStatus::Withdrawn;
+    }
+
+    return CourseStatus::InProgress;
+}
+
 Course::Course(int id,
                std::string name,
                std::string code,
-               int credits)
+               int credits,
+               CourseStatus courseStatus,
+               bool isRetaken)
     : courseName(validateCourseName(name)),
       courseCode(validateCourseCode(code)),
       creditCount(credits),
-      courseID(id)
+      courseID(id),
+      status(courseStatus),
+      retaken(isRetaken)
 {
     validateCourseID(courseID);
     validateCredits(creditCount);
@@ -172,6 +234,36 @@ int Course::getCredits() const
     return creditCount;
 }
 
+CourseStatus Course::getStatus() const
+{
+    return status;
+}
+
+bool Course::isPlanned() const
+{
+    return status == CourseStatus::Planned;
+}
+
+bool Course::isInProgress() const
+{
+    return status == CourseStatus::InProgress;
+}
+
+bool Course::isCompleted() const
+{
+    return status == CourseStatus::Completed;
+}
+
+bool Course::isWithdrawn() const
+{
+    return status == CourseStatus::Withdrawn;
+}
+
+bool Course::isRetaken() const
+{
+    return retaken;
+}
+
 const std::vector<Assignment> &
 Course::getAssignments() const
 {
@@ -192,6 +284,16 @@ void Course::setCredits(int credits)
 {
     validateCredits(credits);
     creditCount = credits;
+}
+
+void Course::setStatus(CourseStatus newStatus)
+{
+    status = newStatus;
+}
+
+void Course::setRetaken(bool isRetaken)
+{
+    retaken = isRetaken;
 }
 
 void Course::addAssignment(
@@ -357,7 +459,8 @@ double Course::calculateCourseGPA() const
 
 double Course::calculateQualityPoints() const
 {
-    if (!hasGradedAssignments())
+    if (!isCompleted() ||
+        !hasGradedAssignments())
     {
         return 0.0;
     }
