@@ -1,5 +1,7 @@
 #include "courseswindow.h"
 #include "courseeditordialog.h"
+#include "courseprojectiondialog.h"
+#include "gradeprojection.h"
 #include "ui_courseswindow.h"
 
 #include <QAction>
@@ -569,6 +571,10 @@ void CoursesWindow::addCourseRow(
         Qt::UserRole + 7,
         course.getRetakeOfCourseID()
     );
+    item->setData(
+        Qt::UserRole + 8,
+        course.getTargetGrade()
+    );
 
     auto *rowWidget =
         new QWidget(ui->coursesListWidget);
@@ -630,10 +636,55 @@ void CoursesWindow::addCourseRow(
         "font-weight: 600;"
     );
 
-    auto *creditsLabel = new QLabel(
+    Course projectionCourse = course;
+
+    const std::vector<Assignment> projectionAssignments =
+        database.loadAssignmentsForCourse(
+            course.getID()
+        );
+
+    for (const Assignment &assignment :
+         projectionAssignments)
+    {
+        projectionCourse.addAssignment(
+            assignment
+        );
+    }
+
+    const CourseProjectionResult projectionResult =
+        GradeProjection::calculateCourse(
+            projectionCourse
+        );
+
+    QString courseDetails =
         QString("%1 credit%2")
             .arg(course.getCredits())
-            .arg(course.getCredits() == 1 ? "" : "s"),
+            .arg(course.getCredits() == 1 ? "" : "s");
+
+    if (projectionResult.hasProjectedResult &&
+        !course.isWithdrawn())
+    {
+        courseDetails +=
+            tr("  •  Projected %1% (%2)")
+                .arg(
+                    projectionResult.projectedGrade,
+                    0,
+                    'f',
+                    1
+                )
+                .arg(
+                    QString::fromStdString(
+                        GradeProjection::
+                            percentageToLetterGrade(
+                                projectionResult
+                                    .projectedGrade
+                            )
+                    )
+                );
+    }
+
+    auto *creditsLabel = new QLabel(
+        courseDetails,
         textContainer
     );
 
@@ -778,6 +829,53 @@ void CoursesWindow::addCourseRow(
         );
     }
 
+    auto *projectionButton =
+        new QPushButton(
+            tr("Projection"),
+            rowWidget
+        );
+
+    projectionButton->setCursor(
+        Qt::PointingHandCursor
+    );
+    projectionButton->setFixedHeight(36);
+    projectionButton->setMinimumWidth(92);
+    projectionButton->setToolTip(
+        tr("Project assignment grades and the final course result")
+    );
+    projectionButton->setStyleSheet(R"(
+        QPushButton {
+            color: #6d28d9;
+            background-color: #f5f3ff;
+            border: 1px solid #ddd6fe;
+            border-radius: 8px;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        QPushButton:hover {
+            background-color: #ede9fe;
+            border-color: #c4b5fd;
+        }
+
+        QPushButton:pressed {
+            background-color: #ddd6fe;
+        }
+    )");
+
+    if (course.isExcludedFromCGPA() ||
+        course.isWithdrawn())
+    {
+        projectionButton->setEnabled(false);
+
+        projectionButton->setToolTip(
+            course.isExcludedFromCGPA()
+                ? tr("Historical attempts are read-only.")
+                : tr("Withdrawn courses are excluded from projections.")
+        );
+    }
+
     auto *editButton = new QToolButton(rowWidget);
     editButton->setIcon(makePencilIcon());
     editButton->setIconSize(QSize(20, 20));
@@ -862,6 +960,12 @@ void CoursesWindow::addCourseRow(
     }
 
     rowLayout->addWidget(
+        projectionButton,
+        0,
+        Qt::AlignVCenter
+    );
+
+    rowLayout->addWidget(
         editButton,
         0,
         Qt::AlignVCenter
@@ -878,6 +982,18 @@ void CoursesWindow::addCourseRow(
     ui->coursesListWidget->setItemWidget(
         item,
         rowWidget
+    );
+
+    connect(
+        projectionButton,
+        &QPushButton::clicked,
+        this,
+        [this, projectionCourse]()
+        {
+            openCourseProjection(
+                projectionCourse
+            );
+        }
     );
 
     connect(
@@ -899,6 +1015,25 @@ void CoursesWindow::addCourseRow(
             deleteCourseRow(item);
         }
     );
+}
+
+void CoursesWindow::openCourseProjection(
+    const Course &course)
+{
+    CourseProjectionDialog dialog(
+        database,
+        course,
+        this
+    );
+
+    if (dialog.exec() !=
+        QDialog::Accepted)
+    {
+        return;
+    }
+
+    refreshCourses();
+    emit coursesChanged();
 }
 
 void CoursesWindow::setCourseStatus(
@@ -1005,7 +1140,10 @@ void CoursesWindow::editCourseRow(
             ).toInt(),
             item->data(
                 Qt::UserRole + 6
-            ).toBool()
+            ).toBool(),
+            item->data(
+                Qt::UserRole + 8
+            ).toDouble()
         );
 
         CourseEditorDialog dialog(

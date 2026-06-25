@@ -3,30 +3,20 @@
  <class>GradesWindow</class>
  <widget class="QWidget" name="GradesWindow">
   <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>980</width>
-    <height>680</height>
-   </rect>
+   <rect><x>0</x><y>0</y><width>980</width><height>820</height></rect>
   </property>
   <property name="minimumSize">
-   <size>
-    <width>820</width>
-    <height>560</height>
-   </size>
+   <size><width>820</width><height>640</height></size>
   </property>
-  <property name="windowTitle">
-   <string>Grades</string>
-  </property>
+  <property name="windowTitle"><string>Grades</string></property>
   <property name="styleSheet">
    <string notr="true">QWidget#GradesWindow {
     background-color: #f5f7fb;
 }
 
 QFrame#headerCard,
-QFrame#semesterCard,
 QFrame#summaryCard,
+QFrame#trendCard,
 QFrame#coursesCard {
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
@@ -35,60 +25,58 @@ QFrame#coursesCard {
 
 QLabel#gradesTitleLabel {
     color: #111827;
-    font-size: 25px;
+    font-size: 24px;
     font-weight: 700;
 }
 
 QLabel#gradesSubtitleLabel,
 QLabel#semesterHelpLabel,
 QLabel#summaryCaptionLabel,
+QLabel#trendHelpLabel,
 QLabel#emptyStateLabel {
     color: #64748b;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 QLabel#semesterSectionLabel,
+QLabel#trendTitleLabel,
 QLabel#courseGradesLabel {
     color: #111827;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
 }
 
 QLabel#semesterGpaTitleLabel,
 QLabel#averageGradeTitleLabel,
-QLabel#completedCoursesTitleLabel {
+QLabel#completedCoursesTitleLabel,
+QLabel#projectedCgpaTitleLabel {
     color: #64748b;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
 }
 
 QLabel#semesterGpaValueLabel,
 QLabel#averageGradeValueLabel,
-QLabel#completedCoursesValueLabel {
+QLabel#completedCoursesValueLabel,
+QLabel#projectedCgpaValueLabel {
     color: #111827;
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 700;
 }
 
 QComboBox#semesterComboBox {
-    min-height: 38px;
-    min-width: 240px;
-    padding: 0 12px;
+    min-height: 34px;
+    min-width: 230px;
+    padding: 0 11px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     background-color: #ffffff;
     color: #334155;
-    font-size: 13px;
+    font-size: 12px;
 }
 
-QComboBox#semesterComboBox:hover {
-    border-color: #93c5fd;
-}
-
-QComboBox#semesterComboBox:focus {
-    border: 1px solid #2563eb;
-}
-
+QComboBox#semesterComboBox:hover { border-color: #93c5fd; }
+QComboBox#semesterComboBox:focus { border: 1px solid #2563eb; }
 QComboBox#semesterComboBox QAbstractItemView {
     background-color: #ffffff;
     color: #1f2937;
@@ -102,11 +90,11 @@ QListWidget#courseGradesListWidget {
     background-color: transparent;
     outline: none;
     color: #1f2937;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 QListWidget#courseGradesListWidget::item {
-    margin: 4px 0;
+    margin: 3px 0;
     border: none;
     background-color: transparent;
 }
@@ -119,302 +107,94 @@ QListWidget#courseGradesListWidget::item:selected {
 
 QLabel#emptyStateTitleLabel {
     color: #334155;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
 }</string>
   </property>
-  <layout class="QVBoxLayout" name="mainLayout">
-   <property name="leftMargin">
-    <number>24</number>
-   </property>
-   <property name="topMargin">
-    <number>24</number>
-   </property>
-   <property name="rightMargin">
-    <number>24</number>
-   </property>
-   <property name="bottomMargin">
-    <number>24</number>
-   </property>
-   <property name="spacing">
-    <number>16</number>
-   </property>
+  <layout class="QVBoxLayout" name="mainLayout" stretch="0,0,1,0">
+   <property name="leftMargin"><number>20</number></property>
+   <property name="topMargin"><number>20</number></property>
+   <property name="rightMargin"><number>20</number></property>
+   <property name="bottomMargin"><number>20</number></property>
+   <property name="spacing"><number>12</number></property>
+
    <item>
     <widget class="QFrame" name="headerCard">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>96</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>96</height>
-      </size>
-     </property>
-     <layout class="QVBoxLayout" name="headerLayout">
-      <property name="leftMargin">
-       <number>22</number>
-      </property>
-      <property name="topMargin">
-       <number>16</number>
-      </property>
-      <property name="rightMargin">
-       <number>22</number>
-      </property>
-      <property name="bottomMargin">
-       <number>16</number>
-      </property>
-      <property name="spacing">
-       <number>3</number>
-      </property>
+     <property name="minimumSize"><size><width>0</width><height>82</height></size></property>
+     <property name="maximumSize"><size><width>16777215</width><height>82</height></size></property>
+     <layout class="QHBoxLayout" name="headerLayout">
+      <property name="leftMargin"><number>20</number></property>
+      <property name="topMargin"><number>12</number></property>
+      <property name="rightMargin"><number>18</number></property>
+      <property name="bottomMargin"><number>12</number></property>
+      <property name="spacing"><number>20</number></property>
       <item>
-       <widget class="QLabel" name="gradesTitleLabel">
-        <property name="text">
-         <string>Grades</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="gradesSubtitleLabel">
-        <property name="text">
-         <string>Review course grades and semester performance.</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QFrame" name="semesterCard">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>108</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>108</height>
-      </size>
-     </property>
-     <layout class="QHBoxLayout" name="semesterCardLayout">
-      <property name="leftMargin">
-       <number>20</number>
-      </property>
-      <property name="topMargin">
-       <number>14</number>
-      </property>
-      <property name="rightMargin">
-       <number>20</number>
-      </property>
-      <property name="bottomMargin">
-       <number>14</number>
-      </property>
-      <item>
-       <layout class="QVBoxLayout" name="semesterTextLayout">
-        <property name="spacing">
-         <number>4</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="semesterSectionLabel">
-          <property name="text">
-           <string>Selected Semester</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="semesterHelpLabel">
-          <property name="text">
-           <string>Only grades from the selected semester will be shown.</string>
-          </property>
-         </widget>
-        </item>
+       <layout class="QVBoxLayout" name="headerTextLayout">
+        <property name="spacing"><number>2</number></property>
+        <item><widget class="QLabel" name="gradesTitleLabel"><property name="text"><string>Grades</string></property></widget></item>
+        <item><widget class="QLabel" name="gradesSubtitleLabel"><property name="text"><string>Project course outcomes and track GPA and CGPA across semesters.</string></property></widget></item>
        </layout>
       </item>
+      <item><spacer name="headerSpacer"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>30</width><height>20</height></size></property></spacer></item>
       <item>
-       <spacer name="semesterSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
+       <layout class="QVBoxLayout" name="semesterTextLayout">
+        <property name="spacing"><number>1</number></property>
+        <item><widget class="QLabel" name="semesterSectionLabel"><property name="text"><string>Semester</string></property></widget></item>
+        <item><widget class="QLabel" name="semesterHelpLabel"><property name="text"><string>Showing grades for</string></property></widget></item>
+       </layout>
       </item>
-      <item>
-       <widget class="QComboBox" name="semesterComboBox">
-        <item>
-         <property name="text">
-          <string>Select a semester</string>
-         </property>
-        </item>
-       </widget>
-      </item>
+      <item><widget class="QComboBox" name="semesterComboBox"><item><property name="text"><string>Select a semester</string></property></item></widget></item>
      </layout>
     </widget>
    </item>
+
    <item>
     <widget class="QFrame" name="summaryCard">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>150</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>150</height>
-      </size>
-     </property>
+     <property name="minimumSize"><size><width>0</width><height>108</height></size></property>
+     <property name="maximumSize"><size><width>16777215</width><height>108</height></size></property>
      <layout class="QVBoxLayout" name="summaryCardLayout">
-      <property name="leftMargin">
-       <number>20</number>
-      </property>
-      <property name="topMargin">
-       <number>14</number>
-      </property>
-      <property name="rightMargin">
-       <number>20</number>
-      </property>
-      <property name="bottomMargin">
-       <number>14</number>
-      </property>
-      <property name="spacing">
-       <number>10</number>
-      </property>
-      <item>
-       <widget class="QLabel" name="summaryCaptionLabel">
-        <property name="text">
-         <string>Semester Summary</string>
-        </property>
-       </widget>
-      </item>
+      <property name="leftMargin"><number>16</number></property>
+      <property name="topMargin"><number>10</number></property>
+      <property name="rightMargin"><number>16</number></property>
+      <property name="bottomMargin"><number>10</number></property>
+      <property name="spacing"><number>6</number></property>
+      <item><widget class="QLabel" name="summaryCaptionLabel"><property name="text"><string>Current and projected performance</string></property></widget></item>
       <item>
        <layout class="QHBoxLayout" name="summaryValuesLayout">
-        <property name="spacing">
-         <number>18</number>
-        </property>
+        <property name="spacing"><number>12</number></property>
         <item>
          <widget class="QFrame" name="semesterGpaFrame">
-          <property name="styleSheet">
-           <string notr="true">QFrame#semesterGpaFrame {
-    background-color: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 10px;
-}</string>
-          </property>
-          <layout class="QVBoxLayout" name="semesterGpaLayout">
-           <property name="leftMargin">
-            <number>16</number>
-           </property>
-           <property name="topMargin">
-            <number>12</number>
-           </property>
-           <property name="rightMargin">
-            <number>16</number>
-           </property>
-           <property name="bottomMargin">
-            <number>12</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="semesterGpaTitleLabel">
-             <property name="text">
-              <string>Semester GPA</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="semesterGpaValueLabel">
-             <property name="text">
-              <string>—</string>
-             </property>
-            </widget>
-           </item>
+          <property name="styleSheet"><string notr="true">QFrame#semesterGpaFrame { background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 9px; }</string></property>
+          <layout class="QVBoxLayout" name="semesterGpaLayout"><property name="leftMargin"><number>14</number></property><property name="topMargin"><number>8</number></property><property name="rightMargin"><number>14</number></property><property name="bottomMargin"><number>8</number></property><property name="spacing"><number>1</number></property>
+           <item><widget class="QLabel" name="semesterGpaTitleLabel"><property name="text"><string>Current semester GPA</string></property></widget></item>
+           <item><widget class="QLabel" name="semesterGpaValueLabel"><property name="text"><string>—</string></property></widget></item>
           </layout>
          </widget>
         </item>
         <item>
          <widget class="QFrame" name="averageGradeFrame">
-          <property name="styleSheet">
-           <string notr="true">QFrame#averageGradeFrame {
-    background-color: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    border-radius: 10px;
-}</string>
-          </property>
-          <layout class="QVBoxLayout" name="averageGradeLayout">
-           <property name="leftMargin">
-            <number>16</number>
-           </property>
-           <property name="topMargin">
-            <number>12</number>
-           </property>
-           <property name="rightMargin">
-            <number>16</number>
-           </property>
-           <property name="bottomMargin">
-            <number>12</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="averageGradeTitleLabel">
-             <property name="text">
-              <string>Average Grade</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="averageGradeValueLabel">
-             <property name="text">
-              <string>—</string>
-             </property>
-            </widget>
-           </item>
+          <property name="styleSheet"><string notr="true">QFrame#averageGradeFrame { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 9px; }</string></property>
+          <layout class="QVBoxLayout" name="averageGradeLayout"><property name="leftMargin"><number>14</number></property><property name="topMargin"><number>8</number></property><property name="rightMargin"><number>14</number></property><property name="bottomMargin"><number>8</number></property><property name="spacing"><number>1</number></property>
+           <item><widget class="QLabel" name="averageGradeTitleLabel"><property name="text"><string>Projected semester GPA</string></property></widget></item>
+           <item><widget class="QLabel" name="averageGradeValueLabel"><property name="text"><string>—</string></property></widget></item>
           </layout>
          </widget>
         </item>
         <item>
          <widget class="QFrame" name="completedCoursesFrame">
-          <property name="styleSheet">
-           <string notr="true">QFrame#completedCoursesFrame {
-    background-color: #fff7ed;
-    border: 1px solid #fed7aa;
-    border-radius: 10px;
-}</string>
-          </property>
-          <layout class="QVBoxLayout" name="completedCoursesLayout">
-           <property name="leftMargin">
-            <number>16</number>
-           </property>
-           <property name="topMargin">
-            <number>12</number>
-           </property>
-           <property name="rightMargin">
-            <number>16</number>
-           </property>
-           <property name="bottomMargin">
-            <number>12</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="completedCoursesTitleLabel">
-             <property name="text">
-              <string>Courses</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="completedCoursesValueLabel">
-             <property name="text">
-              <string>0</string>
-             </property>
-            </widget>
-           </item>
+          <property name="styleSheet"><string notr="true">QFrame#completedCoursesFrame { background-color: #fff7ed; border: 1px solid #fed7aa; border-radius: 9px; }</string></property>
+          <layout class="QVBoxLayout" name="completedCoursesLayout"><property name="leftMargin"><number>14</number></property><property name="topMargin"><number>8</number></property><property name="rightMargin"><number>14</number></property><property name="bottomMargin"><number>8</number></property><property name="spacing"><number>1</number></property>
+           <item><widget class="QLabel" name="completedCoursesTitleLabel"><property name="text"><string>Current CGPA</string></property></widget></item>
+           <item><widget class="QLabel" name="completedCoursesValueLabel"><property name="text"><string>—</string></property></widget></item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="projectedCgpaFrame">
+          <property name="styleSheet"><string notr="true">QFrame#projectedCgpaFrame { background-color: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 9px; }</string></property>
+          <layout class="QVBoxLayout" name="projectedCgpaLayout"><property name="leftMargin"><number>14</number></property><property name="topMargin"><number>8</number></property><property name="rightMargin"><number>14</number></property><property name="bottomMargin"><number>8</number></property><property name="spacing"><number>1</number></property>
+           <item><widget class="QLabel" name="projectedCgpaTitleLabel"><property name="text"><string>Projected CGPA</string></property></widget></item>
+           <item><widget class="QLabel" name="projectedCgpaValueLabel"><property name="text"><string>—</string></property></widget></item>
           </layout>
          </widget>
         </item>
@@ -423,91 +203,48 @@ QLabel#emptyStateTitleLabel {
      </layout>
     </widget>
    </item>
+
    <item>
     <widget class="QFrame" name="coursesCard">
+     <property name="minimumSize"><size><width>0</width><height>190</height></size></property>
      <layout class="QVBoxLayout" name="coursesCardLayout">
-      <property name="leftMargin">
-       <number>18</number>
-      </property>
-      <property name="topMargin">
-       <number>16</number>
-      </property>
-      <property name="rightMargin">
-       <number>18</number>
-      </property>
-      <property name="bottomMargin">
-       <number>18</number>
-      </property>
-      <property name="spacing">
-       <number>10</number>
-      </property>
+      <property name="leftMargin"><number>16</number></property>
+      <property name="topMargin"><number>12</number></property>
+      <property name="rightMargin"><number>16</number></property>
+      <property name="bottomMargin"><number>14</number></property>
+      <property name="spacing"><number>7</number></property>
       <item>
        <layout class="QHBoxLayout" name="courseGradesHeaderLayout">
-        <item>
-         <widget class="QLabel" name="courseGradesLabel">
-          <property name="text">
-           <string>Course Grades</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="courseGradesSpacer">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLabel" name="courseCountLabel">
-          <property name="styleSheet">
-           <string notr="true">color: #64748b; font-size: 13px; font-weight: 600;</string>
-          </property>
-          <property name="text">
-           <string>0 courses</string>
-          </property>
-         </widget>
-        </item>
+        <item><widget class="QLabel" name="courseGradesLabel"><property name="text"><string>Course Grades</string></property></widget></item>
+        <item><spacer name="courseGradesSpacer"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
+        <item><widget class="QLabel" name="courseCountLabel"><property name="styleSheet"><string notr="true">color: #64748b; font-size: 12px; font-weight: 600;</string></property><property name="text"><string>0 courses</string></property></widget></item>
        </layout>
       </item>
-      <item>
-       <widget class="QListWidget" name="courseGradesListWidget"/>
-      </item>
+      <item><widget class="QListWidget" name="courseGradesListWidget"/></item>
       <item>
        <layout class="QVBoxLayout" name="emptyStateLayout">
-        <property name="spacing">
-         <number>5</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="emptyStateTitleLabel">
-          <property name="text">
-           <string>No grades to show</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="emptyStateLabel">
-          <property name="text">
-           <string>Select a semester with courses and graded assignments.</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignCenter</set>
-          </property>
-          <property name="wordWrap">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
+        <property name="spacing"><number>3</number></property>
+        <item><widget class="QLabel" name="emptyStateTitleLabel"><property name="text"><string>No grades to show</string></property><property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property></widget></item>
+        <item><widget class="QLabel" name="emptyStateLabel"><property name="text"><string>Select a semester with courses and graded assignments.</string></property><property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property><property name="wordWrap"><bool>true</bool></property></widget></item>
        </layout>
       </item>
+     </layout>
+    </widget>
+   </item>
+
+   <item>
+    <widget class="QFrame" name="trendCard">
+     <property name="minimumSize"><size><width>0</width><height>205</height></size></property>
+     <property name="maximumSize"><size><width>16777215</width><height>230</height></size></property>
+     <layout class="QVBoxLayout" name="trendCardLayout">
+      <property name="leftMargin"><number>16</number></property>
+      <property name="topMargin"><number>11</number></property>
+      <property name="rightMargin"><number>16</number></property>
+      <property name="bottomMargin"><number>10</number></property>
+      <property name="spacing"><number>3</number></property>
+      <item><widget class="QLabel" name="trendTitleLabel"><property name="text"><string>GPA Trend</string></property></widget></item>
+      <item><widget class="QLabel" name="trendHelpLabel"><property name="text"><string>Semester GPA and cumulative CGPA in chronological order. Dashed segments are projected.</string></property></widget></item>
+      <item><widget class="QWidget" name="trendChartContainer"><property name="minimumSize"><size><width>0</width><height>155</height></size></property></widget></item>
      </layout>
     </widget>
    </item>

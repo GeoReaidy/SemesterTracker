@@ -164,6 +164,17 @@ void validateOptionalCourseID(int id)
         );
     }
 }
+
+void validateTargetGrade(double grade)
+{
+    if (grade < -1.0 || grade > 100.0)
+    {
+        throw std::invalid_argument(
+            "Target course grade must be -1 for no target, "
+            "or between 0 and 100."
+        );
+    }
+}
 }
 
 std::string courseStatusToStorage(CourseStatus status)
@@ -214,7 +225,8 @@ Course::Course(int id,
                CourseStatus courseStatus,
                bool isRetaken,
                int sourceCourseID,
-               bool excluded)
+               bool excluded,
+               double targetGrade)
     : courseName(validateCourseName(name)),
       courseCode(validateCourseCode(code)),
       creditCount(credits),
@@ -222,11 +234,13 @@ Course::Course(int id,
       status(courseStatus),
       retaken(isRetaken),
       retakeOfCourseID(sourceCourseID),
-      excludedFromCGPA(excluded)
+      excludedFromCGPA(excluded),
+      targetGrade(targetGrade)
 {
     validateCourseID(courseID);
     validateCredits(creditCount);
     validateOptionalCourseID(retakeOfCourseID);
+    validateTargetGrade(this->targetGrade);
 }
 
 int Course::getID() const
@@ -289,6 +303,16 @@ bool Course::isExcludedFromCGPA() const
     return excludedFromCGPA;
 }
 
+double Course::getTargetGrade() const
+{
+    return targetGrade;
+}
+
+bool Course::hasTargetGrade() const
+{
+    return targetGrade >= 0.0;
+}
+
 const std::vector<Assignment> &
 Course::getAssignments() const
 {
@@ -330,6 +354,12 @@ void Course::setRetakeOfCourseID(int courseID)
 void Course::setExcludedFromCGPA(bool excluded)
 {
     excludedFromCGPA = excluded;
+}
+
+void Course::setTargetGrade(double grade)
+{
+    validateTargetGrade(grade);
+    targetGrade = grade;
 }
 
 void Course::addAssignment(

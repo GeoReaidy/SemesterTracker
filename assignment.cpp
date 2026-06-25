@@ -89,6 +89,17 @@ void validateGrade(double grade)
     }
 }
 
+void validateProjectedGrade(double grade)
+{
+    if (grade < -1.0 || grade > 100.0)
+    {
+        throw std::invalid_argument(
+            "Projected assignment grade must be -1 for no projection, "
+            "or between 0 and 100."
+        );
+    }
+}
+
 bool isLeapYear(int year)
 {
     return (year % 400 == 0) ||
@@ -180,17 +191,20 @@ Assignment::Assignment(int id,
                        int weight,
                        double grade,
                        std::string dueDate,
-                       bool completed)
+                       bool completed,
+                       double projectedGrade)
     : assignmentName(validateAssignmentName(name)),
       assignmentWeight(weight),
       assignmentGrade(grade),
       assignmentID(id),
       dueDate(validateDueDate(dueDate)),
-      completed(completed)
+      completed(completed),
+      projectedGrade(projectedGrade)
 {
     validateAssignmentID(assignmentID);
     validateWeight(assignmentWeight);
     validateGrade(assignmentGrade);
+    validateProjectedGrade(this->projectedGrade);
 }
 
 int Assignment::getID() const
@@ -238,6 +252,26 @@ bool Assignment::isCompleted() const
     return completed;
 }
 
+double Assignment::getProjectedGrade() const
+{
+    return projectedGrade;
+}
+
+bool Assignment::hasProjectedGrade() const
+{
+    return projectedGrade >= 0.0;
+}
+
+double Assignment::getEffectiveGrade() const
+{
+    if (hasGrade())
+    {
+        return assignmentGrade;
+    }
+
+    return projectedGrade;
+}
+
 void Assignment::setName(const std::string &name)
 {
     assignmentName = validateAssignmentName(name);
@@ -264,4 +298,10 @@ void Assignment::setDueDate(
 void Assignment::setCompleted(bool value)
 {
     completed = value;
+}
+
+void Assignment::setProjectedGrade(double grade)
+{
+    validateProjectedGrade(grade);
+    projectedGrade = grade;
 }

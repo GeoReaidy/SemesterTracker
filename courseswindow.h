@@ -42,6 +42,7 @@ private:
     int selectedSemesterID() const;
     bool selectedSemesterIsSummaryOnly() const;
     void addCourseRow(const Course &course);
+    void openCourseProjection(const Course &course);
     void setCourseStatus(
         QListWidgetItem *item,
         CourseStatus status
