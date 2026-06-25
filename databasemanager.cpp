@@ -36,6 +36,49 @@ std::string trimCopy(const std::string &value)
     return std::string(first, last);
 }
 
+bool tableHasColumn(
+    sqlite3 *database,
+    const char *tableName,
+    const char *columnName)
+{
+    const std::string sql =
+        std::string("PRAGMA table_info(") +
+        tableName +
+        ");";
+
+    sqlite3_stmt *statement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            sql.c_str(),
+            -1,
+            &statement,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    bool exists = false;
+
+    while (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        const unsigned char *name =
+            sqlite3_column_text(statement, 1);
+
+        if (name != nullptr &&
+            std::string(
+                reinterpret_cast<const char *>(name)
+            ) == columnName)
+        {
+            exists = true;
+            break;
+        }
+    }
+
+    sqlite3_finalize(statement);
+    return exists;
+}
+
 bool isValidUsername(const std::string &value)
 {
     const std::string username = trimCopy(value);
@@ -445,6 +488,7 @@ bool DatabaseManager::createTables()
         "retaken INTEGER NOT NULL DEFAULT 0, "
         "retake_of_course_id INTEGER DEFAULT NULL, "
         "excluded_from_cgpa INTEGER NOT NULL DEFAULT 0, "
+        "target_grade REAL NOT NULL DEFAULT -1.0, "
         "FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE, "
         "FOREIGN KEY (retake_of_course_id) REFERENCES courses(id) ON DELETE SET NULL"
         ");"
@@ -457,6 +501,7 @@ bool DatabaseManager::createTables()
         "weight INTEGER NOT NULL, "
         "due_date TEXT NOT NULL DEFAULT '', "
         "completed INTEGER NOT NULL DEFAULT 0, "
+        "projected_grade REAL NOT NULL DEFAULT -1.0, "
         "FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE"
         ");";
 
@@ -598,6 +643,50 @@ bool DatabaseManager::createTables()
             << sqlite3_errmsg(database)
             << std::endl;
         return false;
+    }
+
+    if (!tableHasColumn(
+            database,
+            "assignments",
+            "projected_grade"))
+    {
+        if (sqlite3_exec(
+                database,
+                "ALTER TABLE assignments "
+                "ADD COLUMN projected_grade "
+                "REAL NOT NULL DEFAULT -1.0;",
+                nullptr,
+                nullptr,
+                nullptr) != SQLITE_OK)
+        {
+            std::cout
+                << "Failed to add assignment projected_grade column: "
+                << sqlite3_errmsg(database)
+                << std::endl;
+            return false;
+        }
+    }
+
+    if (!tableHasColumn(
+            database,
+            "courses",
+            "target_grade"))
+    {
+        if (sqlite3_exec(
+                database,
+                "ALTER TABLE courses "
+                "ADD COLUMN target_grade "
+                "REAL NOT NULL DEFAULT -1.0;",
+                nullptr,
+                nullptr,
+                nullptr) != SQLITE_OK)
+        {
+            std::cout
+                << "Failed to add course target_grade column: "
+                << sqlite3_errmsg(database)
+                << std::endl;
+            return false;
+        }
     }
 
     bool semesterStatusColumnAdded = false;
@@ -3907,7 +3996,7 @@ std::vector<Course> DatabaseManager::loadCoursesForSemester(int semesterID)
 
     const char *sql =
         "SELECT id, course_name, course_code, credits, status, retaken, "
-        "retake_of_course_id, excluded_from_cgpa "
+        "retake_of_course_id, excluded_from_cgpa, target_grade "
         "FROM courses "
         "WHERE semester_id = ? "
         "ORDER BY id ASC;";
@@ -3958,6 +4047,9 @@ std::vector<Course> DatabaseManager::loadCoursesForSemester(int semesterID)
         const bool excludedFromCGPA =
             sqlite3_column_int(statement, 7) == 1;
 
+        const double targetGrade =
+            sqlite3_column_double(statement, 8);
+
         Course course(
             courseID,
             courseName,
@@ -3966,7 +4058,8 @@ std::vector<Course> DatabaseManager::loadCoursesForSemester(int semesterID)
             courseStatusFromStorage(storedStatus),
             retaken,
             retakeOfCourseID,
-            excludedFromCGPA
+            excludedFromCGPA,
+            targetGrade
         );
 
         courses.push_back(course);
@@ -4324,13 +4417,193 @@ bool DatabaseManager::setAssignmentCompleted(
     return success;
 }
 
+bool DatabaseManager::saveCourseProjection(
+    int courseID,
+    double targetGrade,
+    const std::vector<std::pair<int, double>> &assignmentProjections)
+{
+    if (database == nullptr ||
+        courseID <= 0 ||
+        targetGrade < -1.0 ||
+        targetGrade > 100.0 ||
+        courseIsHistoricalAttempt(database, courseID))
+    {
+        return false;
+    }
+
+    for (const auto &projection : assignmentProjections)
+    {
+        if (projection.first <= 0 ||
+            projection.second < -1.0 ||
+            projection.second > 100.0)
+        {
+            return false;
+        }
+    }
+
+    if (sqlite3_exec(
+            database,
+            "BEGIN IMMEDIATE TRANSACTION;",
+            nullptr,
+            nullptr,
+            nullptr) != SQLITE_OK)
+    {
+        return false;
+    }
+
+    sqlite3_stmt *courseStatement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "UPDATE courses "
+            "SET target_grade = ? "
+            "WHERE id = ?;",
+            -1,
+            &courseStatement,
+            nullptr) != SQLITE_OK)
+    {
+        sqlite3_exec(
+            database,
+            "ROLLBACK;",
+            nullptr,
+            nullptr,
+            nullptr
+        );
+        return false;
+    }
+
+    sqlite3_bind_double(
+        courseStatement,
+        1,
+        targetGrade
+    );
+
+    sqlite3_bind_int(
+        courseStatement,
+        2,
+        courseID
+    );
+
+    const bool courseUpdated =
+        sqlite3_step(courseStatement) ==
+        SQLITE_DONE;
+
+    sqlite3_finalize(courseStatement);
+
+    if (!courseUpdated ||
+        sqlite3_changes(database) != 1)
+    {
+        sqlite3_exec(
+            database,
+            "ROLLBACK;",
+            nullptr,
+            nullptr,
+            nullptr
+        );
+        return false;
+    }
+
+    sqlite3_stmt *assignmentStatement = nullptr;
+
+    if (sqlite3_prepare_v2(
+            database,
+            "UPDATE assignments "
+            "SET projected_grade = ? "
+            "WHERE id = ? AND course_id = ?;",
+            -1,
+            &assignmentStatement,
+            nullptr) != SQLITE_OK)
+    {
+        sqlite3_exec(
+            database,
+            "ROLLBACK;",
+            nullptr,
+            nullptr,
+            nullptr
+        );
+        return false;
+    }
+
+    bool success = true;
+
+    for (const auto &projection :
+         assignmentProjections)
+    {
+        sqlite3_reset(assignmentStatement);
+        sqlite3_clear_bindings(
+            assignmentStatement
+        );
+
+        sqlite3_bind_double(
+            assignmentStatement,
+            1,
+            projection.second
+        );
+
+        sqlite3_bind_int(
+            assignmentStatement,
+            2,
+            projection.first
+        );
+
+        sqlite3_bind_int(
+            assignmentStatement,
+            3,
+            courseID
+        );
+
+        if (sqlite3_step(
+                assignmentStatement) !=
+            SQLITE_DONE ||
+            sqlite3_changes(database) != 1)
+        {
+            success = false;
+            break;
+        }
+    }
+
+    sqlite3_finalize(assignmentStatement);
+
+    if (!success)
+    {
+        sqlite3_exec(
+            database,
+            "ROLLBACK;",
+            nullptr,
+            nullptr,
+            nullptr
+        );
+        return false;
+    }
+
+    if (sqlite3_exec(
+            database,
+            "COMMIT;",
+            nullptr,
+            nullptr,
+            nullptr) != SQLITE_OK)
+    {
+        sqlite3_exec(
+            database,
+            "ROLLBACK;",
+            nullptr,
+            nullptr,
+            nullptr
+        );
+        return false;
+    }
+
+    return true;
+}
+
 std::vector<Assignment>
 DatabaseManager::loadAssignmentsForCourse(int courseID)
 {
     std::vector<Assignment> assignments;
 
     const char *sql =
-        "SELECT id, name, weight, grade, due_date, completed "
+        "SELECT id, name, weight, grade, due_date, completed, "
+        "projected_grade "
         "FROM assignments "
         "WHERE course_id = ? "
         "ORDER BY "
@@ -4390,13 +4663,17 @@ DatabaseManager::loadAssignmentsForCourse(int courseID)
         const bool completed =
             sqlite3_column_int(statement, 5) != 0;
 
+        const double projectedGrade =
+            sqlite3_column_double(statement, 6);
+
         assignments.emplace_back(
             assignmentID,
             assignmentName,
             weight,
             grade,
             dueDate,
-            completed
+            completed,
+            projectedGrade
         );
     }
 

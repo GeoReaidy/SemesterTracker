@@ -1,21 +1,43 @@
 #include "gradeswindow.h"
+#include "courseprojectiondialog.h"
+#include "gpatrendchart.h"
 #include "ui_gradeswindow.h"
 
 #include <QComboBox>
+#include <QDialog>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QListView>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QProgressBar>
-#include <QString>
+#include <QPushButton>
+#include <QSize>
 #include <QVBoxLayout>
 
 #include <algorithm>
+#include <exception>
 
 namespace
 {
-constexpr int UniformRowHeight = 88;
+constexpr int UniformRowHeight = 82;
+
+QString gradeText(
+    double percentage,
+    double gpa)
+{
+    return QString("%1%  •  %2  •  %3 / 4.00")
+        .arg(percentage, 0, 'f', 2)
+        .arg(
+            QString::fromStdString(
+                GradeProjection::
+                    percentageToLetterGrade(
+                        percentage
+                    )
+            )
+        )
+        .arg(gpa, 0, 'f', 2);
+}
 }
 
 GradesWindow::GradesWindow(
@@ -25,14 +47,11 @@ GradesWindow::GradesWindow(
     : QWidget(parent),
       database(database),
       userID(userID),
-      ui(new Ui::GradesWindow)
+      ui(new Ui::GradesWindow),
+      trendChart(nullptr)
 {
     ui->setupUi(this);
 
-    /*
-     * Apply popup styling directly to the view.
-     * This prevents white-on-white dropdown text on Windows.
-     */
     const QString comboPopupStyle = R"(
         QListView {
             background-color: #ffffff;
@@ -66,11 +85,6 @@ GradesWindow::GradesWindow(
 
     ui->semesterComboBox->setMaxVisibleItems(10);
 
-    /*
-     * The QListWidget item itself stays transparent.
-     * Each custom row draws exactly one outer card, preventing
-     * the "box inside another box" issue.
-     */
     ui->courseGradesListWidget->setStyleSheet(R"(
         QListWidget {
             background-color: transparent;
@@ -91,6 +105,25 @@ GradesWindow::GradesWindow(
             background-color: transparent;
         }
     )");
+
+    auto *chartLayout =
+        new QVBoxLayout(
+            ui->trendChartContainer
+        );
+
+    chartLayout->setContentsMargins(
+        0,
+        0,
+        0,
+        0
+    );
+
+    trendChart =
+        new GpaTrendChart(
+            ui->trendChartContainer
+        );
+
+    chartLayout->addWidget(trendChart);
 
     connect(
         ui->semesterComboBox,
@@ -124,7 +157,7 @@ void GradesWindow::refreshSemesters()
     if (userID < 0)
     {
         ui->semesterComboBox->addItem(
-            "No user selected",
+            tr("No user selected"),
             -1
         );
 
@@ -143,12 +176,27 @@ void GradesWindow::refreshSemesters()
 
     for (const Semester &semester : semesters)
     {
-        const QString label =
+        QString label =
             QString("%1 %2")
-                .arg(QString::fromStdString(
-                    semester.getName()
-                ))
+                .arg(
+                    QString::fromStdString(
+                        semester.getName()
+                    )
+                )
                 .arg(semester.getYear());
+
+        if (semester.isInProgress())
+        {
+            label += tr(" — active");
+        }
+        else if (semester.isCompleted())
+        {
+            label += tr(" — completed");
+        }
+        else
+        {
+            label += tr(" — planned");
+        }
 
         ui->semesterComboBox->addItem(
             label,
@@ -158,7 +206,8 @@ void GradesWindow::refreshSemesters()
         const int index =
             ui->semesterComboBox->count() - 1;
 
-        if (semester.getID() == previousSemesterID)
+        if (semester.getID() ==
+            previousSemesterID)
         {
             previousIndex = index;
         }
@@ -172,7 +221,7 @@ void GradesWindow::refreshSemesters()
     if (semesters.empty())
     {
         ui->semesterComboBox->addItem(
-            "Create a semester first",
+            tr("Create a semester first"),
             -1
         );
 
@@ -208,31 +257,95 @@ void GradesWindow::refreshGrades()
 {
     ui->courseGradesListWidget->clear();
 
-    const int semesterID = selectedSemesterID();
-
-    if (semesterID < 0)
+    if (userID < 0)
     {
-        updateSummary({});
+        ui->semesterGpaValueLabel->setText(
+            tr("—")
+        );
+        ui->averageGradeValueLabel->setText(
+            tr("—")
+        );
+        ui->completedCoursesValueLabel->setText(
+            tr("—")
+        );
+        ui->projectedCgpaValueLabel->setText(
+            tr("—")
+        );
+        trendChart->setPoints({});
         updateEmptyState();
         return;
     }
 
-    const std::vector<Course> courses =
-        database.loadCoursesForSemester(semesterID);
-
-    for (const Course &course : courses)
+    try
     {
-        const CourseGradeResult result =
-            calculateCourseGrade(course);
+        const User user =
+            database.loadFullUserByID(userID);
 
-        addCourseGradeRow(course, result);
+        const Semester *selectedSemester =
+            nullptr;
+
+        const int semesterID =
+            selectedSemesterID();
+
+        for (const Semester &semester :
+             user.getSemesters())
+        {
+            if (semester.getID() ==
+                semesterID)
+            {
+                selectedSemester =
+                    &semester;
+                break;
+            }
+        }
+
+        if (selectedSemester != nullptr &&
+            !selectedSemester->isSummaryOnly())
+        {
+            for (const Course &course :
+                 selectedSemester->getCourses())
+            {
+                const CourseProjectionResult result =
+                    GradeProjection::calculateCourse(
+                        course
+                    );
+
+                addCourseGradeRow(
+                    course,
+                    result
+                );
+            }
+        }
+
+        updateSummary(
+            user,
+            selectedSemester
+        );
+
+        updateTrend(user);
+    }
+    catch (const std::exception &)
+    {
+        ui->semesterGpaValueLabel->setText(
+            tr("—")
+        );
+        ui->averageGradeValueLabel->setText(
+            tr("—")
+        );
+        ui->completedCoursesValueLabel->setText(
+            tr("—")
+        );
+        ui->projectedCgpaValueLabel->setText(
+            tr("—")
+        );
+        trendChart->setPoints({});
     }
 
-    updateSummary(courses);
     updateEmptyState();
 }
 
-void GradesWindow::handleSemesterChanged(int index)
+void GradesWindow::handleSemesterChanged(
+    int index)
 {
     Q_UNUSED(index);
     refreshGrades();
@@ -252,70 +365,9 @@ int GradesWindow::selectedSemesterID() const
         .toInt();
 }
 
-GradesWindow::CourseGradeResult
-GradesWindow::calculateCourseGrade(
-    const Course &course) const
-{
-    CourseGradeResult result;
-
-    const std::vector<Assignment> assignments =
-        database.loadAssignmentsForCourse(
-            course.getID()
-        );
-
-    double weightedGradeTotal = 0.0;
-    int totalWeight = 0;
-
-    for (const Assignment &assignment : assignments)
-    {
-        if (!assignment.hasGrade())
-        {
-            continue;
-        }
-
-        const int weight =
-            assignment.getWeightPercentage();
-
-        if (weight <= 0)
-        {
-            continue;
-        }
-
-        weightedGradeTotal +=
-            assignment.getGrade() * weight;
-
-        totalWeight += weight;
-    }
-
-    result.totalWeight = totalWeight;
-
-    if (totalWeight <= 0)
-    {
-        return result;
-    }
-
-    /*
-     * Normalize by the weight currently entered.
-     * Example: one assignment worth 20% with a grade of 90%
-     * displays a current course grade of 90%, not 18%.
-     */
-    result.hasGrades = true;
-    result.percentage =
-        weightedGradeTotal
-        / static_cast<double>(totalWeight);
-
-    result.percentage =
-        std::clamp(result.percentage, 0.0, 100.0);
-
-    result.gpa =
-        percentageToGpa(result.percentage);
-
-    return result;
-}
-
 void GradesWindow::addCourseGradeRow(
     const Course &course,
-    const CourseGradeResult &result)
+    const CourseProjectionResult &result)
 {
     auto *item =
         new QListWidgetItem(
@@ -328,7 +380,13 @@ void GradesWindow::addCourseGradeRow(
         );
 
     rowWidget->setObjectName("gradeRow");
-    rowWidget->setMinimumHeight(UniformRowHeight);
+    rowWidget->setMinimumHeight(
+        UniformRowHeight
+    );
+    rowWidget->setAttribute(
+        Qt::WA_StyledBackground,
+        true
+    );
 
     rowWidget->setStyleSheet(R"(
         QWidget#gradeRow {
@@ -345,142 +403,216 @@ void GradesWindow::addCourseGradeRow(
         }
     )");
 
-    auto *rowLayout = new QHBoxLayout(rowWidget);
-    rowLayout->setContentsMargins(14, 0, 14, 0);
-    rowLayout->setSpacing(14);
-    rowLayout->setAlignment(Qt::AlignVCenter);
+    auto *rowLayout =
+        new QHBoxLayout(rowWidget);
 
-    auto *textContainer = new QWidget(rowWidget);
-    textContainer->setStyleSheet(
-        "background: transparent;"
-        "border: none;"
+    rowLayout->setContentsMargins(
+        14,
+        9,
+        12,
+        9
     );
+    rowLayout->setSpacing(12);
+    rowLayout->setAlignment(
+        Qt::AlignVCenter
+    );
+
+    auto *textContainer =
+        new QWidget(rowWidget);
 
     auto *textLayout =
         new QVBoxLayout(textContainer);
 
-    textLayout->setContentsMargins(0, 0, 0, 0);
+    textLayout->setContentsMargins(
+        0,
+        0,
+        0,
+        0
+    );
     textLayout->setSpacing(4);
 
     auto *courseLabel = new QLabel(
         QString("%1 — %2")
-            .arg(QString::fromStdString(
-                course.getCode()
-            ))
-            .arg(QString::fromStdString(
-                course.getName()
-            )),
+            .arg(
+                QString::fromStdString(
+                    course.getCode()
+                )
+            )
+            .arg(
+                QString::fromStdString(
+                    course.getName()
+                )
+            ),
         textContainer
     );
 
-    courseLabel->setAlignment(
-        Qt::AlignLeft | Qt::AlignVCenter
-    );
-
     courseLabel->setStyleSheet(
-        "color: #111827;"
-        "font-size: 15px;"
-        "font-weight: 600;"
-        "border: none;"
-        "background: transparent;"
+        QStringLiteral(
+            "color: #111827;"
+            "font-size: 14px;"
+            "font-weight: 600;"
+        )
     );
 
-    QString detailsText =
-        result.hasGrades
-            ? QString("Assignment weight entered: %1%")
-                  .arg(result.totalWeight)
-            : tr("Add graded assignments to calculate this course.");
+    QString detail =
+        tr("%1 credit%2 • %3% assignment weight configured")
+            .arg(course.getCredits())
+            .arg(
+                course.getCredits() == 1
+                    ? QString()
+                    : QStringLiteral("s")
+            )
+            .arg(result.configuredWeight);
 
     if (course.isExcludedFromCGPA())
     {
-        detailsText += tr(
-            "  •  Historical attempt — excluded from CGPA"
+        detail += tr(
+            " • Historical — excluded from CGPA"
         );
     }
     else if (course.isRetaken())
     {
-        detailsText += tr(
-            "  •  Retake attempt"
-        );
+        detail += tr(" • Retake");
     }
 
-    auto *detailsLabel = new QLabel(
-        detailsText,
-        textContainer
-    );
-
-    detailsLabel->setAlignment(
-        Qt::AlignLeft | Qt::AlignVCenter
-    );
+    auto *detailsLabel =
+        new QLabel(
+            detail,
+            textContainer
+        );
 
     detailsLabel->setStyleSheet(
-        "color: #64748b;"
-        "font-size: 13px;"
-        "border: none;"
-        "background: transparent;"
+        QStringLiteral(
+            "color: #64748b;"
+            "font-size: 12px;"
+        )
     );
 
     textLayout->addWidget(courseLabel);
     textLayout->addWidget(detailsLabel);
 
-    auto *gradeContainer = new QWidget(rowWidget);
-    gradeContainer->setStyleSheet(
-        "background: transparent;"
-        "border: none;"
+    auto *gradeContainer =
+        new QWidget(rowWidget);
+
+    // Keep enough horizontal room for the complete current/projected
+    // grade strings. A fixed 205 px width clipped the "Projected:" text.
+    gradeContainer->setMinimumWidth(300);
+    gradeContainer->setSizePolicy(
+        QSizePolicy::Minimum,
+        QSizePolicy::Preferred
     );
 
     auto *gradeLayout =
-        new QVBoxLayout(gradeContainer);
+        new QVBoxLayout(
+            gradeContainer
+        );
 
-    gradeLayout->setContentsMargins(0, 0, 0, 0);
-    gradeLayout->setSpacing(4);
-    gradeLayout->setAlignment(Qt::AlignVCenter);
+    gradeLayout->setContentsMargins(
+        0,
+        0,
+        0,
+        0
+    );
+    gradeLayout->setSpacing(3);
 
-    const QString gradeDisplayText =
-        result.hasGrades
-            ? QString("%1%  •  %2  •  %3 / 4.00")
-                  .arg(result.percentage, 0, 'f', 2)
-                  .arg(percentageToLetterGrade(
-                      result.percentage
-                  ))
-                  .arg(result.gpa, 0, 'f', 2)
-            : "No graded assignments";
+    const QString currentText =
+        result.hasActualGrades
+            ? tr("Current: %1")
+                  .arg(
+                      gradeText(
+                          result.currentGrade,
+                          GradeProjection::
+                              percentageToGpa(
+                                  result.currentGrade
+                              )
+                      )
+                  )
+            : tr("Current: —");
 
-    auto *gradeLabel = new QLabel(
-        gradeDisplayText,
-        gradeContainer
+    const QString projectedText =
+        result.hasProjectedResult
+            ? tr("Projected: %1")
+                  .arg(
+                      gradeText(
+                          result.projectedGrade,
+                          result.projectedGpa
+                      )
+                  )
+            : tr("Projected: —");
+
+    auto *currentLabel =
+        new QLabel(
+            currentText,
+            gradeContainer
+        );
+
+    auto *projectedLabel =
+        new QLabel(
+            projectedText,
+            gradeContainer
+        );
+
+    currentLabel->setAlignment(
+        Qt::AlignRight |
+        Qt::AlignVCenter
     );
 
-    gradeLabel->setAlignment(
-        Qt::AlignRight | Qt::AlignVCenter
+    projectedLabel->setAlignment(
+        Qt::AlignRight |
+        Qt::AlignVCenter
     );
 
-    gradeLabel->setStyleSheet(
-        result.hasGrades
-            ? "color: #2563eb;"
-              "font-size: 14px;"
-              "font-weight: 700;"
-              "border: none;"
-              "background: transparent;"
-            : "color: #94a3b8;"
-              "font-size: 13px;"
-              "font-weight: 600;"
-              "border: none;"
-              "background: transparent;"
+    currentLabel->setWordWrap(false);
+    projectedLabel->setWordWrap(false);
+    currentLabel->setMinimumWidth(300);
+    projectedLabel->setMinimumWidth(300);
+
+    currentLabel->setStyleSheet(
+        QStringLiteral(
+            "color: #475569;"
+            "font-size: 12px;"
+            "font-weight: 600;"
+        )
+    );
+
+    projectedLabel->setStyleSheet(
+        result.hasProjectedResult
+            ? QStringLiteral(
+                  "color: #2563eb;"
+                  "font-size: 13px;"
+                  "font-weight: 700;"
+              )
+            : QStringLiteral(
+                  "color: #94a3b8;"
+                  "font-size: 12px;"
+                  "font-weight: 600;"
+              )
     );
 
     auto *progressBar =
-        new QProgressBar(gradeContainer);
+        new QProgressBar(
+            gradeContainer
+        );
 
     progressBar->setRange(0, 100);
     progressBar->setValue(
-        result.hasGrades
-            ? static_cast<int>(result.percentage)
-            : 0
+        result.hasProjectedResult
+            ? static_cast<int>(
+                  result.projectedGrade
+              )
+            : result.hasActualGrades
+                  ? static_cast<int>(
+                        result.currentGrade
+                    )
+                  : 0
     );
 
     progressBar->setTextVisible(false);
-    progressBar->setFixedSize(190, 8);
+    progressBar->setFixedSize(180, 6);
+    progressBar->setVisible(
+        result.hasProjectedResult ||
+        result.hasActualGrades
+    );
 
     progressBar->setStyleSheet(R"(
         QProgressBar {
@@ -496,7 +628,13 @@ void GradesWindow::addCourseGradeRow(
     )");
 
     gradeLayout->addWidget(
-        gradeLabel,
+        currentLabel,
+        0,
+        Qt::AlignRight
+    );
+
+    gradeLayout->addWidget(
+        projectedLabel,
         0,
         Qt::AlignRight
     );
@@ -506,6 +644,40 @@ void GradesWindow::addCourseGradeRow(
         0,
         Qt::AlignRight
     );
+
+    auto *projectionButton =
+        new QPushButton(
+            tr("Projection"),
+            rowWidget
+        );
+
+    projectionButton->setFixedHeight(32);
+    projectionButton->setMinimumWidth(86);
+    projectionButton->setCursor(
+        Qt::PointingHandCursor
+    );
+    projectionButton->setStyleSheet(R"(
+        QPushButton {
+            color: #6d28d9;
+            background-color: #f5f3ff;
+            border: 1px solid #ddd6fe;
+            border-radius: 8px;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        QPushButton:hover {
+            background-color: #ede9fe;
+            border-color: #c4b5fd;
+        }
+    )");
+
+    if (course.isExcludedFromCGPA() ||
+        course.isWithdrawn())
+    {
+        projectionButton->setEnabled(false);
+    }
 
     rowLayout->addWidget(
         textContainer,
@@ -519,87 +691,180 @@ void GradesWindow::addCourseGradeRow(
         Qt::AlignVCenter
     );
 
+    rowLayout->addWidget(
+        projectionButton,
+        0,
+        Qt::AlignVCenter
+    );
+
     item->setSizeHint(
         QSize(0, UniformRowHeight)
     );
 
-    ui->courseGradesListWidget->setItemWidget(
-        item,
-        rowWidget
+    ui->courseGradesListWidget
+        ->setItemWidget(
+            item,
+            rowWidget
+        );
+
+    connect(
+        projectionButton,
+        &QPushButton::clicked,
+        this,
+        [this, course]()
+        {
+            openCourseProjection(course);
+        }
     );
 }
 
-void GradesWindow::updateSummary(
-    const std::vector<Course> &courses)
+void GradesWindow::openCourseProjection(
+    const Course &course)
 {
-    double creditWeightedGpaTotal = 0.0;
-    int gradedCredits = 0;
-
-    double percentageTotal = 0.0;
-    int gradedCourseCount = 0;
-    int completedCourseCount = 0;
-
-    for (const Course &course : courses)
-    {
-        if (course.isCompleted())
-        {
-            ++completedCourseCount;
-        }
-
-        if (course.isWithdrawn())
-        {
-            continue;
-        }
-
-        const CourseGradeResult result =
-            calculateCourseGrade(course);
-
-        if (!result.hasGrades)
-        {
-            continue;
-        }
-
-        ++gradedCourseCount;
-        percentageTotal += result.percentage;
-
-        const int credits =
-            std::max(course.getCredits(), 0);
-
-        creditWeightedGpaTotal +=
-            result.gpa * credits;
-
-        gradedCredits += credits;
-    }
-
-    ui->completedCoursesValueLabel->setText(
-        QString::number(completedCourseCount)
+    CourseProjectionDialog dialog(
+        database,
+        course,
+        this
     );
 
-    if (gradedCourseCount == 0)
+    if (dialog.exec() !=
+        QDialog::Accepted)
     {
-        ui->semesterGpaValueLabel->setText("—");
-        ui->averageGradeValueLabel->setText("—");
         return;
     }
 
-    const double averagePercentage =
-        percentageTotal
-        / static_cast<double>(gradedCourseCount);
+    refreshGrades();
+}
 
-    const double semesterGpa =
-        gradedCredits > 0
-            ? creditWeightedGpaTotal
-              / static_cast<double>(gradedCredits)
-            : percentageToGpa(averagePercentage);
+void GradesWindow::updateSummary(
+    const User &user,
+    const Semester *selectedSemester)
+{
+    bool hasCurrentSemesterGpa = false;
+    bool hasProjectedSemesterGpa = false;
+
+    double currentSemesterGpa = 0.0;
+    double projectedSemesterGpa = 0.0;
+
+    if (selectedSemester != nullptr)
+    {
+        currentSemesterGpa =
+            GradeProjection::
+                calculateSemesterGpa(
+                    *selectedSemester,
+                    false,
+                    &hasCurrentSemesterGpa
+                );
+
+        projectedSemesterGpa =
+            GradeProjection::
+                calculateSemesterGpa(
+                    *selectedSemester,
+                    true,
+                    &hasProjectedSemesterGpa
+                );
+    }
+
+    bool hasCurrentCgpa = false;
+    bool hasProjectedCgpa = false;
+
+    const double currentCgpa =
+        GradeProjection::calculateCgpa(
+            user,
+            false,
+            &hasCurrentCgpa
+        );
+
+    const double projectedCgpa =
+        GradeProjection::calculateCgpa(
+            user,
+            true,
+            &hasProjectedCgpa
+        );
 
     ui->semesterGpaValueLabel->setText(
-        QString("%1 / 4.00")
-            .arg(semesterGpa, 0, 'f', 2)
+        hasCurrentSemesterGpa
+            ? tr("%1 / 4.00")
+                  .arg(
+                      currentSemesterGpa,
+                      0,
+                      'f',
+                      2
+                  )
+            : tr("—")
     );
 
     ui->averageGradeValueLabel->setText(
-        QString("%1%")
-            .arg(averagePercentage, 0, 'f', 2)
+        hasProjectedSemesterGpa
+            ? tr("%1 / 4.00")
+                  .arg(
+                      projectedSemesterGpa,
+                      0,
+                      'f',
+                      2
+                  )
+            : tr("—")
+    );
+
+    ui->completedCoursesValueLabel->setText(
+        hasCurrentCgpa
+            ? tr("%1 / 4.00")
+                  .arg(
+                      currentCgpa,
+                      0,
+                      'f',
+                      2
+                  )
+            : tr("—")
+    );
+
+    ui->projectedCgpaValueLabel->setText(
+        hasProjectedCgpa
+            ? tr("%1 / 4.00")
+                  .arg(
+                      projectedCgpa,
+                      0,
+                      'f',
+                      2
+                  )
+            : tr("—")
+    );
+
+    if (hasCurrentCgpa &&
+        hasProjectedCgpa)
+    {
+        const double change =
+            projectedCgpa -
+            currentCgpa;
+
+        ui->projectedCgpaValueLabel
+            ->setToolTip(
+                tr("Projected change: %1%2")
+                    .arg(
+                        change >= 0.0
+                            ? QStringLiteral("+")
+                            : QString()
+                    )
+                    .arg(
+                        change,
+                        0,
+                        'f',
+                        2
+                    )
+            );
+    }
+    else
+    {
+        ui->projectedCgpaValueLabel
+            ->setToolTip(QString());
+    }
+}
+
+void GradesWindow::updateTrend(
+    const User &user)
+{
+    trendChart->setPoints(
+        GradeProjection::buildTrend(user)
     );
 }
 
@@ -612,7 +877,9 @@ void GradesWindow::updateEmptyState()
         courseCountText(courseCount)
     );
 
-    const bool hasCourses = courseCount > 0;
+    const bool hasCourses =
+        courseCount > 0;
+
     const bool hasSemester =
         selectedSemesterID() >= 0;
 
@@ -631,60 +898,33 @@ void GradesWindow::updateEmptyState()
     if (!hasSemester)
     {
         ui->emptyStateTitleLabel->setText(
-            "No semester selected"
+            tr("No semester selected")
         );
 
         ui->emptyStateLabel->setText(
-            "Create or select a semester first."
+            tr("Create or select a semester first.")
         );
     }
     else
     {
         ui->emptyStateTitleLabel->setText(
-            "No courses to grade"
+            tr("No courses to grade")
         );
 
         ui->emptyStateLabel->setText(
-            "Add courses and assignments to this semester first."
+            tr("Add courses and assignments to this semester first.")
         );
     }
 }
 
-double GradesWindow::percentageToGpa(
-    double percentage)
+QString GradesWindow::courseCountText(
+    int count)
 {
-    if (percentage >= 90.0) return 4.0;
-    if (percentage >= 87.0) return 3.7;
-    if (percentage >= 83.0) return 3.3;
-    if (percentage >= 80.0) return 3.0;
-    if (percentage >= 77.0) return 2.7;
-    if (percentage >= 73.0) return 2.3;
-    if (percentage >= 70.0) return 2.0;
-    if (percentage >= 67.0) return 1.7;
-    if (percentage >= 63.0) return 1.3;
-    if (percentage >= 60.0) return 1.0;
-    return 0.0;
-}
-
-QString GradesWindow::percentageToLetterGrade(
-    double percentage)
-{
-    if (percentage >= 90.0) return "A";
-    if (percentage >= 87.0) return "A-";
-    if (percentage >= 83.0) return "B+";
-    if (percentage >= 80.0) return "B";
-    if (percentage >= 77.0) return "B-";
-    if (percentage >= 73.0) return "C+";
-    if (percentage >= 70.0) return "C";
-    if (percentage >= 67.0) return "C-";
-    if (percentage >= 63.0) return "D+";
-    if (percentage >= 60.0) return "D";
-    return "F";
-}
-
-QString GradesWindow::courseCountText(int count)
-{
-    return QString("%1 course%2")
+    return tr("%1 course%2")
         .arg(count)
-        .arg(count == 1 ? "" : "s");
+        .arg(
+            count == 1
+                ? QString()
+                : QStringLiteral("s")
+        );
 }

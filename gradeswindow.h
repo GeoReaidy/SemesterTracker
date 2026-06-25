@@ -2,6 +2,7 @@
 #define GRADESWINDOW_H
 
 #include "databasemanager.h"
+#include "gradeprojection.h"
 
 #include <QWidget>
 
@@ -11,6 +12,8 @@ namespace Ui
 class GradesWindow;
 }
 QT_END_NAMESPACE
+
+class GpaTrendChart;
 
 class GradesWindow : public QWidget
 {
@@ -33,38 +36,31 @@ private slots:
     void handleSemesterChanged(int index);
 
 private:
-    struct CourseGradeResult
-    {
-        bool hasGrades = false;
-        double percentage = 0.0;
-        double gpa = 0.0;
-        int totalWeight = 0;
-    };
-
     int selectedSemesterID() const;
-
-    CourseGradeResult calculateCourseGrade(
-        const Course &course
-    ) const;
 
     void addCourseGradeRow(
         const Course &course,
-        const CourseGradeResult &result
+        const CourseProjectionResult &result
+    );
+
+    void openCourseProjection(
+        const Course &course
     );
 
     void updateSummary(
-        const std::vector<Course> &courses
+        const User &user,
+        const Semester *selectedSemester
     );
 
+    void updateTrend(const User &user);
     void updateEmptyState();
 
-    static double percentageToGpa(double percentage);
-    static QString percentageToLetterGrade(double percentage);
     static QString courseCountText(int count);
 
     DatabaseManager &database;
     int userID;
     Ui::GradesWindow *ui;
+    GpaTrendChart *trendChart;
 };
 
 #endif // GRADESWINDOW_H

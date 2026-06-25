@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(
     SemesterTrackerGUI
-    VERSION 1.2.1
+    VERSION 1.3.0
     LANGUAGES C CXX
 )
 
@@ -118,6 +118,10 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
         courseswindow.ui
         courseeditordialog.h courseeditordialog.cpp
         courseeditordialog.ui
+        courseprojectiondialog.h courseprojectiondialog.cpp
+        courseprojectiondialog.ui
+        gradeprojection.h gradeprojection.cpp
+        gpatrendchart.h gpatrendchart.cpp
         assignmentswindow.ui
         assignmentswindow.h assignmentswindow.cpp
         assignmenteditordialog.ui

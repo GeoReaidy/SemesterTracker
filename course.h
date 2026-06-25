@@ -29,6 +29,7 @@ private:
     bool retaken;
     int retakeOfCourseID;
     bool excludedFromCGPA;
+    double targetGrade;
 
 public:
     Course(int id,
@@ -38,7 +39,8 @@ public:
            CourseStatus status = CourseStatus::InProgress,
            bool retaken = false,
            int retakeOfCourseID = -1,
-           bool excludedFromCGPA = false);
+           bool excludedFromCGPA = false,
+           double targetGrade = -1.0);
 
     int getID() const;
     std::string getName() const;
@@ -52,6 +54,8 @@ public:
     bool isRetaken() const;
     int getRetakeOfCourseID() const;
     bool isExcludedFromCGPA() const;
+    double getTargetGrade() const;
+    bool hasTargetGrade() const;
     const std::vector<Assignment> &getAssignments() const;
 
     void setName(const std::string &name);
@@ -61,6 +65,7 @@ public:
     void setRetaken(bool isRetaken);
     void setRetakeOfCourseID(int courseID);
     void setExcludedFromCGPA(bool excluded);
+    void setTargetGrade(double grade);
 
     void addAssignment(const Assignment &assignment);
     bool removeAssignment(int assignmentID);

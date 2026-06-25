@@ -1,0 +1,1062 @@
+warning: in the working copy of 'CMakeLists.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'appstyle.cpp', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'appstyle.h', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'assignment.cpp', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'assignment.h', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'course.cpp', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'course.h', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'courseswindow.cpp', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'courseswindow.h', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'databasemanager.cpp', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'databasemanager.h', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'gradeswindow.cpp', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'gradeswindow.h', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'gradeswindow.ui', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'resources/app_resources.qrc', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/CMakeLists.txt b/CMakeLists.txt[m
+[1mindex 06cb853..8dcc285 100644[m
+[1m--- a/CMakeLists.txt[m
+[1m+++ b/CMakeLists.txt[m
+[36m@@ -2,7 +2,7 @@[m [mcmake_minimum_required(VERSION 3.16)[m
+ [m
+ project([m
+     SemesterTrackerGUI[m
+[31m-    VERSION 1.2.1[m
+[32m+[m[32m    VERSION 1.3.0[m
+     LANGUAGES C CXX[m
+ )[m
+ [m
+[36m@@ -118,6 +118,10 @@[m [mif(QT_VERSION_MAJOR GREATER_EQUAL 6)[m
+         courseswindow.ui[m
+         courseeditordialog.h courseeditordialog.cpp[m
+         courseeditordialog.ui[m
+[32m+[m[32m        courseprojectiondialog.h courseprojectiondialog.cpp[m
+[32m+[m[32m        courseprojectiondialog.ui[m
+[32m+[m[32m        gradeprojection.h gradeprojection.cpp[m
+[32m+[m[32m        gpatrendchart.h gpatrendchart.cpp[m
+         assignmentswindow.ui[m
+         assignmentswindow.h assignmentswindow.cpp[m
+         assignmenteditordialog.ui[m
+[1mdiff --git a/appstyle.cpp b/appstyle.cpp[m
+[1mindex 8b7f395..53d49ec 100644[m
+[1m--- a/appstyle.cpp[m
+[1m+++ b/appstyle.cpp[m
+[36m@@ -154,6 +154,105 @@[m [mQString AppStyle::globalStyleSheet()[m
+             padding: 8px 10px;[m
+         }[m
+ [m
+[32m+[m[32m        /* Clean, compact stepper buttons for numeric/date/time fields. */[m
+[32m+[m[32m        QSpinBox,[m
+[32m+[m[32m        QDoubleSpinBox,[m
+[32m+[m[32m        QDateEdit,[m
+[32m+[m[32m        QTimeEdit,[m
+[32m+[m[32m        QDateTimeEdit {[m
+[32m+[m[32m            padding-right: 30px;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        QSpinBox::up-button,[m
+[32m+[m[32m        QDoubleSpinBox::up-button,[m
+[32m+[m[32m        QDateEdit::up-button,[m
+[32m+[m[32m        QTimeEdit::up-button,[m
+[32m+[m[32m        QDateTimeEdit::up-button {[m
+[32m+[m[32m            subcontrol-origin: border;[m
+[32m+[m[32m            subcontrol-position: top right;[m
+[32m+[m[32m            width: 26px;[m
+[32m+[m[32m            background-color: #f8fafc;[m
+[32m+[m[32m            border: none;[m
+[32m+[m[32m            border-left: 1px solid #cbd5e1;[m
+[32m+[m[32m            border-bottom: 1px solid #e2e8f0;[m
+[32m+[m[32m            border-top-right-radius: 7px;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        QSpinBox::down-button,[m
+[32m+[m[32m        QDoubleSpinBox::down-button,[m
+[32m+[m[32m        QDateEdit::down-button,[m
+[32m+[m[32m        QTimeEdit::down-button,[m
+[32m+[m[32m        QDateTimeEdit::down-button {[m
+[32m+[m[32m            subcontrol-origin: border;[m
+[32m+[m[32m            subcontrol-position: bottom right;[m
+[32m+[m[32m            width: 26px;[m
+[32m+[m[32m            background-color: #f8fafc;[m
+[32m+[m[32m            border: none;[m
+[32m+[m[32m            border-left: 1px solid #cbd5e1;[m
+[32m+[m[32m            border-top: 1px solid #e2e8f0;[m
+[32m+[m[32m            border-bottom-right-radius: 7px;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        QSpinBox::up-button:hover,[m
+[32m+[m[32m        QDoubleSpinBox::up-button:hover,[m
+[32m+[m[32m        QDateEdit::up-button:hover,[m
+[32m+[m[32m        QTimeEdit::up-button:hover,[m
+[32m+[m[32m        QDateTimeEdit::up-button:hover,[m
+[32m+[m[32m        QSpinBox::down-button:hover,[m
+[32m+[m[32m        QDoubleSpinBox::down-button:hover,[m
+[32m+[m[32m        QDateEdit::down-button:hover,[m
+[32m+[m[32m        QTimeEdit::down-button:hover,[m
+[32m+[m[32m        QDateTimeEdit::down-button:hover {[m
+[32m+[m[32m            background-color: #e2e8f0;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        QSpinBox::up-button:pressed,[m
+[32m+[m[32m        QDoubleSpinBox::up-button:pressed,[m
+[32m+[m[32m        QDateEdit::up-button:pressed,[m
+[32m+[m[32m        QTimeEdit::up-button:pressed,[m
+[32m+[m[32m        QDateTimeEdit::up-button:pressed,[m
+[32m+[m[32m        QSpinBox::down-button:pressed,[m
+[32m+[m[32m        QDoubleSpinBox::down-button:pressed,[m
+[32m+[m[32m        QDateEdit::down-button:pressed,[m
+[32m+[m[32m        QTimeEdit::down-button:pressed,[m
+[32m+[m[32m        QDateTimeEdit::down-button:pressed {[m
+[32m+[m[32m            background-color: #cbd5e1;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        QSpinBox::up-arrow,[m
+[32m+[m[32m        QDoubleSpinBox::up-arrow,[m
+[32m+[m[32m        QDateEdit::up-arrow,[m
+[32m+[m[32m        QTimeEdit::up-arrow,[m
+[32m+[m[32m        QDateTimeEdit::up-arrow {[m
+[32m+[m[32m            image: url(:/icons/chevron-up-black.svg);[m
+[32m+[m[32m            width: 11px;[m
+[32m+[m[32m            height: 11px;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        QSpinBox::down-arrow,[m
+[32m+[m[32m        QDoubleSpinBox::down-arrow,[m
+[32m+[m[32m        QDateEdit::down-arrow,[m
+[32m+[m[32m        QTimeEdit::down-arrow,[m
+[32m+[m[32m        QDateTimeEdit::down-arrow {[m
+[32m+[m[32m            image: url(:/icons/chevron-down-black.svg);[m
+[32m+[m[32m            width: 11px;[m
+[32m+[m[32m            height: 11px;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        QSpinBox::up-button:disabled,[m
+[32m+[m[32m        QDoubleSpinBox::up-button:disabled,[m
+[32m+[m[32m        QDateEdit::up-button:disabled,[m
+[32m+[m[32m        QTimeEdit::up-button:disabled,[m
+[32m+[m[32m        QDateTimeEdit::up-button:disabled,[m
+[32m+[m[32m        QSpinBox::down-button:disabled,[m
+[32m+[m[32m        QDoubleSpinBox::down-button:disabled,[m
+[32m+[m[32m        QDateEdit::down-button:disabled,[m
+[32m+[m[32m        QTimeEdit::down-button:disabled,[m
+[32m+[m[32m        QDateTimeEdit::down-button:disabled {[m
+[32m+[m[32m            background-color: #f1f5f9;[m
+[32m+[m[32m            border-color: #e2e8f0;[m
+[32m+[m[32m        }[m
+[32m+[m
+         QLineEdit:hover,[m
+         QTextEdit:hover,[m
+         QPlainTextEdit:hover,[m
+[1mdiff --git a/assignment.cpp b/assignment.cpp[m
+[1mindex 36ba4c6..7396bcb 100644[m
+[1m--- a/assignment.cpp[m
+[1m+++ b/assignment.cpp[m
+[36m@@ -89,6 +89,17 @@[m [mvoid validateGrade(double grade)[m
+     }[m
+ }[m
+ [m
+[32m+[m[32mvoid validateProjectedGrade(double grade)[m
+[32m+[m[32m{[m
+[32m+[m[32m    if (grade < -1.0 || grade > 100.0)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        throw std::invalid_argument([m
+[32m+[m[32m            "Projected assignment grade must be -1 for no projection, "[m
+[32m+[m[32m            "or between 0 and 100."[m
+[32m+[m[32m        );[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+ bool isLeapYear(int year)[m
+ {[m
+     return (year % 400 == 0) ||[m
+[36m@@ -180,17 +191,20 @@[m [mAssignment::Assignment(int id,[m
+                        int weight,[m
+                        double grade,[m
+                        std::string dueDate,[m
+[31m-                       bool completed)[m
+[32m+[m[32m                       bool completed,[m
+[32m+[m[32m                       double projectedGrade)[m
+     : assignmentName(validateAssignmentName(name)),[m
+       assignmentWeight(weight),[m
+       assignmentGrade(grade),[m
+       assignmentID(id),[m
+       dueDate(validateDueDate(dueDate)),[m
+[31m-      completed(completed)[m
+[32m+[m[32m      completed(completed),[m
+[32m+[m[32m      projectedGrade(projectedGrade)[m
+ {[m
+     validateAssignmentID(assignmentID);[m
+     validateWeight(assignmentWeight);[m
+     validateGrade(assignmentGrade);[m
+[32m+[m[32m    validateProjectedGrade(this->projectedGrade);[m
+ }[m
+ [m
+ int Assignment::getID() const[m
+[36m@@ -238,6 +252,26 @@[m [mbool Assignment::isCompleted() const[m
+     return completed;[m
+ }[m
+ [m
+[32m+[m[32mdouble Assignment::getProjectedGrade() const[m
+[32m+[m[32m{[m
+[32m+[m[32m    return projectedGrade;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mbool Assignment::hasProjectedGrade() const[m
+[32m+[m[32m{[m
+[32m+[m[32m    return projectedGrade >= 0.0;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mdouble Assignment::getEffectiveGrade() const[m
+[32m+[m[32m{[m
+[32m+[m[32m    if (hasGrade())[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return assignmentGrade;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return projectedGrade;[m
+[32m+[m[32m}[m
+[32m+[m
+ void Assignment::setName(const std::string &name)[m
+ {[m
+     assignmentName = validateAssignmentName(name);[m
+[36m@@ -265,3 +299,9 @@[m [mvoid Assignment::setCompleted(bool value)[m
+ {[m
+     completed = value;[m
+ }[m
+[32m+[m
+[32m+[m[32mvoid Assignment::setProjectedGrade(double grade)[m
+[32m+[m[32m{[m
+[32m+[m[32m    validateProjectedGrade(grade);[m
+[32m+[m[32m    projectedGrade = grade;[m
+[32m+[m[32m}[m
+[1mdiff --git a/assignment.h b/assignment.h[m
+[1mindex 8b081ca..9870613 100644[m
+[1m--- a/assignment.h[m
+[1m+++ b/assignment.h[m
+[36m@@ -12,6 +12,7 @@[m [mprivate:[m
+     int assignmentID;[m
+     std::string dueDate;[m
+     bool completed;[m
+[32m+[m[32m    double projectedGrade;[m
+ [m
+ public:[m
+     Assignment(int id,[m
+[36m@@ -19,7 +20,8 @@[m [mpublic:[m
+                int weight,[m
+                double grade,[m
+                std::string dueDate = "",[m
+[31m-               bool completed = false);[m
+[32m+[m[32m               bool completed = false,[m
+[32m+[m[32m               double projectedGrade = -1.0);[m
+ [m
+     int getID() const;[m
+     std::string getName() const;[m
+[36m@@ -30,12 +32,16 @@[m [mpublic:[m
+     std::string getDueDate() const;[m
+     bool hasDueDate() const;[m
+     bool isCompleted() const;[m
+[32m+[m[32m    double getProjectedGrade() const;[m
+[32m+[m[32m    bool hasProjectedGrade() const;[m
+[32m+[m[32m    double getEffectiveGrade() const;[m
+ [m
+     void setName(const std::string &name);[m
+     void setWeight(int weight);[m
+     void setGrade(double grade);[m
+     void setDueDate(const std::string &date);[m
+     void setCompleted(bool completed);[m
+[32m+[m[32m    void setProjectedGrade(double grade);[m
+ };[m
+ [m
+ #endif[m
+[1mdiff --git a/course.cpp b/course.cpp[m
+[1mindex 2398bc7..1ee93f3 100644[m
+[1m--- a/course.cpp[m
+[1m+++ b/course.cpp[m
+[36m@@ -164,6 +164,17 @@[m [mvoid validateOptionalCourseID(int id)[m
+         );[m
+     }[m
+ }[m
+[32m+[m
+[32m+[m[32mvoid validateTargetGrade(double grade)[m
+[32m+[m[32m{[m
+[32m+[m[32m    if (grade < -1.0 || grade > 100.0)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        throw std::invalid_argument([m
+[32m+[m[32m            "Target course grade must be -1 for no target, "[m
+[32m+[m[32m            "or between 0 and 100."[m
+[32m+[m[32m        );[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+ }[m
+ [m
+ std::string courseStatusToStorage(CourseStatus status)[m
+[36m@@ -214,7 +225,8 @@[m [mCourse::Course(int id,[m
+                CourseStatus courseStatus,[m
+                bool isRetaken,[m
+                int sourceCourseID,[m
+[31m-               bool excluded)[m
+[32m+[m[32m               bool excluded,[m
+[32m+[m[32m               double targetGrade)[m
+     : courseName(validateCourseName(name)),[m
+       courseCode(validateCourseCode(code)),[m
+       creditCount(credits),[m
+[36m@@ -222,11 +234,13 @@[m [mCourse::Course(int id,[m
+       status(courseStatus),[m
+       retaken(isRetaken),[m
+       retakeOfCourseID(sourceCourseID),[m
+[31m-      excludedFromCGPA(excluded)[m
+[32m+[m[32m      excludedFromCGPA(excluded),[m
+[32m+[m[32m      targetGrade(targetGrade)[m
+ {[m
+     validateCourseID(courseID);[m
+     validateCredits(creditCount);[m
+     validateOptionalCourseID(retakeOfCourseID);[m
+[32m+[m[32m    validateTargetGrade(this->targetGrade);[m
+ }[m
+ [m
+ int Course::getID() const[m
+[36m@@ -289,6 +303,16 @@[m [mbool Course::isExcludedFromCGPA() const[m
+     return excludedFromCGPA;[m
+ }[m
+ [m
+[32m+[m[32mdouble Course::getTargetGrade() const[m
+[32m+[m[32m{[m
+[32m+[m[32m    return targetGrade;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mbool Course::hasTargetGrade() const[m
+[32m+[m[32m{[m
+[32m+[m[32m    return targetGrade >= 0.0;[m
+[32m+[m[32m}[m
+[32m+[m
+ const std::vector<Assignment> &[m
+ Course::getAssignments() const[m
+ {[m
+[36m@@ -332,6 +356,12 @@[m [mvoid Course::setExcludedFromCGPA(bool excluded)[m
+     excludedFromCGPA = excluded;[m
+ }[m
+ [m
+[32m+[m[32mvoid Course::setTargetGrade(double grade)[m
+[32m+[m[32m{[m
+[32m+[m[32m    validateTargetGrade(grade);[m
+[32m+[m[32m    targetGrade = grade;[m
+[32m+[m[32m}[m
+[32m+[m
+ void Course::addAssignment([m
+     const Assignment &assignment)[m
+ {[m
+[1mdiff --git a/course.h b/course.h[m
+[1mindex 25454d2..26d47d7 100644[m
+[1m--- a/course.h[m
+[1m+++ b/course.h[m
+[36m@@ -29,6 +29,7 @@[m [mprivate:[m
+     bool retaken;[m
+     int retakeOfCourseID;[m
+     bool excludedFromCGPA;[m
+[32m+[m[32m    double targetGrade;[m
+ [m
+ public:[m
+     Course(int id,[m
+[36m@@ -38,7 +39,8 @@[m [mpublic:[m
+            CourseStatus status = CourseStatus::InProgress,[m
+            bool retaken = false,[m
+            int retakeOfCourseID = -1,[m
+[31m-           bool excludedFromCGPA = false);[m
+[32m+[m[32m           bool excludedFromCGPA = false,[m
+[32m+[m[32m           double targetGrade = -1.0);[m
+ [m
+     int getID() const;[m
+     std::string getName() const;[m
+[36m@@ -52,6 +54,8 @@[m [mpublic:[m
+     bool isRetaken() const;[m
+     int getRetakeOfCourseID() const;[m
+     bool isExcludedFromCGPA() const;[m
+[32m+[m[32m    double getTargetGrade() const;[m
+[32m+[m[32m    bool hasTargetGrade() const;[m
+     const std::vector<Assignment> &getAssignments() const;[m
+ [m
+     void setName(const std::string &name);[m
+[36m@@ -61,6 +65,7 @@[m [mpublic:[m
+     void setRetaken(bool isRetaken);[m
+     void setRetakeOfCourseID(int courseID);[m
+     void setExcludedFromCGPA(bool excluded);[m
+[32m+[m[32m    void setTargetGrade(double grade);[m
+ [m
+     void addAssignment(const Assignment &assignment);[m
+     bool removeAssignment(int assignmentID);[m
+[1mdiff --git a/courseswindow.cpp b/courseswindow.cpp[m
+[1mindex b42c5d0..038553a 100644[m
+[1m--- a/courseswindow.cpp[m
+[1m+++ b/courseswindow.cpp[m
+[36m@@ -1,5 +1,7 @@[m
+ #include "courseswindow.h"[m
+ #include "courseeditordialog.h"[m
+[32m+[m[32m#include "courseprojectiondialog.h"[m
+[32m+[m[32m#include "gradeprojection.h"[m
+ #include "ui_courseswindow.h"[m
+ [m
+ #include <QAction>[m
+[36m@@ -569,6 +571,10 @@[m [mvoid CoursesWindow::addCourseRow([m
+         Qt::UserRole + 7,[m
+         course.getRetakeOfCourseID()[m
+     );[m
+[32m+[m[32m    item->setData([m
+[32m+[m[32m        Qt::UserRole + 8,[m
+[32m+[m[32m        course.getTargetGrade()[m
+[32m+[m[32m    );[m
+ [m
+     auto *rowWidget =[m
+         new QWidget(ui->coursesListWidget);[m
+[36m@@ -630,10 +636,55 @@[m [mvoid CoursesWindow::addCourseRow([m
+         "font-weight: 600;"[m
+     );[m
+ [m
+[31m-    auto *creditsLabel = new QLabel([m
+[32m+[m[32m    Course projectionCourse = course;[m
+[32m+[m
+[32m+[m[32m    const std::vector<Assignment> projectionAssignments =[m
+[32m+[m[32m        database.loadAssignmentsForCourse([m
+[32m+[m[32m            course.getID()[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m    for (const Assignment &assignment :[m
+[32m+[m[32m         projectionAssignments)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        projectionCourse.addAssignment([m
+[32m+[m[32m            assignment[m
+[32m+[m[32m        );[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const CourseProjectionResult projectionResult =[m
+[32m+[m[32m        GradeProjection::calculateCourse([m
+[32m+[m[32m            projectionCourse[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m    QString courseDetails =[m
+         QString("%1 credit%2")[m
+             .arg(course.getCredits())[m
+[31m-            .arg(course.getCredits() == 1 ? "" : "s"),[m
+[32m+[m[32m            .arg(course.getCredits() == 1 ? "" : "s");[m
+[32m+[m
+[32m+[m[32m    if (projectionResult.hasProjectedResult &&[m
+[32m+[m[32m        !course.isWithdrawn())[m
+[32m+[m[32m    {[m
+[32m+[m[32m        courseDetails +=[m
+[32m+[m[32m            tr("  •  Projected %1% (%2)")[m
+[32m+[m[32m                .arg([m
+[32m+[m[32m                    projectionResult.projectedGrade,[m
+[32m+[m[32m                    0,[m
+[32m+[m[32m                    'f',[m
+[32m+[m[32m                    1[m
+[32m+[m[32m                )[m
+[32m+[m[32m                .arg([m
+[32m+[m[32m                    QString::fromStdString([m
+[32m+[m[32m                        GradeProjection::[m
+[32m+[m[32m                            percentageToLetterGrade([m
+[32m+[m[32m                                projectionResult[m
+[32m+[m[32m                                    .projectedGrade[m
+[32m+[m[32m                            )[m
+[32m+[m[32m                    )[m
+[32m+[m[32m                );[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    auto *creditsLabel = new QLabel([m
+[32m+[m[32m        courseDetails,[m
+         textContainer[m
+     );[m
+ [m
+[36m@@ -778,6 +829,53 @@[m [mvoid CoursesWindow::addCourseRow([m
+         );[m
+     }[m
+ [m
+[32m+[m[32m    auto *projectionButton =[m
+[32m+[m[32m        new QPushButton([m
+[32m+[m[32m            tr("Projection"),[m
+[32m+[m[32m            rowWidget[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m    projectionButton->setCursor([m
+[32m+[m[32m        Qt::PointingHandCursor[m
+[32m+[m[32m    );[m
+[32m+[m[32m    projectionButton->setFixedHeight(36);[m
+[32m+[m[32m    projectionButton->setMinimumWidth(92);[m
+[32m+[m[32m    projectionButton->setToolTip([m
+[32m+[m[32m        tr("Project assignment grades and the final course result")[m
+[32m+[m[32m    );[m
+[32m+[m[32m    projectionButton->setStyleSheet(R"([m
+[32m+[m[32m        QPushButton {[m
+[32m+[m[32m            color: #6d28d9;[m
+[32m+[m[32m            background-color: #f5f3ff;[m
+[32m+[m[32m            border: 1px solid #ddd6fe;[m
+[32m+[m[32m            border-radius: 8px;[m
+[32m+[m[32m            padding: 0 12px;[m
+[32m+[m[32m            font-size: 12px;[m
+[32m+[m[32m            font-weight: 600;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        QPushButton:hover {[m
+[32m+[m[32m            background-color: #ede9fe;[m
+[32m+[m[32m            border-color: #c4b5fd;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        QPushButton:pressed {[m
+[32m+[m[32m            background-color: #ddd6fe;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    )");[m
+[32m+[m
+[32m+[m[32m    if (course.isExcludedFromCGPA() ||[m
+[32m+[m[32m        course.isWithdrawn())[m
+[32m+[m[32m    {[m
+[32m+[m[32m        projectionButton->setEnabled(false);[m
+[32m+[m
+[32m+[m[32m        projectionButton->setToolTip([m
+[32m+[m[32m            course.isExcludedFromCGPA()[m
+[32m+[m[32m                ? tr("Historical attempts are read-only.")[m
+[32m+[m[32m                : tr("Withdrawn courses are excluded from projections.")[m
+[32m+[m[32m        );[m
+[32m+[m[32m    }[m
+[32m+[m
+     auto *editButton = new QToolButton(rowWidget);[m
+     editButton->setIcon(makePencilIcon());[m
+     editButton->setIconSize(QSize(20, 20));[m
+[36m@@ -861,6 +959,12 @@[m [mvoid CoursesWindow::addCourseRow([m
+         );[m
+     }[m
+ [m
+[32m+[m[32m    rowLayout->addWidget([m
+[32m+[m[32m        projectionButton,[m
+[32m+[m[32m        0,[m
+[32m+[m[32m        Qt::AlignVCenter[m
+[32m+[m[32m    );[m
+[32m+[m
+     rowLayout->addWidget([m
+         editButton,[m
+         0,[m
+[36m@@ -880,6 +984,18 @@[m [mvoid CoursesWindow::addCourseRow([m
+         rowWidget[m
+     );[m
+ [m
+[32m+[m[32m    connect([m
+[32m+[m[32m        projectionButton,[m
+[32m+[m[32m        &QPushButton::clicked,[m
+[32m+[m[32m        this,[m
+[32m+[m[32m        [this, projectionCourse]()[m
+[32m+[m[32m        {[m
+[32m+[m[32m            openCourseProjection([m
+[32m+[m[32m                projectionCourse[m
+[32m+[m[32m            );[m
+[32m+[m[32m        }[m
+[32m+[m[32m    );[m
+[32m+[m
+     connect([m
+         editButton,[m
+         &QToolButton::clicked,[m
+[36m@@ -901,6 +1017,25 @@[m [mvoid CoursesWindow::addCourseRow([m
+     );[m
+ }[m
+ [m
+[32m+[m[32mvoid CoursesWindow::openCourseProjection([m
+[32m+[m[32m    const Course &course)[m
+[32m+[m[32m{[m
+[32m+[m[32m    CourseProjectionDialog dialog([m
+[32m+[m[32m        database,[m
+[32m+[m[32m        course,[m
+[32m+[m[32m        this[m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m    if (dialog.exec() !=[m
+[32m+[m[32m        QDialog::Accepted)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    refreshCourses();[m
+[32m+[m[32m    emit coursesChanged();[m
+[32m+[m[32m}[m
+[32m+[m
+ void CoursesWindow::setCourseStatus([m
+     QListWidgetItem *item,[m
+     CourseStatus status)[m
+[36m@@ -1005,7 +1140,10 @@[m [mvoid CoursesWindow::editCourseRow([m
+             ).toInt(),[m
+             item->data([m
+                 Qt::UserRole + 6[m
+[31m-            ).toBool()[m
+[32m+[m[32m            ).toBool(),[m
+[32m+[m[32m            item->data([m
+[32m+[m[32m                Qt::UserRole + 8[m
+[32m+[m[32m            ).toDouble()[m
+         );[m
+ [m
+         CourseEditorDialog dialog([m
+[1mdiff --git a/courseswindow.h b/courseswindow.h[m
+[1mindex 58b7f72..57cfc99 100644[m
+[1m--- a/courseswindow.h[m
+[1m+++ b/courseswindow.h[m
+[36m@@ -42,6 +42,7 @@[m [mprivate:[m
+     int selectedSemesterID() const;[m
+     bool selectedSemesterIsSummaryOnly() const;[m
+     void addCourseRow(const Course &course);[m
+[32m+[m[32m    void openCourseProjection(const Course &course);[m
+     void setCourseStatus([m
+         QListWidgetItem *item,[m
+         CourseStatus status[m
+[1mdiff --git a/databasemanager.cpp b/databasemanager.cpp[m
+[1mindex a6bb596..8245a63 100644[m
+[1m--- a/databasemanager.cpp[m
+[1m+++ b/databasemanager.cpp[m
+[36m@@ -36,6 +36,49 @@[m [mstd::string trimCopy(const std::string &value)[m
+     return std::string(first, last);[m
+ }[m
+ [m
+[32m+[m[32mbool tableHasColumn([m
+[32m+[m[32m    sqlite3 *database,[m
+[32m+[m[32m    const char *tableName,[m
+[32m+[m[32m    const char *columnName)[m
+[32m+[m[32m{[m
+[32m+[m[32m    const std::string sql =[m
+[32m+[m[32m        std::string("PRAGMA table_info(") +[m
+[32m+[m[32m        tableName +[m
+[32m+[m[32m        ");";[m
+[32m+[m
+[32m+[m[32m    sqlite3_stmt *statement = nullptr;[m
+[32m+[m
+[32m+[m[32m    if (sqlite3_prepare_v2([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            sql.c_str(),[m
+[32m+[m[32m            -1,[m
+[32m+[m[32m            &statement,[m
+[32m+[m[32m            nullptr) != SQLITE_OK)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return false;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    bool exists = false;[m
+[32m+[m
+[32m+[m[32m    while (sqlite3_step(statement) == SQLITE_ROW)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        const unsigned char *name =[m
+[32m+[m[32m            sqlite3_column_text(statement, 1);[m
+[32m+[m
+[32m+[m[32m        if (name != nullptr &&[m
+[32m+[m[32m            std::string([m
+[32m+[m[32m                reinterpret_cast<const char *>(name)[m
+[32m+[m[32m            ) == columnName)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            exists = true;[m
+[32m+[m[32m            break;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    sqlite3_finalize(statement);[m
+[32m+[m[32m    return exists;[m
+[32m+[m[32m}[m
+[32m+[m
+ bool isValidUsername(const std::string &value)[m
+ {[m
+     const std::string username = trimCopy(value);[m
+[36m@@ -445,6 +488,7 @@[m [mbool DatabaseManager::createTables()[m
+         "retaken INTEGER NOT NULL DEFAULT 0, "[m
+         "retake_of_course_id INTEGER DEFAULT NULL, "[m
+         "excluded_from_cgpa INTEGER NOT NULL DEFAULT 0, "[m
+[32m+[m[32m        "target_grade REAL NOT NULL DEFAULT -1.0, "[m
+         "FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE, "[m
+         "FOREIGN KEY (retake_of_course_id) REFERENCES courses(id) ON DELETE SET NULL"[m
+         ");"[m
+[36m@@ -457,6 +501,7 @@[m [mbool DatabaseManager::createTables()[m
+         "weight INTEGER NOT NULL, "[m
+         "due_date TEXT NOT NULL DEFAULT '', "[m
+         "completed INTEGER NOT NULL DEFAULT 0, "[m
+[32m+[m[32m        "projected_grade REAL NOT NULL DEFAULT -1.0, "[m
+         "FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE"[m
+         ");";[m
+ [m
+[36m@@ -600,6 +645,50 @@[m [mbool DatabaseManager::createTables()[m
+         return false;[m
+     }[m
+ [m
+[32m+[m[32m    if (!tableHasColumn([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "assignments",[m
+[32m+[m[32m            "projected_grade"))[m
+[32m+[m[32m    {[m
+[32m+[m[32m        if (sqlite3_exec([m
+[32m+[m[32m                database,[m
+[32m+[m[32m                "ALTER TABLE assignments "[m
+[32m+[m[32m                "ADD COLUMN projected_grade "[m
+[32m+[m[32m                "REAL NOT NULL DEFAULT -1.0;",[m
+[32m+[m[32m                nullptr,[m
+[32m+[m[32m                nullptr,[m
+[32m+[m[32m                nullptr) != SQLITE_OK)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            std::cout[m
+[32m+[m[32m                << "Failed to add assignment projected_grade column: "[m
+[32m+[m[32m                << sqlite3_errmsg(database)[m
+[32m+[m[32m                << std::endl;[m
+[32m+[m[32m            return false;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (!tableHasColumn([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "courses",[m
+[32m+[m[32m            "target_grade"))[m
+[32m+[m[32m    {[m
+[32m+[m[32m        if (sqlite3_exec([m
+[32m+[m[32m                database,[m
+[32m+[m[32m                "ALTER TABLE courses "[m
+[32m+[m[32m                "ADD COLUMN target_grade "[m
+[32m+[m[32m                "REAL NOT NULL DEFAULT -1.0;",[m
+[32m+[m[32m                nullptr,[m
+[32m+[m[32m                nullptr,[m
+[32m+[m[32m                nullptr) != SQLITE_OK)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            std::cout[m
+[32m+[m[32m                << "Failed to add course target_grade column: "[m
+[32m+[m[32m                << sqlite3_errmsg(database)[m
+[32m+[m[32m                << std::endl;[m
+[32m+[m[32m            return false;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+     bool semesterStatusColumnAdded = false;[m
+ [m
+     const struct SemesterColumnMigration[m
+[36m@@ -3907,7 +3996,7 @@[m [mstd::vector<Course> DatabaseManager::loadCoursesForSemester(int semesterID)[m
+ [m
+     const char *sql =[m
+         "SELECT id, course_name, course_code, credits, status, retaken, "[m
+[31m-        "retake_of_course_id, excluded_from_cgpa "[m
+[32m+[m[32m        "retake_of_course_id, excluded_from_cgpa, target_grade "[m
+         "FROM courses "[m
+         "WHERE semester_id = ? "[m
+         "ORDER BY id ASC;";[m
+[36m@@ -3958,6 +4047,9 @@[m [mstd::vector<Course> DatabaseManager::loadCoursesForSemester(int semesterID)[m
+         const bool excludedFromCGPA =[m
+             sqlite3_column_int(statement, 7) == 1;[m
+ [m
+[32m+[m[32m        const double targetGrade =[m
+[32m+[m[32m            sqlite3_column_double(statement, 8);[m
+[32m+[m
+         Course course([m
+             courseID,[m
+             courseName,[m
+[36m@@ -3966,7 +4058,8 @@[m [mstd::vector<Course> DatabaseManager::loadCoursesForSemester(int semesterID)[m
+             courseStatusFromStorage(storedStatus),[m
+             retaken,[m
+             retakeOfCourseID,[m
+[31m-            excludedFromCGPA[m
+[32m+[m[32m            excludedFromCGPA,[m
+[32m+[m[32m            targetGrade[m
+         );[m
+ [m
+         courses.push_back(course);[m
+[36m@@ -4324,13 +4417,193 @@[m [mbool DatabaseManager::setAssignmentCompleted([m
+     return success;[m
+ }[m
+ [m
+[32m+[m[32mbool DatabaseManager::saveCourseProjection([m
+[32m+[m[32m    int courseID,[m
+[32m+[m[32m    double targetGrade,[m
+[32m+[m[32m    const std::vector<std::pair<int, double>> &assignmentProjections)[m
+[32m+[m[32m{[m
+[32m+[m[32m    if (database == nullptr ||[m
+[32m+[m[32m        courseID <= 0 ||[m
+[32m+[m[32m        targetGrade < -1.0 ||[m
+[32m+[m[32m        targetGrade > 100.0 ||[m
+[32m+[m[32m        courseIsHistoricalAttempt(database, courseID))[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return false;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    for (const auto &projection : assignmentProjections)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        if (projection.first <= 0 ||[m
+[32m+[m[32m            projection.second < -1.0 ||[m
+[32m+[m[32m            projection.second > 100.0)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return false;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (sqlite3_exec([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "BEGIN IMMEDIATE TRANSACTION;",[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr) != SQLITE_OK)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return false;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    sqlite3_stmt *courseStatement = nullptr;[m
+[32m+[m
+[32m+[m[32m    if (sqlite3_prepare_v2([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "UPDATE courses "[m
+[32m+[m[32m            "SET target_grade = ? "[m
+[32m+[m[32m            "WHERE id = ?;",[m
+[32m+[m[32m            -1,[m
+[32m+[m[32m            &courseStatement,[m
+[32m+[m[32m            nullptr) != SQLITE_OK)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        sqlite3_exec([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "ROLLBACK;",[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr[m
+[32m+[m[32m        );[m
+[32m+[m[32m        return false;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    sqlite3_bind_double([m
+[32m+[m[32m        courseStatement,[m
+[32m+[m[32m        1,[m
+[32m+[m[32m        targetGrade[m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m    sqlite3_bind_int([m
+[32m+[m[32m        courseStatement,[m
+[32m+[m[32m        2,[m
+[32m+[m[32m        courseID[m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m    const bool courseUpdated =[m
+[32m+[m[32m        sqlite3_step(courseStatement) ==[m
+[32m+[m[32m        SQLITE_DONE;[m
+[32m+[m
+[32m+[m[32m    sqlite3_finalize(courseStatement);[m
+[32m+[m
+[32m+[m[32m    if (!courseUpdated ||[m
+[32m+[m[32m        sqlite3_changes(database) != 1)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        sqlite3_exec([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "ROLLBACK;",[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr[m
+[32m+[m[32m        );[m
+[32m+[m[32m        return false;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    sqlite3_stmt *assignmentStatement = nullptr;[m
+[32m+[m
+[32m+[m[32m    if (sqlite3_prepare_v2([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "UPDATE assignments "[m
+[32m+[m[32m            "SET projected_grade = ? "[m
+[32m+[m[32m            "WHERE id = ? AND course_id = ?;",[m
+[32m+[m[32m            -1,[m
+[32m+[m[32m            &assignmentStatement,[m
+[32m+[m[32m            nullptr) != SQLITE_OK)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        sqlite3_exec([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "ROLLBACK;",[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr[m
+[32m+[m[32m        );[m
+[32m+[m[32m        return false;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    bool success = true;[m
+[32m+[m
+[32m+[m[32m    for (const auto &projection :[m
+[32m+[m[32m         assignmentProjections)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        sqlite3_reset(assignmentStatement);[m
+[32m+[m[32m        sqlite3_clear_bindings([m
+[32m+[m[32m            assignmentStatement[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        sqlite3_bind_double([m
+[32m+[m[32m            assignmentStatement,[m
+[32m+[m[32m            1,[m
+[32m+[m[32m            projection.second[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        sqlite3_bind_int([m
+[32m+[m[32m            assignmentStatement,[m
+[32m+[m[32m            2,[m
+[32m+[m[32m            projection.first[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        sqlite3_bind_int([m
+[32m+[m[32m            assignmentStatement,[m
+[32m+[m[32m            3,[m
+[32m+[m[32m            courseID[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        if (sqlite3_step([m
+[32m+[m[32m                assignmentStatement) !=[m
+[32m+[m[32m            SQLITE_DONE ||[m
+[32m+[m[32m            sqlite3_changes(database) != 1)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            success = false;[m
+[32m+[m[32m            break;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    sqlite3_finalize(assignmentStatement);[m
+[32m+[m
+[32m+[m[32m    if (!success)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        sqlite3_exec([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "ROLLBACK;",[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr[m
+[32m+[m[32m        );[m
+[32m+[m[32m        return false;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (sqlite3_exec([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "COMMIT;",[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr) != SQLITE_OK)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        sqlite3_exec([m
+[32m+[m[32m            database,[m
+[32m+[m[32m            "ROLLBACK;",[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr,[m
+[32m+[m[32m            nullptr[m
+[32m+[m[32m        );[m
+[32m+[m[32m        return false;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return true;[m
+[32m+[m[32m}[m
+[32m+[m
+ std::vector<Assignment>[m
+ DatabaseManager::loadAssignmentsForCourse(int courseID)[m
+ {[m
+     std::vector<Assignment> assignments;[m
+ [m
+     const char *sql =[m
+[31m-        "SELECT id, name, weight, grade, due_date, completed "[m
+[32m+[m[32m        "SELECT id, name, weight, grade, due_date, completed, "[m
+[32m+[m[32m        "projected_grade "[m
+         "FROM assignments "[m
+         "WHERE course_id = ? "[m
+         "ORDER BY "[m
+[36m@@ -4390,13 +4663,17 @@[m [mDatabaseManager::loadAssignmentsForCourse(int courseID)[m
+         const bool completed =[m
+             sqlite3_column_int(statement, 5) != 0;[m
+ [m
+[32m+[m[32m        const double projectedGrade =[m
+[32m+[m[32m            sqlite3_column_double(statement, 6);[m
+[32m+[m
+         assignments.emplace_back([m
+             assignmentID,[m
+             assignmentName,[m
+             weight,[m
+             grade,[m
+             dueDate,[m
+[31m-            completed[m
+[32m+[m[32m            completed,[m
+[32m+[m[32m            projectedGrade[m
+         );[m
+     }[m
+ [m
+[1mdiff --git a/databasemanager.h b/databasemanager.h[m
+[1mindex 4168f5c..eea18da 100644[m
+[1m--- a/databasemanager.h[m
+[1m+++ b/databasemanager.h[m
+[36m@@ -8,6 +8,7 @@[m
+ #include "user.h"[m
+ [m
+ #include <string>[m
+[32m+[m[32m#include <utility>[m
+ #include <vector>[m
+ [m
+ class DatabaseManager[m
+[36m@@ -194,6 +195,12 @@[m [mpublic:[m
+         bool completed[m
+     );[m
+ [m
+[32m+[m[32m    bool saveCourseProjection([m
+[32m+[m[32m        int courseID,[m
+[32m+[m[32m        double targetGrade,[m
+[32m+[m[32m        const std::vector<std::pair<int, double>> &assignmentProjections[m
+[32m+[m[32m    );[m
+[32m+[m
+     std::vector<Assignment> loadAssignmentsForCourse(int courseID);[m
+ };[m
+ [m
+[1mdiff --git a/gradeswindow.cpp b/gradeswindow.cpp[m
+[1mindex b929218..cf2eca4 100644[m
+[1m--- a/gradeswindow.cpp[m
+[1m+++ b/gradeswindow.cpp[m
+[36m@@ -1,21 +1,43 @@[m
+ #include "gradeswindow.h"[m
+[32m+[m[32m#include "courseprojectiondialog.h"[m
+[32m+[m[32m#include "gpatrendchart.h"[m
+ #include "ui_gradeswindow.h"[m
+ [m
+ #include <QComboBox>[m
+[32m+[m[32m#include <QDialog>[m
+ #include <QHBoxLayout>[m
+ #include <QLabel>[m
+ #include <QListView>[m
+ #include <QListWidget>[m
+ #include <QListWidgetItem>[m
+ #include <QProgressBar>[m
+[31m-#include <QString>[m
+[32m+[m[32m#include <QPushButton>[m
+[32m+[m[32m#include <QSize>[m
+ #include <QVBoxLayout>[m
+ [m
+ #include <algorithm>[m
+[32m+[m[32m#include <exception>[m
+ [m
+ namespace[m
+ {[m
+[31m-constexpr int UniformRowHeight = 88;[m
+[32m+[m[32mconstexpr int UniformRowHeight = 82;[m
+[32m+[m
+[32m+[m[32mQString gradeText([m
+[32m+[m[32m    double percentage,[m
+[32m+[m[32m    double gpa)[m
+[32m+[m[32m{[m
+[32m+[m[32m    return QString("%1%  •  %2  •  %3 / 4.00")[m
+[32m+[m[32m        .arg(percentage, 0, 'f', 2)[m
+[32m+[m[32m        .arg([m
+[32m+[m[32m            QString::fromStdString([m
+[32m+[m[32m                GradeProjection::[m
+[32m+[m[32m                    percentageToLetterGrade([m
+[32m+[m[32m                        percentage[m
+[32m+[m[32m                    )[m
+[32m+[m[32m            )[m
+[32m+[m[32m        )[m
+[32m+[m[32m        .arg(gpa, 0, 'f', 2);[m
+[32m+[m[32m}[m
+ }[m
+ [m
+ GradesWindow::GradesWindow([m
+[36m@@ -25,14 +47,11 @@[m [mGradesWindow::GradesWindow([m
+     : QWidget(parent),[m
+       database(database),[m
+       userID(userID),[m
+[31m-      ui(new Ui::GradesWindow)[m
+[32m+[m[32m      ui(new Ui::GradesWindow),[m
+[32m+[m[32m      trendChart(nullptr)[m
+ {[m
+     ui->setupUi(this);[m
+ [m
+[31m-    /*[m
+[31m-     * Apply popup styling directly to the view.[m
+[31m-     * This prevents white-on-white dropdown text on Windows.[m
+[31m-     */[m
+     const QString comboPopupStyle = R"([m
+         QListView {[m
+             background-color: #ffffff;[m
+[36m@@ -66,11 +85,6 @@[m [mGradesWindow::GradesWindow([m
+ [m
+     ui->semesterCombo

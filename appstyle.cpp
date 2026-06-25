@@ -154,6 +154,105 @@ QString AppStyle::globalStyleSheet()
             padding: 8px 10px;
         }
 
+        /* Clean, compact stepper buttons for numeric/date/time fields. */
+        QSpinBox,
+        QDoubleSpinBox,
+        QDateEdit,
+        QTimeEdit,
+        QDateTimeEdit {
+            padding-right: 30px;
+        }
+
+        QSpinBox::up-button,
+        QDoubleSpinBox::up-button,
+        QDateEdit::up-button,
+        QTimeEdit::up-button,
+        QDateTimeEdit::up-button {
+            subcontrol-origin: border;
+            subcontrol-position: top right;
+            width: 26px;
+            background-color: #f8fafc;
+            border: none;
+            border-left: 1px solid #cbd5e1;
+            border-bottom: 1px solid #e2e8f0;
+            border-top-right-radius: 7px;
+        }
+
+        QSpinBox::down-button,
+        QDoubleSpinBox::down-button,
+        QDateEdit::down-button,
+        QTimeEdit::down-button,
+        QDateTimeEdit::down-button {
+            subcontrol-origin: border;
+            subcontrol-position: bottom right;
+            width: 26px;
+            background-color: #f8fafc;
+            border: none;
+            border-left: 1px solid #cbd5e1;
+            border-top: 1px solid #e2e8f0;
+            border-bottom-right-radius: 7px;
+        }
+
+        QSpinBox::up-button:hover,
+        QDoubleSpinBox::up-button:hover,
+        QDateEdit::up-button:hover,
+        QTimeEdit::up-button:hover,
+        QDateTimeEdit::up-button:hover,
+        QSpinBox::down-button:hover,
+        QDoubleSpinBox::down-button:hover,
+        QDateEdit::down-button:hover,
+        QTimeEdit::down-button:hover,
+        QDateTimeEdit::down-button:hover {
+            background-color: #e2e8f0;
+        }
+
+        QSpinBox::up-button:pressed,
+        QDoubleSpinBox::up-button:pressed,
+        QDateEdit::up-button:pressed,
+        QTimeEdit::up-button:pressed,
+        QDateTimeEdit::up-button:pressed,
+        QSpinBox::down-button:pressed,
+        QDoubleSpinBox::down-button:pressed,
+        QDateEdit::down-button:pressed,
+        QTimeEdit::down-button:pressed,
+        QDateTimeEdit::down-button:pressed {
+            background-color: #cbd5e1;
+        }
+
+        QSpinBox::up-arrow,
+        QDoubleSpinBox::up-arrow,
+        QDateEdit::up-arrow,
+        QTimeEdit::up-arrow,
+        QDateTimeEdit::up-arrow {
+            image: url(:/icons/chevron-up-black.svg);
+            width: 11px;
+            height: 11px;
+        }
+
+        QSpinBox::down-arrow,
+        QDoubleSpinBox::down-arrow,
+        QDateEdit::down-arrow,
+        QTimeEdit::down-arrow,
+        QDateTimeEdit::down-arrow {
+            image: url(:/icons/chevron-down-black.svg);
+            width: 11px;
+            height: 11px;
+        }
+
+        QSpinBox::up-button:disabled,
+        QDoubleSpinBox::up-button:disabled,
+        QDateEdit::up-button:disabled,
+        QTimeEdit::up-button:disabled,
+        QDateTimeEdit::up-button:disabled,
+        QSpinBox::down-button:disabled,
+        QDoubleSpinBox::down-button:disabled,
+        QDateEdit::down-button:disabled,
+        QTimeEdit::down-button:disabled,
+        QDateTimeEdit::down-button:disabled {
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+
         QLineEdit:hover,
         QTextEdit:hover,
         QPlainTextEdit:hover,

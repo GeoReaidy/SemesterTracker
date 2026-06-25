@@ -8,6 +8,7 @@
 #include "user.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 class DatabaseManager
@@ -192,6 +193,12 @@ public:
     bool setAssignmentCompleted(
         int assignmentID,
         bool completed
+    );
+
+    bool saveCourseProjection(
+        int courseID,
+        double targetGrade,
+        const std::vector<std::pair<int, double>> &assignmentProjections
     );
 
     std::vector<Assignment> loadAssignmentsForCourse(int courseID);
