@@ -1,7 +1,125 @@
 #include "appstyle.h"
 
+#include <QApplication>
+#include <QEvent>
+#include <QFontMetrics>
+#include <QGuiApplication>
+#include <QLabel>
+#include <QLayout>
+#include <QMessageBox>
+#include <QScreen>
+#include <QSizePolicy>
+#include <QTimer>
+
+#include <algorithm>
+
+namespace
+{
+class MessageBoxAutoSizer final : public QObject
+{
+public:
+    using QObject::QObject;
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override
+    {
+        auto *box = qobject_cast<QMessageBox *>(watched);
+        if (!box)
+            return QObject::eventFilter(watched, event);
+
+        if (event->type() == QEvent::Show ||
+            event->type() == QEvent::LayoutRequest ||
+            event->type() == QEvent::FontChange)
+        {
+            QTimer::singleShot(0, box, [box]() { resizeMessageBox(box); });
+        }
+
+        return QObject::eventFilter(watched, event);
+    }
+
+private:
+    static int naturalTextWidth(const QLabel *label)
+    {
+        if (!label)
+            return 0;
+
+        const QFontMetrics metrics(label->font());
+        int widestLine = 0;
+        const QStringList lines = label->text().split('\n');
+        for (const QString &line : lines)
+            widestLine = std::max(widestLine, metrics.horizontalAdvance(line));
+
+        return widestLine + 28;
+    }
+
+    static void prepareLabel(QLabel *label, int width)
+    {
+        if (!label)
+            return;
+
+        label->setWordWrap(true);
+        label->setMinimumWidth(width);
+        label->setMaximumWidth(width);
+        label->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        label->updateGeometry();
+    }
+
+    static void resizeMessageBox(QMessageBox *box)
+    {
+        if (!box || !box->isVisible())
+            return;
+
+        QLabel *mainLabel = box->findChild<QLabel *>(QStringLiteral("qt_msgbox_label"));
+        QLabel *infoLabel = box->findChild<QLabel *>(QStringLiteral("qt_msgbox_informativelabel"));
+
+        QScreen *screen = box->screen();
+        if (!screen)
+            screen = QGuiApplication::primaryScreen();
+
+        const int screenWidth = screen ? screen->availableGeometry().width() : 1280;
+        const int maximumTextWidth = std::max(320, std::min(720, screenWidth - 220));
+        const int minimumTextWidth = 240;
+
+        const int requestedWidth = std::max(
+            naturalTextWidth(mainLabel),
+            naturalTextWidth(infoLabel));
+
+        const int textWidth = std::clamp(
+            requestedWidth,
+            minimumTextWidth,
+            maximumTextWidth);
+
+        prepareLabel(mainLabel, textWidth);
+        prepareLabel(infoLabel, textWidth);
+
+        if (QLayout *layout = box->layout())
+        {
+            layout->invalidate();
+            layout->activate();
+        }
+
+        box->setMinimumSize(QSize(0, 0));
+        box->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        box->adjustSize();
+    }
+};
+
+void installMessageBoxAutoSizing()
+{
+    static MessageBoxAutoSizer *sizer = nullptr;
+
+    if (!qApp || sizer)
+        return;
+
+    sizer = new MessageBoxAutoSizer(qApp);
+    qApp->installEventFilter(sizer);
+}
+}
+
 QString AppStyle::globalStyleSheet()
 {
+    installMessageBoxAutoSizing();
+
     return QStringLiteral(R"(
         QWidget {
             color: #1f2937;
@@ -289,6 +407,146 @@ QString AppStyle::globalStyleSheet()
             color: #94a3b8;
             background-color: #f1f5f9;
             border-color: #e2e8f0;
+        }
+
+        /* Calendar-popup date fields use one full-height drop-down button.
+           Keep this after the generic spin-box rules so QDateEdit does not
+           inherit the stacked numeric stepper appearance. */
+        QDateEdit {
+            padding-right: 36px;
+        }
+
+        QDateEdit::drop-down {
+            subcontrol-origin: border;
+            subcontrol-position: top right;
+            width: 32px;
+            background-color: #f8fafc;
+            border: none;
+            border-left: 1px solid #cbd5e1;
+            border-top-right-radius: 7px;
+            border-bottom-right-radius: 7px;
+        }
+
+        QDateEdit::drop-down:hover {
+            background-color: #e2e8f0;
+        }
+
+        QDateEdit::drop-down:pressed {
+            background-color: #cbd5e1;
+        }
+
+        QDateEdit::drop-down:disabled {
+            background-color: #f1f5f9;
+            border-left-color: #e2e8f0;
+        }
+
+        QDateEdit::down-arrow {
+            image: url(:/icons/chevron-down-black.svg);
+            width: 12px;
+            height: 12px;
+        }
+
+        /* QCalendarWidget popup */
+        QCalendarWidget {
+            color: #1f2937;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+        }
+
+        QCalendarWidget QWidget#qt_calendar_navigationbar {
+            min-height: 44px;
+            background-color: #ffffff;
+            border: none;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        QCalendarWidget QToolButton {
+            min-width: 30px;
+            max-width: none;
+            min-height: 30px;
+            max-height: 30px;
+            color: #1f2937;
+            background-color: transparent;
+            border: none;
+            border-radius: 7px;
+            padding: 0 8px;
+            margin: 6px 2px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        QCalendarWidget QToolButton:hover {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        QCalendarWidget QToolButton:pressed,
+        QCalendarWidget QToolButton:checked {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        QCalendarWidget QToolButton#qt_calendar_prevmonth,
+        QCalendarWidget QToolButton#qt_calendar_nextmonth {
+            min-width: 30px;
+            max-width: 30px;
+            padding: 0;
+            qproperty-iconSize: 14px 14px;
+        }
+
+        QCalendarWidget QToolButton#qt_calendar_prevmonth {
+            qproperty-icon: url(:/icons/chevron-left-black.svg);
+        }
+
+        QCalendarWidget QToolButton#qt_calendar_nextmonth {
+            qproperty-icon: url(:/icons/chevron-right-black.svg);
+        }
+
+        QCalendarWidget QToolButton::menu-indicator {
+            image: url(:/icons/chevron-down-black.svg);
+            width: 10px;
+            height: 10px;
+            subcontrol-origin: padding;
+            subcontrol-position: center right;
+            right: 5px;
+        }
+
+        QCalendarWidget QSpinBox {
+            min-width: 74px;
+            min-height: 30px;
+            max-height: 30px;
+            margin: 6px 4px;
+            padding-left: 8px;
+            padding-right: 26px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+        }
+
+        QCalendarWidget QAbstractItemView {
+            color: #334155;
+            background-color: #ffffff;
+            border: none;
+            outline: none;
+            selection-background-color: #2563eb;
+            selection-color: #ffffff;
+            alternate-background-color: #ffffff;
+        }
+
+        QCalendarWidget QAbstractItemView:enabled {
+            color: #334155;
+            background-color: #ffffff;
+            selection-background-color: #2563eb;
+            selection-color: #ffffff;
+        }
+
+        QCalendarWidget QAbstractItemView:disabled {
+            color: #cbd5e1;
+        }
+
+        QCalendarWidget QMenu {
+            min-width: 120px;
         }
 
         QComboBox {
@@ -655,14 +913,12 @@ QString AppStyle::globalStyleSheet()
             background-color: #f8fafc;
         }
 
-        /* Message text only — does not affect the icon */
-        QMessageBox QLabel#qt_msgbox_label {
+        /* Width is calculated per message box by MessageBoxAutoSizer. */
+        QMessageBox QLabel#qt_msgbox_label,
+        QMessageBox QLabel#qt_msgbox_informativelabel {
             color: #1f2937;
-            min-width: 360px;
-            max-width: 520px;
             padding: 8px 6px;
             font-size: 13px;
-            qproperty-wordWrap: true;
         }
 
         /* Reserve enough space for the information/warning icon */

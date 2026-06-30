@@ -2,7 +2,13 @@
 #include "ui_settingswindow.h"
 #include "updatemanager.h"
 
+#include <QApplication>
+#include <QDateTime>
+#include <QFileDialog>
+#include <QDir>
+#include <QFileInfo>
 #include <QHBoxLayout>
+#include <QStandardPaths>
 #include <QLabel>
 #include <QPushButton>
 #include <QInputDialog>
@@ -215,6 +221,7 @@ SettingsWindow::SettingsWindow(
     ui->profileCard->setStyleSheet(cardStyle);
     ui->securityCard->setStyleSheet(cardStyle);
     ui->preferencesCard->setStyleSheet(cardStyle);
+    ui->dataManagementCard->setStyleSheet(cardStyle);
     ui->dangerCard->setStyleSheet(cardStyle);
 
     ui->saveProfileButton->setStyleSheet(R"(
@@ -235,6 +242,31 @@ SettingsWindow::SettingsWindow(
 
     ui->changePasswordButton->setStyleSheet(
         ui->saveProfileButton->styleSheet()
+    );
+
+    ui->backupDatabaseButton->setStyleSheet(
+        ui->saveProfileButton->styleSheet()
+    );
+
+    ui->restoreDatabaseButton->setStyleSheet(R"(
+        QPushButton {
+            color: #334155;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+        }
+
+        QPushButton:hover {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+        }
+    )");
+
+    ui->exportUserDataButton->setStyleSheet(
+        ui->saveProfileButton->styleSheet()
+    );
+
+    ui->importUserDataButton->setStyleSheet(
+        ui->restoreDatabaseButton->styleSheet()
     );
 
     ui->deleteAccountButton->setStyleSheet(R"(
@@ -274,6 +306,34 @@ SettingsWindow::SettingsWindow(
         &QPushButton::clicked,
         this,
         &SettingsWindow::deleteAccount
+    );
+
+    connect(
+        ui->backupDatabaseButton,
+        &QPushButton::clicked,
+        this,
+        &SettingsWindow::createDatabaseBackup
+    );
+
+    connect(
+        ui->restoreDatabaseButton,
+        &QPushButton::clicked,
+        this,
+        &SettingsWindow::restoreDatabaseBackup
+    );
+
+    connect(
+        ui->exportUserDataButton,
+        &QPushButton::clicked,
+        this,
+        &SettingsWindow::exportUserData
+    );
+
+    connect(
+        ui->importUserDataButton,
+        &QPushButton::clicked,
+        this,
+        &SettingsWindow::importUserData
     );
 
     connect(
@@ -665,4 +725,395 @@ void SettingsWindow::saveReminderPreferences()
             ? 2
             : 3
     );
+}
+
+
+void SettingsWindow::createDatabaseBackup()
+{
+    QString defaultDirectory =
+        QStandardPaths::writableLocation(
+            QStandardPaths::DocumentsLocation
+        );
+
+    if (defaultDirectory.isEmpty())
+    {
+        defaultDirectory =
+            QStandardPaths::writableLocation(
+                QStandardPaths::HomeLocation
+            );
+    }
+
+    const QString defaultName =
+        QString(
+            "SemesterTracker_Backup_%1.db"
+        ).arg(
+            QDateTime::currentDateTime().toString(
+                "yyyy-MM-dd_HH-mm-ss"
+            )
+        );
+
+    const QString destinationPath =
+        QFileDialog::getSaveFileName(
+            this,
+            "Create Database Backup",
+            defaultDirectory + "/" + defaultName,
+            "SemesterTracker Database (*.db *.sqlite *.bak);;All Files (*)"
+        );
+
+    if (destinationPath.isEmpty())
+    {
+        return;
+    }
+
+    std::string errorMessage;
+
+    if (!database.backupDatabase(
+            destinationPath.toStdString(),
+            &errorMessage))
+    {
+        QMessageBox::critical(
+            this,
+            "Backup Failed",
+            QString::fromStdString(errorMessage)
+        );
+        return;
+    }
+
+    QMessageBox::information(
+        this,
+        "Backup Created",
+        QString(
+            "A complete database backup was created successfully.\n\n%1"
+        ).arg(
+            QDir::toNativeSeparators(
+                destinationPath
+            )
+        )
+    );
+}
+
+void SettingsWindow::restoreDatabaseBackup()
+{
+    const QString sourcePath =
+        QFileDialog::getOpenFileName(
+            this,
+            "Restore Database Backup",
+            QStandardPaths::writableLocation(
+                QStandardPaths::DocumentsLocation
+            ),
+            "SemesterTracker Database (*.db *.sqlite *.bak);;All Files (*)"
+        );
+
+    if (sourcePath.isEmpty())
+    {
+        return;
+    }
+
+    const QMessageBox::StandardButton confirmation =
+        QMessageBox::warning(
+            this,
+            "Restore Database Backup",
+            "Restoring replaces the current database with the selected backup.\n\n"
+            "SemesterTracker will create an automatic safety backup first, "
+            "then close after the restore so the restored data can be loaded cleanly.",
+            QMessageBox::Yes | QMessageBox::Cancel,
+            QMessageBox::Cancel
+        );
+
+    if (confirmation != QMessageBox::Yes)
+    {
+        return;
+    }
+
+    std::string safetyBackupPath;
+    std::string errorMessage;
+
+    if (!database.restoreDatabase(
+            sourcePath.toStdString(),
+            &safetyBackupPath,
+            &errorMessage))
+    {
+        QMessageBox::critical(
+            this,
+            "Restore Failed",
+            QString::fromStdString(errorMessage)
+        );
+        return;
+    }
+
+    QSettings settings(
+        "SemesterTracker",
+        "SemesterTrackerGUI"
+    );
+
+    settings.remove(
+        "authentication/sessionToken"
+    );
+    settings.sync();
+
+    QMessageBox::information(
+        this,
+        "Restore Complete",
+        QString(
+            "The database was restored successfully.\n\n"
+            "A safety backup of the previous database was saved at:\n%1\n\n"
+            "SemesterTracker will now close. Open it again to load the restored data."
+        ).arg(
+            QDir::toNativeSeparators(
+                QString::fromStdString(
+                    safetyBackupPath
+                )
+            )
+        )
+    );
+
+    QApplication::quit();
+}
+
+
+void SettingsWindow::exportUserData()
+{
+    if (currentUserID < 0)
+    {
+        QMessageBox::warning(
+            this,
+            "Export Unavailable",
+            "No signed-in user is available to export."
+        );
+        return;
+    }
+
+    QString directory =
+        QStandardPaths::writableLocation(
+            QStandardPaths::DocumentsLocation
+        );
+
+    if (directory.isEmpty())
+    {
+        directory =
+            QStandardPaths::writableLocation(
+                QStandardPaths::HomeLocation
+            );
+    }
+
+    const QString defaultName =
+        QString(
+            "SemesterTracker_UserData_%1_%2.json"
+        ).arg(
+            QString::fromStdString(
+                currentUsername
+            ),
+            QDateTime::currentDateTime().toString(
+                "yyyy-MM-dd_HH-mm-ss"
+            )
+        );
+
+    const QString destinationPath =
+        QFileDialog::getSaveFileName(
+            this,
+            "Export User Data",
+            directory + "/" + defaultName,
+            "SemesterTracker User Data (*.json)"
+        );
+
+    if (destinationPath.isEmpty())
+    {
+        return;
+    }
+
+    std::string errorMessage;
+
+    if (!database.exportUserData(
+            currentUserID,
+            destinationPath.toStdString(),
+            &errorMessage))
+    {
+        QMessageBox::critical(
+            this,
+            "Export Failed",
+            QString::fromStdString(
+                errorMessage
+            )
+        );
+        return;
+    }
+
+    QMessageBox::information(
+        this,
+        "User Data Exported",
+        QString(
+            "Your semesters, courses, assignments, categories, "
+            "and academic settings were exported successfully.\n\n%1\n\n"
+            "Passwords and login sessions are never included."
+        ).arg(
+            QDir::toNativeSeparators(
+                destinationPath
+            )
+        )
+    );
+}
+
+void SettingsWindow::importUserData()
+{
+    if (currentUserID < 0)
+    {
+        QMessageBox::warning(
+            this,
+            "Import Unavailable",
+            "No signed-in user is available for import."
+        );
+        return;
+    }
+
+    const QString sourcePath =
+        QFileDialog::getOpenFileName(
+            this,
+            "Import User Data",
+            QStandardPaths::writableLocation(
+                QStandardPaths::DocumentsLocation
+            ),
+            "SemesterTracker User Data (*.json)"
+        );
+
+    if (sourcePath.isEmpty())
+    {
+        return;
+    }
+
+    UserDataImportSummary preview;
+    std::string errorMessage;
+
+    if (!database.inspectUserDataFile(
+            sourcePath.toStdString(),
+            &preview,
+            &errorMessage))
+    {
+        QMessageBox::critical(
+            this,
+            "Invalid User Data",
+            QString::fromStdString(
+                errorMessage
+            )
+        );
+        return;
+    }
+
+    QMessageBox modeDialog(this);
+    modeDialog.setIcon(
+        QMessageBox::Question
+    );
+    modeDialog.setWindowTitle(
+        "Choose Import Mode"
+    );
+    modeDialog.setText(
+        QString(
+            "The file contains %1 semester(s), %2 course(s), "
+            "%3 assignment(s), and %4 category item(s)."
+        ).arg(
+            preview.semesters
+        ).arg(
+            preview.courses
+        ).arg(
+            preview.assignments
+        ).arg(
+            preview.categories
+        )
+    );
+    modeDialog.setInformativeText(
+        "Merge adds the imported records to your current data.\n"
+        "Replace removes your current academic records first.\n\n"
+        "Your username, email, password, and login session are not replaced."
+    );
+
+    QPushButton *mergeButton =
+        modeDialog.addButton(
+            "Merge",
+            QMessageBox::AcceptRole
+        );
+
+    QPushButton *replaceButton =
+        modeDialog.addButton(
+            "Replace",
+            QMessageBox::DestructiveRole
+        );
+
+    modeDialog.addButton(
+        QMessageBox::Cancel
+    );
+    modeDialog.exec();
+
+    if (modeDialog.clickedButton() !=
+            mergeButton &&
+        modeDialog.clickedButton() !=
+            replaceButton)
+    {
+        return;
+    }
+
+    const UserDataImportMode mode =
+        modeDialog.clickedButton() ==
+                replaceButton
+            ? UserDataImportMode::Replace
+            : UserDataImportMode::Merge;
+
+    if (mode ==
+        UserDataImportMode::Replace)
+    {
+        const QMessageBox::StandardButton confirmation =
+            QMessageBox::warning(
+                this,
+                "Replace Current User Data",
+                "This removes the current user's semesters, courses, "
+                "assignments, and custom categories before importing.\n\n"
+                "Create a database backup first if you may need to undo this.",
+                QMessageBox::Yes |
+                    QMessageBox::Cancel,
+                QMessageBox::Cancel
+            );
+
+        if (confirmation !=
+            QMessageBox::Yes)
+        {
+            return;
+        }
+    }
+
+    UserDataImportSummary imported;
+
+    if (!database.importUserData(
+            currentUserID,
+            sourcePath.toStdString(),
+            mode,
+            &imported,
+            &errorMessage))
+    {
+        QMessageBox::critical(
+            this,
+            "Import Failed",
+            QString::fromStdString(
+                errorMessage
+            )
+        );
+        return;
+    }
+
+    QMessageBox::information(
+        this,
+        "Import Complete",
+        QString(
+            "Imported %1 semester(s), %2 course(s), "
+            "%3 assignment(s), and %4 new category item(s).\n\n"
+            "SemesterTracker will now close so all windows reload the imported data cleanly."
+        ).arg(
+            imported.semesters
+        ).arg(
+            imported.courses
+        ).arg(
+            imported.assignments
+        ).arg(
+            imported.categories
+        )
+    );
+
+    QApplication::quit();
 }

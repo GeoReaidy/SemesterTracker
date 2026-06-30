@@ -13,6 +13,8 @@ private:
     std::string dueDate;
     bool completed;
     double projectedGrade;
+    int categoryID;
+    std::string categoryName;
 
 public:
     Assignment(int id,
@@ -21,7 +23,9 @@ public:
                double grade,
                std::string dueDate = "",
                bool completed = false,
-               double projectedGrade = -1.0);
+               double projectedGrade = -1.0,
+               int categoryID = -1,
+               std::string categoryName = "Uncategorized");
 
     int getID() const;
     std::string getName() const;
@@ -35,6 +39,8 @@ public:
     double getProjectedGrade() const;
     bool hasProjectedGrade() const;
     double getEffectiveGrade() const;
+    int getCategoryID() const;
+    std::string getCategoryName() const;
 
     void setName(const std::string &name);
     void setWeight(int weight);
@@ -42,6 +48,7 @@ public:
     void setDueDate(const std::string &date);
     void setCompleted(bool completed);
     void setProjectedGrade(double grade);
+    void setCategory(int id, const std::string &name);
 };
 
 #endif

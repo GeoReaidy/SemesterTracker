@@ -3,5 +3,7 @@
         <file>semestertracker_icon.png</file>
 	<file>chevron-down-black.svg</file>
 	<file>chevron-up-black.svg</file>
+	<file>chevron-left-black.svg</file>
+	<file>chevron-right-black.svg</file>
     </qresource>
 </RCC>
