@@ -453,6 +453,112 @@
         </widget>
        </item>
        <item>
+        <widget class="QFrame" name="dataManagementCard">
+         <layout class="QVBoxLayout" name="dataManagementCardLayout">
+          <property name="leftMargin">
+           <number>24</number>
+          </property>
+          <property name="topMargin">
+           <number>22</number>
+          </property>
+          <property name="rightMargin">
+           <number>24</number>
+          </property>
+          <property name="bottomMargin">
+           <number>22</number>
+          </property>
+          <property name="spacing">
+           <number>12</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="dataManagementTitleLabel">
+            <property name="styleSheet">
+             <string notr="true">color: #111827; font-size: 18px; font-weight: 700;</string>
+            </property>
+            <property name="text">
+             <string>Data Management</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="dataManagementDescriptionLabel">
+            <property name="styleSheet">
+             <string notr="true">color: #64748b; font-size: 12px;</string>
+            </property>
+            <property name="text">
+             <string>Create full database backups, or export and import the current user's portable JSON data.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="dataManagementActionLayout">
+            <item>
+             <spacer name="dataManagementActionSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="restoreDatabaseButton">
+              <property name="text">
+               <string>Restore Backup</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="backupDatabaseButton">
+              <property name="text">
+               <string>Create Backup</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="userDataActionLayout">
+            <item>
+             <spacer name="userDataActionSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="importUserDataButton">
+              <property name="text">
+               <string>Import User Data</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="exportUserDataButton">
+              <property name="text">
+               <string>Export User Data</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QFrame" name="dangerCard">
          <layout class="QVBoxLayout" name="dangerCardLayout">
           <property name="leftMargin">

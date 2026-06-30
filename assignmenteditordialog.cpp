@@ -2,6 +2,7 @@
 #include "ui_assignmenteditordialog.h"
 
 #include <QCheckBox>
+#include <QComboBox>
 #include <QDate>
 #include <QDateEdit>
 #include <QDialogButtonBox>
@@ -25,6 +26,7 @@ AssignmentEditorDialog::AssignmentEditorDialog(
       ui(new Ui::AssignmentEditorDialog)
 {
     ui->setupUi(this);
+    loadCategories();
     configureForAdd();
 
     connect(
@@ -71,6 +73,7 @@ AssignmentEditorDialog::AssignmentEditorDialog(
       ui(new Ui::AssignmentEditorDialog)
 {
     ui->setupUi(this);
+    loadCategories();
     configureForEdit(assignment);
 
     connect(
@@ -107,6 +110,28 @@ AssignmentEditorDialog::~AssignmentEditorDialog()
     delete ui;
 }
 
+
+void AssignmentEditorDialog::loadCategories()
+{
+    ui->categoryComboBox->clear();
+    ui->categoryComboBox->setEditable(true);
+    ui->categoryComboBox->setInsertPolicy(QComboBox::NoInsert);
+    ui->categoryComboBox->lineEdit()->setPlaceholderText(
+        tr("Choose a category or type a custom one")
+    );
+
+    const auto categories =
+        database.loadAssignmentCategoriesForCourse(courseID);
+
+    for (const AssignmentCategory &category : categories)
+    {
+        ui->categoryComboBox->addItem(
+            QString::fromStdString(category.name),
+            category.id
+        );
+    }
+}
+
 void AssignmentEditorDialog::configureForAdd()
 {
     setWindowTitle(tr("Add Assignment"));
@@ -117,6 +142,20 @@ void AssignmentEditorDialog::configureForAdd()
     ui->courseValueLabel->setText(courseDisplayName);
 
     ui->assignmentNameEdit->clear();
+    const int otherCategoryIndex =
+        ui->categoryComboBox->findText(
+            tr("Other"),
+            Qt::MatchFixedString
+        );
+
+    if (otherCategoryIndex >= 0)
+    {
+        ui->categoryComboBox->setCurrentIndex(otherCategoryIndex);
+    }
+    else
+    {
+        ui->categoryComboBox->setCurrentIndex(-1);
+    }
     ui->weightSpinBox->setValue(10);
 
     ui->hasGradeCheckBox->setChecked(false);
@@ -147,6 +186,20 @@ void AssignmentEditorDialog::configureForEdit(
     ui->weightSpinBox->setValue(
         static_cast<int>(assignment.getWeightPercentage())
     );
+
+    const QString categoryName =
+        QString::fromStdString(assignment.getCategoryName());
+    const int categoryIndex =
+        ui->categoryComboBox->findData(assignment.getCategoryID());
+
+    if (categoryIndex >= 0)
+    {
+        ui->categoryComboBox->setCurrentIndex(categoryIndex);
+    }
+    else
+    {
+        ui->categoryComboBox->setCurrentText(categoryName);
+    }
 
     ui->hasGradeCheckBox->setChecked(assignment.hasGrade());
     ui->gradeSpinBox->setValue(
@@ -280,6 +333,28 @@ void AssignmentEditorDialog::saveAssignment()
                   .toStdString()
             : std::string();
 
+    QString categoryName =
+        ui->categoryComboBox->currentText().trimmed();
+
+    if (categoryName.isEmpty())
+    {
+        categoryName = tr("Uncategorized");
+    }
+
+    const int categoryID =
+        database.ensureAssignmentCategoryForCourse(
+            courseID,
+            categoryName.toStdString()
+        );
+
+    if (categoryID <= 0)
+    {
+        showValidationError(
+            tr("The assignment category could not be saved.")
+        );
+        return;
+    }
+
     try
     {
         const Assignment candidate(
@@ -287,7 +362,11 @@ void AssignmentEditorDialog::saveAssignment()
             name.toStdString(),
             weight,
             grade,
-            dueDate
+            dueDate,
+            false,
+            -1.0,
+            categoryID,
+            categoryName.toStdString()
         );
 
         Q_UNUSED(candidate);
@@ -335,7 +414,8 @@ void AssignmentEditorDialog::saveAssignment()
             name.toStdString(),
             grade,
             weight,
-            dueDate
+            dueDate,
+            categoryID
         );
     }
     else
@@ -345,7 +425,8 @@ void AssignmentEditorDialog::saveAssignment()
             name.toStdString(),
             grade,
             weight,
-            dueDate
+            dueDate,
+            categoryID
         );
     }
 

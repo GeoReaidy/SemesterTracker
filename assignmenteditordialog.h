@@ -42,6 +42,7 @@ private slots:
     void saveAssignment();
 
 private:
+    void loadCategories();
     void configureForAdd();
     void configureForEdit(const Assignment &assignment);
     bool assignmentNameAlreadyExists(

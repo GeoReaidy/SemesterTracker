@@ -1,5 +1,18 @@
 #include "databasemanager.h"
 
+#include <QDateTime>
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QSaveFile>
+
+#include <chrono>
+#include <ctime>
+#include <filesystem>
+#include <iomanip>
+#include <sstream>
+
 #include <algorithm>
 #include <cctype>
 #include <iostream>
@@ -303,7 +316,7 @@ bool courseHasCompleteGrade(
             database,
             "SELECT COALESCE(SUM(weight), 0) "
             "FROM assignments "
-            "WHERE course_id = ? "
+            "WHERE a.course_id = ? "
             "AND grade >= 0;",
             -1,
             &statement,
@@ -380,7 +393,8 @@ int assignmentWeightTotal(
 // ============================================================
 
 DatabaseManager::DatabaseManager()
-    : database(nullptr)
+    : database(nullptr),
+      currentDatabasePath()
 {
 }
 
@@ -426,6 +440,8 @@ bool DatabaseManager::openDatabase(const std::string &databasePath)
         return false;
     }
 
+    currentDatabasePath = databasePath;
+
     std::cout << "Database opened successfully." << std::endl;
     std::cout << "Foreign keys enabled." << std::endl;
 
@@ -441,6 +457,1757 @@ void DatabaseManager::closeDatabase()
         std::cout << "Database closed." << std::endl;
     }
 }
+
+
+namespace
+{
+std::string sqliteErrorText(sqlite3 *db, const std::string &fallback)
+{
+    if (db != nullptr)
+    {
+        const char *message = sqlite3_errmsg(db);
+        if (message != nullptr)
+        {
+            return message;
+        }
+    }
+
+    return fallback;
+}
+
+std::string timestampForBackup()
+{
+    const auto now = std::chrono::system_clock::now();
+    const std::time_t rawTime =
+        std::chrono::system_clock::to_time_t(now);
+
+    std::tm localTime{};
+
+#ifdef _WIN32
+    localtime_s(&localTime, &rawTime);
+#else
+    localtime_r(&rawTime, &localTime);
+#endif
+
+    std::ostringstream stream;
+    stream << std::put_time(
+        &localTime,
+        "%Y-%m-%d_%H-%M-%S"
+    );
+
+    return stream.str();
+}
+
+bool copyDatabaseWithBackupApi(
+    sqlite3 *destination,
+    sqlite3 *source,
+    std::string *errorMessage)
+{
+    sqlite3_backup *backup =
+        sqlite3_backup_init(
+            destination,
+            "main",
+            source,
+            "main"
+        );
+
+    if (backup == nullptr)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                sqliteErrorText(
+                    destination,
+                    "Could not initialize the SQLite backup."
+                );
+        }
+
+        return false;
+    }
+
+    int result = SQLITE_OK;
+
+    do
+    {
+        result = sqlite3_backup_step(backup, 128);
+
+        if (result == SQLITE_BUSY ||
+            result == SQLITE_LOCKED)
+        {
+            sqlite3_sleep(25);
+        }
+    }
+    while (result == SQLITE_OK ||
+           result == SQLITE_BUSY ||
+           result == SQLITE_LOCKED);
+
+    const int finishResult =
+        sqlite3_backup_finish(backup);
+
+    if (result != SQLITE_DONE ||
+        finishResult != SQLITE_OK)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                sqliteErrorText(
+                    destination,
+                    "The SQLite backup operation failed."
+                );
+        }
+
+        return false;
+    }
+
+    return true;
+}
+}
+
+bool DatabaseManager::validateDatabaseFile(
+    const std::string &path,
+    std::string *errorMessage) const
+{
+    if (path.empty() ||
+        !std::filesystem::exists(path))
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The selected database file does not exist.";
+        }
+
+        return false;
+    }
+
+    sqlite3 *candidate = nullptr;
+
+    const int openResult =
+        sqlite3_open_v2(
+            path.c_str(),
+            &candidate,
+            SQLITE_OPEN_READONLY,
+            nullptr
+        );
+
+    if (openResult != SQLITE_OK)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                sqliteErrorText(
+                    candidate,
+                    "The selected file is not a readable SQLite database."
+                );
+        }
+
+        if (candidate)
+        {
+            sqlite3_close(candidate);
+        }
+
+        return false;
+    }
+
+    sqlite3_stmt *statement = nullptr;
+
+    const int prepareResult =
+        sqlite3_prepare_v2(
+            candidate,
+            "PRAGMA quick_check;",
+            -1,
+            &statement,
+            nullptr
+        );
+
+    bool valid = false;
+
+    if (prepareResult == SQLITE_OK &&
+        sqlite3_step(statement) == SQLITE_ROW)
+    {
+        const unsigned char *resultText =
+            sqlite3_column_text(statement, 0);
+
+        valid =
+            resultText != nullptr &&
+            std::string(
+                reinterpret_cast<const char *>(
+                    resultText
+                )
+            ) == "ok";
+    }
+
+    if (statement)
+    {
+        sqlite3_finalize(statement);
+    }
+
+    if (!valid && errorMessage)
+    {
+        *errorMessage =
+            "The selected database failed SQLite's integrity check.";
+    }
+
+    sqlite3_close(candidate);
+    return valid;
+}
+
+bool DatabaseManager::backupDatabase(
+    const std::string &destinationPath,
+    std::string *errorMessage)
+{
+    if (database == nullptr)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The application database is not open.";
+        }
+
+        return false;
+    }
+
+    if (destinationPath.empty())
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "No backup destination was selected.";
+        }
+
+        return false;
+    }
+
+    sqlite3 *destination = nullptr;
+
+    const int openResult =
+        sqlite3_open(
+            destinationPath.c_str(),
+            &destination
+        );
+
+    if (openResult != SQLITE_OK)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                sqliteErrorText(
+                    destination,
+                    "Could not create the backup file."
+                );
+        }
+
+        if (destination)
+        {
+            sqlite3_close(destination);
+        }
+
+        return false;
+    }
+
+    const bool copied =
+        copyDatabaseWithBackupApi(
+            destination,
+            database,
+            errorMessage
+        );
+
+    sqlite3_close(destination);
+
+    if (!copied)
+    {
+        std::error_code removeError;
+        std::filesystem::remove(
+            destinationPath,
+            removeError
+        );
+    }
+
+    return copied;
+}
+
+bool DatabaseManager::restoreDatabase(
+    const std::string &sourcePath,
+    std::string *safetyBackupPath,
+    std::string *errorMessage)
+{
+    if (database == nullptr ||
+        currentDatabasePath.empty())
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The application database is not open.";
+        }
+
+        return false;
+    }
+
+    std::string validationError;
+
+    if (!validateDatabaseFile(
+            sourcePath,
+            &validationError))
+    {
+        if (errorMessage)
+        {
+            *errorMessage = validationError;
+        }
+
+        return false;
+    }
+
+    const std::filesystem::path activePath(
+        currentDatabasePath
+    );
+
+    const std::filesystem::path backupPath =
+        activePath.parent_path() /
+        (
+            activePath.stem().string() +
+            "_before_restore_" +
+            timestampForBackup() +
+            activePath.extension().string() +
+            ".bak"
+        );
+
+    std::string backupError;
+
+    if (!backupDatabase(
+            backupPath.string(),
+            &backupError))
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "A safety backup could not be created: " +
+                backupError;
+        }
+
+        return false;
+    }
+
+    sqlite3 *source = nullptr;
+
+    const int openResult =
+        sqlite3_open_v2(
+            sourcePath.c_str(),
+            &source,
+            SQLITE_OPEN_READONLY,
+            nullptr
+        );
+
+    if (openResult != SQLITE_OK)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                sqliteErrorText(
+                    source,
+                    "Could not open the selected backup."
+                );
+        }
+
+        if (source)
+        {
+            sqlite3_close(source);
+        }
+
+        return false;
+    }
+
+    std::string restoreError;
+
+    const bool restored =
+        copyDatabaseWithBackupApi(
+            database,
+            source,
+            &restoreError
+        );
+
+    sqlite3_close(source);
+
+    if (!restored)
+    {
+        sqlite3 *safetySource = nullptr;
+
+        if (sqlite3_open_v2(
+                backupPath.string().c_str(),
+                &safetySource,
+                SQLITE_OPEN_READONLY,
+                nullptr) == SQLITE_OK)
+        {
+            std::string rollbackError;
+            copyDatabaseWithBackupApi(
+                database,
+                safetySource,
+                &rollbackError
+            );
+        }
+
+        if (safetySource)
+        {
+            sqlite3_close(safetySource);
+        }
+
+        if (errorMessage)
+        {
+            *errorMessage =
+                "Restore failed and the previous database was recovered. " +
+                restoreError;
+        }
+
+        return false;
+    }
+
+    if (!createTables())
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The backup was restored, but its schema could not be prepared.";
+        }
+
+        return false;
+    }
+
+    if (safetyBackupPath)
+    {
+        *safetyBackupPath =
+            backupPath.string();
+    }
+
+    return true;
+}
+
+const std::string &DatabaseManager::databasePath() const
+{
+    return currentDatabasePath;
+}
+
+
+
+namespace
+{
+QString sqliteText(sqlite3_stmt *statement, int column)
+{
+    const unsigned char *text =
+        sqlite3_column_text(statement, column);
+
+    return text
+        ? QString::fromUtf8(
+              reinterpret_cast<const char *>(text)
+          )
+        : QString();
+}
+
+bool executeSql(
+    sqlite3 *database,
+    const char *sql,
+    std::string *errorMessage = nullptr)
+{
+    char *sqliteError = nullptr;
+
+    const int result =
+        sqlite3_exec(
+            database,
+            sql,
+            nullptr,
+            nullptr,
+            &sqliteError
+        );
+
+    if (result != SQLITE_OK)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                sqliteError
+                    ? sqliteError
+                    : "SQLite operation failed.";
+        }
+
+        sqlite3_free(sqliteError);
+        return false;
+    }
+
+    return true;
+}
+
+bool prepareStatement(
+    sqlite3 *database,
+    const char *sql,
+    sqlite3_stmt **statement,
+    std::string *errorMessage)
+{
+    if (sqlite3_prepare_v2(
+            database,
+            sql,
+            -1,
+            statement,
+            nullptr) == SQLITE_OK)
+    {
+        return true;
+    }
+
+    if (errorMessage)
+    {
+        *errorMessage = sqlite3_errmsg(database);
+    }
+
+    return false;
+}
+
+bool bindText(
+    sqlite3_stmt *statement,
+    int index,
+    const QString &value)
+{
+    const QByteArray utf8 = value.toUtf8();
+
+    return sqlite3_bind_text(
+               statement,
+               index,
+               utf8.constData(),
+               utf8.size(),
+               SQLITE_TRANSIENT
+           ) == SQLITE_OK;
+}
+
+bool readUserDataDocument(
+    const std::string &sourcePath,
+    QJsonObject *root,
+    std::string *errorMessage)
+{
+    QFile file(
+        QString::fromStdString(sourcePath)
+    );
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The selected user-data file could not be opened.";
+        }
+
+        return false;
+    }
+
+    QJsonParseError parseError;
+    const QJsonDocument document =
+        QJsonDocument::fromJson(
+            file.readAll(),
+            &parseError
+        );
+
+    if (parseError.error !=
+            QJsonParseError::NoError ||
+        !document.isObject())
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The selected file is not valid SemesterTracker JSON: " +
+                parseError.errorString().toStdString();
+        }
+
+        return false;
+    }
+
+    const QJsonObject object =
+        document.object();
+
+    if (object.value("format").toString() !=
+            "SemesterTrackerUserData")
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The selected file is not a SemesterTracker user-data export.";
+        }
+
+        return false;
+    }
+
+    const int formatVersion =
+        object.value("formatVersion").toInt(-1);
+
+    if (formatVersion != 1)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "This user-data format version is not supported.";
+        }
+
+        return false;
+    }
+
+    if (!object.value("user").isObject() ||
+        !object.value("semesters").isArray() ||
+        !object.value("categories").isArray())
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The user-data file is missing required sections.";
+        }
+
+        return false;
+    }
+
+    if (root)
+    {
+        *root = object;
+    }
+
+    return true;
+}
+
+int countNestedItems(
+    const QJsonArray &semesters,
+    const QString &childName,
+    const QString &grandchildName = QString())
+{
+    int count = 0;
+
+    for (const QJsonValue &semesterValue :
+         semesters)
+    {
+        const QJsonObject semester =
+            semesterValue.toObject();
+
+        const QJsonArray children =
+            semester.value(childName).toArray();
+
+        if (grandchildName.isEmpty())
+        {
+            count += children.size();
+            continue;
+        }
+
+        for (const QJsonValue &childValue :
+             children)
+        {
+            count +=
+                childValue
+                    .toObject()
+                    .value(grandchildName)
+                    .toArray()
+                    .size();
+        }
+    }
+
+    return count;
+}
+}
+
+bool DatabaseManager::exportUserData(
+    int userID,
+    const std::string &destinationPath,
+    std::string *errorMessage) const
+{
+    if (database == nullptr || userID < 0)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "No signed-in user is available to export.";
+        }
+
+        return false;
+    }
+
+    QJsonObject root;
+    root["format"] = "SemesterTrackerUserData";
+    root["formatVersion"] = 1;
+    root["appVersion"] = QStringLiteral(APP_VERSION);
+    root["exportedAt"] =
+        QDateTime::currentDateTimeUtc().toString(
+            Qt::ISODate
+        );
+
+    sqlite3_stmt *userStatement = nullptr;
+
+    if (!prepareStatement(
+            database,
+            "SELECT username, email, max_credits "
+            "FROM users WHERE id = ?;",
+            &userStatement,
+            errorMessage))
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(
+        userStatement,
+        1,
+        userID
+    );
+
+    if (sqlite3_step(userStatement) != SQLITE_ROW)
+    {
+        sqlite3_finalize(userStatement);
+
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The current user could not be found.";
+        }
+
+        return false;
+    }
+
+    QJsonObject userObject;
+    userObject["username"] =
+        sqliteText(userStatement, 0);
+    userObject["email"] =
+        sqliteText(userStatement, 1);
+    userObject["maxCredits"] =
+        sqlite3_column_int(userStatement, 2);
+
+    sqlite3_finalize(userStatement);
+    root["user"] = userObject;
+
+    QJsonArray categories;
+    sqlite3_stmt *categoryStatement = nullptr;
+
+    if (!prepareStatement(
+            database,
+            "SELECT name, is_builtin "
+            "FROM assignment_categories "
+            "WHERE user_id = ? "
+            "ORDER BY is_builtin DESC, name COLLATE NOCASE;",
+            &categoryStatement,
+            errorMessage))
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(
+        categoryStatement,
+        1,
+        userID
+    );
+
+    while (sqlite3_step(categoryStatement) ==
+           SQLITE_ROW)
+    {
+        QJsonObject category;
+        category["name"] =
+            sqliteText(categoryStatement, 0);
+        category["builtIn"] =
+            sqlite3_column_int(
+                categoryStatement,
+                1
+            ) != 0;
+        categories.append(category);
+    }
+
+    sqlite3_finalize(categoryStatement);
+    root["categories"] = categories;
+
+    QJsonArray semesters;
+    sqlite3_stmt *semesterStatement = nullptr;
+
+    if (!prepareStatement(
+            database,
+            "SELECT id, name, year, in_progress, status, "
+            "summary_only, summary_credits, summary_gpa "
+            "FROM semesters WHERE user_id = ? "
+            "ORDER BY year, id;",
+            &semesterStatement,
+            errorMessage))
+    {
+        return false;
+    }
+
+    sqlite3_bind_int(
+        semesterStatement,
+        1,
+        userID
+    );
+
+    while (sqlite3_step(semesterStatement) ==
+           SQLITE_ROW)
+    {
+        const int semesterID =
+            sqlite3_column_int(
+                semesterStatement,
+                0
+            );
+
+        QJsonObject semester;
+        semester["name"] =
+            sqliteText(semesterStatement, 1);
+        semester["year"] =
+            sqlite3_column_int(
+                semesterStatement,
+                2
+            );
+        semester["inProgress"] =
+            sqlite3_column_int(
+                semesterStatement,
+                3
+            ) != 0;
+        semester["status"] =
+            sqliteText(semesterStatement, 4);
+        semester["summaryOnly"] =
+            sqlite3_column_int(
+                semesterStatement,
+                5
+            ) != 0;
+        semester["summaryCredits"] =
+            sqlite3_column_int(
+                semesterStatement,
+                6
+            );
+        semester["summaryGpa"] =
+            sqlite3_column_double(
+                semesterStatement,
+                7
+            );
+
+        QJsonArray courses;
+        sqlite3_stmt *courseStatement = nullptr;
+
+        if (!prepareStatement(
+                database,
+                "SELECT id, course_code, course_name, credits, "
+                "status, retaken, excluded_from_cgpa, target_grade "
+                "FROM courses WHERE semester_id = ? "
+                "ORDER BY id;",
+                &courseStatement,
+                errorMessage))
+        {
+            sqlite3_finalize(semesterStatement);
+            return false;
+        }
+
+        sqlite3_bind_int(
+            courseStatement,
+            1,
+            semesterID
+        );
+
+        while (sqlite3_step(courseStatement) ==
+               SQLITE_ROW)
+        {
+            const int courseID =
+                sqlite3_column_int(
+                    courseStatement,
+                    0
+                );
+
+            QJsonObject course;
+            course["code"] =
+                sqliteText(courseStatement, 1);
+            course["name"] =
+                sqliteText(courseStatement, 2);
+            course["credits"] =
+                sqlite3_column_int(
+                    courseStatement,
+                    3
+                );
+            course["status"] =
+                sqliteText(courseStatement, 4);
+            course["retaken"] =
+                sqlite3_column_int(
+                    courseStatement,
+                    5
+                ) != 0;
+            course["excludedFromCgpa"] =
+                sqlite3_column_int(
+                    courseStatement,
+                    6
+                ) != 0;
+            course["targetGrade"] =
+                sqlite3_column_double(
+                    courseStatement,
+                    7
+                );
+
+            QJsonArray assignments;
+            sqlite3_stmt *assignmentStatement =
+                nullptr;
+
+            if (!prepareStatement(
+                    database,
+                    "SELECT a.name, a.grade, a.weight, "
+                    "a.due_date, a.completed, a.projected_grade, "
+                    "COALESCE(c.name, 'Other') "
+                    "FROM assignments a "
+                    "LEFT JOIN assignment_categories c "
+                    "ON c.id = a.category_id "
+                    "WHERE a.course_id = ? "
+                    "ORDER BY a.id;",
+                    &assignmentStatement,
+                    errorMessage))
+            {
+                sqlite3_finalize(
+                    courseStatement
+                );
+                sqlite3_finalize(
+                    semesterStatement
+                );
+                return false;
+            }
+
+            sqlite3_bind_int(
+                assignmentStatement,
+                1,
+                courseID
+            );
+
+            while (sqlite3_step(
+                       assignmentStatement) ==
+                   SQLITE_ROW)
+            {
+                QJsonObject assignment;
+                assignment["name"] =
+                    sqliteText(
+                        assignmentStatement,
+                        0
+                    );
+                assignment["grade"] =
+                    sqlite3_column_double(
+                        assignmentStatement,
+                        1
+                    );
+                assignment["weight"] =
+                    sqlite3_column_int(
+                        assignmentStatement,
+                        2
+                    );
+                assignment["dueDate"] =
+                    sqliteText(
+                        assignmentStatement,
+                        3
+                    );
+                assignment["completed"] =
+                    sqlite3_column_int(
+                        assignmentStatement,
+                        4
+                    ) != 0;
+                assignment["projectedGrade"] =
+                    sqlite3_column_double(
+                        assignmentStatement,
+                        5
+                    );
+                assignment["category"] =
+                    sqliteText(
+                        assignmentStatement,
+                        6
+                    );
+
+                assignments.append(assignment);
+            }
+
+            sqlite3_finalize(
+                assignmentStatement
+            );
+
+            course["assignments"] =
+                assignments;
+            courses.append(course);
+        }
+
+        sqlite3_finalize(courseStatement);
+        semester["courses"] = courses;
+        semesters.append(semester);
+    }
+
+    sqlite3_finalize(semesterStatement);
+    root["semesters"] = semesters;
+
+    QSaveFile file(
+        QString::fromStdString(
+            destinationPath
+        )
+    );
+
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The export file could not be created.";
+        }
+
+        return false;
+    }
+
+    const QJsonDocument document(root);
+
+    if (file.write(
+            document.toJson(
+                QJsonDocument::Indented
+            )) < 0 ||
+        !file.commit())
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "The export file could not be saved.";
+        }
+
+        return false;
+    }
+
+    return true;
+}
+
+bool DatabaseManager::inspectUserDataFile(
+    const std::string &sourcePath,
+    UserDataImportSummary *summary,
+    std::string *errorMessage) const
+{
+    QJsonObject root;
+
+    if (!readUserDataDocument(
+            sourcePath,
+            &root,
+            errorMessage))
+    {
+        return false;
+    }
+
+    if (summary)
+    {
+        const QJsonArray semesters =
+            root.value("semesters").toArray();
+
+        summary->semesters =
+            semesters.size();
+        summary->courses =
+            countNestedItems(
+                semesters,
+                "courses"
+            );
+        summary->assignments =
+            countNestedItems(
+                semesters,
+                "courses",
+                "assignments"
+            );
+        summary->categories =
+            root.value("categories")
+                .toArray()
+                .size();
+    }
+
+    return true;
+}
+
+bool DatabaseManager::importUserData(
+    int userID,
+    const std::string &sourcePath,
+    UserDataImportMode mode,
+    UserDataImportSummary *summary,
+    std::string *errorMessage)
+{
+    if (database == nullptr || userID < 0)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                "No signed-in user is available for import.";
+        }
+
+        return false;
+    }
+
+    QJsonObject root;
+
+    if (!readUserDataDocument(
+            sourcePath,
+            &root,
+            errorMessage))
+    {
+        return false;
+    }
+
+    UserDataImportSummary imported;
+
+    if (!executeSql(
+            database,
+            "BEGIN IMMEDIATE TRANSACTION;",
+            errorMessage))
+    {
+        return false;
+    }
+
+    auto rollback = [&]()
+    {
+        executeSql(
+            database,
+            "ROLLBACK;"
+        );
+    };
+
+    if (mode == UserDataImportMode::Replace)
+    {
+        sqlite3_stmt *deleteSemesters = nullptr;
+
+        if (!prepareStatement(
+                database,
+                "DELETE FROM semesters "
+                "WHERE user_id = ?;",
+                &deleteSemesters,
+                errorMessage))
+        {
+            rollback();
+            return false;
+        }
+
+        sqlite3_bind_int(
+            deleteSemesters,
+            1,
+            userID
+        );
+
+        const bool deleted =
+            sqlite3_step(deleteSemesters) ==
+            SQLITE_DONE;
+
+        sqlite3_finalize(deleteSemesters);
+
+        if (!deleted)
+        {
+            if (errorMessage)
+            {
+                *errorMessage =
+                    sqlite3_errmsg(database);
+            }
+
+            rollback();
+            return false;
+        }
+
+        sqlite3_stmt *deleteCategories =
+            nullptr;
+
+        if (!prepareStatement(
+                database,
+                "DELETE FROM assignment_categories "
+                "WHERE user_id = ? "
+                "AND is_builtin = 0;",
+                &deleteCategories,
+                errorMessage))
+        {
+            rollback();
+            return false;
+        }
+
+        sqlite3_bind_int(
+            deleteCategories,
+            1,
+            userID
+        );
+
+        if (sqlite3_step(deleteCategories) !=
+            SQLITE_DONE)
+        {
+            if (errorMessage)
+            {
+                *errorMessage =
+                    sqlite3_errmsg(database);
+            }
+
+            sqlite3_finalize(
+                deleteCategories
+            );
+            rollback();
+            return false;
+        }
+
+        sqlite3_finalize(deleteCategories);
+    }
+
+    const QJsonObject user =
+        root.value("user").toObject();
+
+    sqlite3_stmt *profileStatement = nullptr;
+
+    if (!prepareStatement(
+            database,
+            "UPDATE users SET max_credits = ? "
+            "WHERE id = ?;",
+            &profileStatement,
+            errorMessage))
+    {
+        rollback();
+        return false;
+    }
+
+    sqlite3_bind_int(
+        profileStatement,
+        1,
+        qMax(
+            1,
+            user.value("maxCredits")
+                .toInt(120)
+        )
+    );
+    sqlite3_bind_int(
+        profileStatement,
+        2,
+        userID
+    );
+
+    if (sqlite3_step(profileStatement) !=
+        SQLITE_DONE)
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                sqlite3_errmsg(database);
+        }
+
+        sqlite3_finalize(profileStatement);
+        rollback();
+        return false;
+    }
+
+    sqlite3_finalize(profileStatement);
+
+    const QJsonArray categoryArray =
+        root.value("categories").toArray();
+
+    for (const QJsonValue &categoryValue :
+         categoryArray)
+    {
+        const QJsonObject category =
+            categoryValue.toObject();
+
+        const QString name =
+            category.value("name")
+                .toString()
+                .trimmed();
+
+        if (name.isEmpty())
+        {
+            continue;
+        }
+
+        sqlite3_stmt *categoryInsert = nullptr;
+
+        if (!prepareStatement(
+                database,
+                "INSERT OR IGNORE INTO assignment_categories "
+                "(user_id, name, is_builtin) "
+                "VALUES (?, ?, ?);",
+                &categoryInsert,
+                errorMessage))
+        {
+            rollback();
+            return false;
+        }
+
+        sqlite3_bind_int(
+            categoryInsert,
+            1,
+            userID
+        );
+        bindText(
+            categoryInsert,
+            2,
+            name
+        );
+        sqlite3_bind_int(
+            categoryInsert,
+            3,
+            category.value("builtIn")
+                .toBool(false)
+                ? 1
+                : 0
+        );
+
+        if (sqlite3_step(categoryInsert) !=
+            SQLITE_DONE)
+        {
+            if (errorMessage)
+            {
+                *errorMessage =
+                    sqlite3_errmsg(database);
+            }
+
+            sqlite3_finalize(
+                categoryInsert
+            );
+            rollback();
+            return false;
+        }
+
+        if (sqlite3_changes(database) > 0)
+        {
+            ++imported.categories;
+        }
+
+        sqlite3_finalize(categoryInsert);
+    }
+
+    const QJsonArray semesterArray =
+        root.value("semesters").toArray();
+
+    for (const QJsonValue &semesterValue :
+         semesterArray)
+    {
+        const QJsonObject semester =
+            semesterValue.toObject();
+
+        const QString semesterName =
+            semester.value("name")
+                .toString()
+                .trimmed();
+
+        if (semesterName.isEmpty())
+        {
+            continue;
+        }
+
+        sqlite3_stmt *semesterInsert = nullptr;
+
+        if (!prepareStatement(
+                database,
+                "INSERT INTO semesters "
+                "(user_id, name, year, in_progress, status, "
+                "summary_only, summary_credits, summary_gpa) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+                &semesterInsert,
+                errorMessage))
+        {
+            rollback();
+            return false;
+        }
+
+        sqlite3_bind_int(
+            semesterInsert,
+            1,
+            userID
+        );
+        bindText(
+            semesterInsert,
+            2,
+            semesterName
+        );
+        sqlite3_bind_int(
+            semesterInsert,
+            3,
+            semester.value("year")
+                .toInt()
+        );
+        sqlite3_bind_int(
+            semesterInsert,
+            4,
+            semester.value("inProgress")
+                .toBool(false)
+                ? 1
+                : 0
+        );
+        bindText(
+            semesterInsert,
+            5,
+            semester.value("status")
+                .toString("planned")
+        );
+        sqlite3_bind_int(
+            semesterInsert,
+            6,
+            semester.value("summaryOnly")
+                .toBool(false)
+                ? 1
+                : 0
+        );
+        sqlite3_bind_int(
+            semesterInsert,
+            7,
+            semester.value("summaryCredits")
+                .toInt()
+        );
+        sqlite3_bind_double(
+            semesterInsert,
+            8,
+            semester.value("summaryGpa")
+                .toDouble()
+        );
+
+        if (sqlite3_step(semesterInsert) !=
+            SQLITE_DONE)
+        {
+            if (errorMessage)
+            {
+                *errorMessage =
+                    sqlite3_errmsg(database);
+            }
+
+            sqlite3_finalize(
+                semesterInsert
+            );
+            rollback();
+            return false;
+        }
+
+        sqlite3_finalize(semesterInsert);
+        const int newSemesterID =
+            static_cast<int>(
+                sqlite3_last_insert_rowid(
+                    database
+                )
+            );
+        ++imported.semesters;
+
+        const QJsonArray courseArray =
+            semester.value("courses")
+                .toArray();
+
+        for (const QJsonValue &courseValue :
+             courseArray)
+        {
+            const QJsonObject course =
+                courseValue.toObject();
+
+            const QString code =
+                course.value("code")
+                    .toString()
+                    .trimmed();
+            const QString name =
+                course.value("name")
+                    .toString()
+                    .trimmed();
+
+            if (code.isEmpty() &&
+                name.isEmpty())
+            {
+                continue;
+            }
+
+            sqlite3_stmt *courseInsert =
+                nullptr;
+
+            if (!prepareStatement(
+                    database,
+                    "INSERT INTO courses "
+                    "(semester_id, course_code, course_name, credits, "
+                    "status, retaken, excluded_from_cgpa, target_grade) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+                    &courseInsert,
+                    errorMessage))
+            {
+                rollback();
+                return false;
+            }
+
+            sqlite3_bind_int(
+                courseInsert,
+                1,
+                newSemesterID
+            );
+            bindText(courseInsert, 2, code);
+            bindText(courseInsert, 3, name);
+            sqlite3_bind_int(
+                courseInsert,
+                4,
+                qMax(
+                    0,
+                    course.value("credits")
+                        .toInt()
+                )
+            );
+            bindText(
+                courseInsert,
+                5,
+                course.value("status")
+                    .toString("planned")
+            );
+            sqlite3_bind_int(
+                courseInsert,
+                6,
+                course.value("retaken")
+                    .toBool(false)
+                    ? 1
+                    : 0
+            );
+            sqlite3_bind_int(
+                courseInsert,
+                7,
+                course.value(
+                    "excludedFromCgpa"
+                ).toBool(false)
+                    ? 1
+                    : 0
+            );
+            sqlite3_bind_double(
+                courseInsert,
+                8,
+                course.value("targetGrade")
+                    .toDouble(-1.0)
+            );
+
+            if (sqlite3_step(courseInsert) !=
+                SQLITE_DONE)
+            {
+                if (errorMessage)
+                {
+                    *errorMessage =
+                        sqlite3_errmsg(database);
+                }
+
+                sqlite3_finalize(
+                    courseInsert
+                );
+                rollback();
+                return false;
+            }
+
+            sqlite3_finalize(courseInsert);
+            const int newCourseID =
+                static_cast<int>(
+                    sqlite3_last_insert_rowid(
+                        database
+                    )
+                );
+            ++imported.courses;
+
+            const QJsonArray assignmentArray =
+                course.value("assignments")
+                    .toArray();
+
+            for (const QJsonValue &assignmentValue :
+                 assignmentArray)
+            {
+                const QJsonObject assignment =
+                    assignmentValue.toObject();
+
+                const QString assignmentName =
+                    assignment.value("name")
+                        .toString()
+                        .trimmed();
+
+                if (assignmentName.isEmpty())
+                {
+                    continue;
+                }
+
+                const QString categoryName =
+                    assignment.value("category")
+                        .toString("Other")
+                        .trimmed();
+
+                sqlite3_stmt *categoryLookup =
+                    nullptr;
+
+                if (!prepareStatement(
+                        database,
+                        "INSERT OR IGNORE INTO assignment_categories "
+                        "(user_id, name, is_builtin) VALUES (?, ?, 0);",
+                        &categoryLookup,
+                        errorMessage))
+                {
+                    rollback();
+                    return false;
+                }
+
+                sqlite3_bind_int(
+                    categoryLookup,
+                    1,
+                    userID
+                );
+                bindText(
+                    categoryLookup,
+                    2,
+                    categoryName.isEmpty()
+                        ? QString("Other")
+                        : categoryName
+                );
+
+                if (sqlite3_step(categoryLookup) !=
+                    SQLITE_DONE)
+                {
+                    if (errorMessage)
+                    {
+                        *errorMessage =
+                            sqlite3_errmsg(
+                                database
+                            );
+                    }
+
+                    sqlite3_finalize(
+                        categoryLookup
+                    );
+                    rollback();
+                    return false;
+                }
+
+                sqlite3_finalize(categoryLookup);
+
+                sqlite3_stmt *categoryIDStatement =
+                    nullptr;
+
+                if (!prepareStatement(
+                        database,
+                        "SELECT id FROM assignment_categories "
+                        "WHERE user_id = ? AND name = ?;",
+                        &categoryIDStatement,
+                        errorMessage))
+                {
+                    rollback();
+                    return false;
+                }
+
+                sqlite3_bind_int(
+                    categoryIDStatement,
+                    1,
+                    userID
+                );
+                bindText(
+                    categoryIDStatement,
+                    2,
+                    categoryName.isEmpty()
+                        ? QString("Other")
+                        : categoryName
+                );
+
+                int categoryID = -1;
+
+                if (sqlite3_step(
+                        categoryIDStatement) ==
+                    SQLITE_ROW)
+                {
+                    categoryID =
+                        sqlite3_column_int(
+                            categoryIDStatement,
+                            0
+                        );
+                }
+
+                sqlite3_finalize(
+                    categoryIDStatement
+                );
+
+                sqlite3_stmt *assignmentInsert =
+                    nullptr;
+
+                if (!prepareStatement(
+                        database,
+                        "INSERT INTO assignments "
+                        "(course_id, name, grade, weight, due_date, "
+                        "completed, projected_grade, category_id) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+                        &assignmentInsert,
+                        errorMessage))
+                {
+                    rollback();
+                    return false;
+                }
+
+                sqlite3_bind_int(
+                    assignmentInsert,
+                    1,
+                    newCourseID
+                );
+                bindText(
+                    assignmentInsert,
+                    2,
+                    assignmentName
+                );
+                sqlite3_bind_double(
+                    assignmentInsert,
+                    3,
+                    assignment.value("grade")
+                        .toDouble(-1.0)
+                );
+                sqlite3_bind_int(
+                    assignmentInsert,
+                    4,
+                    qBound(
+                        0,
+                        assignment.value("weight")
+                            .toInt(),
+                        100
+                    )
+                );
+                bindText(
+                    assignmentInsert,
+                    5,
+                    assignment.value("dueDate")
+                        .toString()
+                );
+                sqlite3_bind_int(
+                    assignmentInsert,
+                    6,
+                    assignment.value("completed")
+                        .toBool(false)
+                        ? 1
+                        : 0
+                );
+                sqlite3_bind_double(
+                    assignmentInsert,
+                    7,
+                    assignment.value(
+                        "projectedGrade"
+                    ).toDouble(-1.0)
+                );
+
+                if (categoryID >= 0)
+                {
+                    sqlite3_bind_int(
+                        assignmentInsert,
+                        8,
+                        categoryID
+                    );
+                }
+                else
+                {
+                    sqlite3_bind_null(
+                        assignmentInsert,
+                        8
+                    );
+                }
+
+                if (sqlite3_step(assignmentInsert) !=
+                    SQLITE_DONE)
+                {
+                    if (errorMessage)
+                    {
+                        *errorMessage =
+                            sqlite3_errmsg(
+                                database
+                            );
+                    }
+
+                    sqlite3_finalize(
+                        assignmentInsert
+                    );
+                    rollback();
+                    return false;
+                }
+
+                sqlite3_finalize(
+                    assignmentInsert
+                );
+                ++imported.assignments;
+            }
+        }
+    }
+
+    if (!executeSql(
+            database,
+            "COMMIT;",
+            errorMessage))
+    {
+        rollback();
+        return false;
+    }
+
+    if (summary)
+    {
+        *summary = imported;
+    }
+
+    return true;
+}
+
 
 // ============================================================
 // Table Setup
@@ -493,6 +2260,15 @@ bool DatabaseManager::createTables()
         "FOREIGN KEY (retake_of_course_id) REFERENCES courses(id) ON DELETE SET NULL"
         ");"
 
+        "CREATE TABLE IF NOT EXISTS assignment_categories ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "user_id INTEGER NOT NULL, "
+        "name TEXT NOT NULL, "
+        "is_builtin INTEGER NOT NULL DEFAULT 0, "
+        "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, "
+        "UNIQUE(user_id, name)"
+        ");"
+
         "CREATE TABLE IF NOT EXISTS assignments ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
         "course_id INTEGER NOT NULL, "
@@ -502,7 +2278,9 @@ bool DatabaseManager::createTables()
         "due_date TEXT NOT NULL DEFAULT '', "
         "completed INTEGER NOT NULL DEFAULT 0, "
         "projected_grade REAL NOT NULL DEFAULT -1.0, "
-        "FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE"
+        "category_id INTEGER DEFAULT NULL, "
+        "FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE, "
+        "FOREIGN KEY (category_id) REFERENCES assignment_categories(id) ON DELETE SET NULL"
         ");";
 
     char *errorMessage = nullptr;
@@ -663,6 +2441,66 @@ bool DatabaseManager::createTables()
                 << "Failed to add assignment projected_grade column: "
                 << sqlite3_errmsg(database)
                 << std::endl;
+            return false;
+        }
+    }
+
+    if (sqlite3_exec(
+            database,
+            "CREATE TABLE IF NOT EXISTS assignment_categories ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "user_id INTEGER NOT NULL, "
+            "name TEXT NOT NULL, "
+            "is_builtin INTEGER NOT NULL DEFAULT 0, "
+            "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, "
+            "UNIQUE(user_id, name)"
+            ");",
+            nullptr,
+            nullptr,
+            nullptr) != SQLITE_OK)
+    {
+        std::cout << "Failed to create assignment categories table: "
+                  << sqlite3_errmsg(database)
+                  << std::endl;
+        return false;
+    }
+
+    if (!tableHasColumn(
+            database,
+            "assignment_categories",
+            "is_builtin"))
+    {
+        if (sqlite3_exec(
+                database,
+                "ALTER TABLE assignment_categories "
+                "ADD COLUMN is_builtin INTEGER NOT NULL DEFAULT 0;",
+                nullptr,
+                nullptr,
+                nullptr) != SQLITE_OK)
+        {
+            std::cout << "Failed to add assignment category is_builtin column: "
+                      << sqlite3_errmsg(database)
+                      << std::endl;
+            return false;
+        }
+    }
+
+    if (!tableHasColumn(
+            database,
+            "assignments",
+            "category_id"))
+    {
+        if (sqlite3_exec(
+                database,
+                "ALTER TABLE assignments "
+                "ADD COLUMN category_id INTEGER DEFAULT NULL;",
+                nullptr,
+                nullptr,
+                nullptr) != SQLITE_OK)
+        {
+            std::cout << "Failed to add assignment category_id column: "
+                      << sqlite3_errmsg(database)
+                      << std::endl;
             return false;
         }
     }
@@ -4085,7 +5923,8 @@ bool DatabaseManager::addAssignment(
     const std::string &name,
     double grade,
     int weight,
-    const std::string &dueDate)
+    const std::string &dueDate,
+    int categoryID)
 {
     if (database == nullptr || courseID <= 0)
     {
@@ -4138,8 +5977,8 @@ bool DatabaseManager::addAssignment(
 
     const char *sql =
         "INSERT INTO assignments "
-        "(course_id, name, grade, weight, due_date) "
-        "VALUES (?, ?, ?, ?, ?);";
+        "(course_id, name, grade, weight, due_date, category_id) "
+        "VALUES (?, ?, ?, ?, ?, ?);";
 
     sqlite3_stmt *statement = nullptr;
 
@@ -4170,6 +6009,14 @@ bool DatabaseManager::addAssignment(
         -1,
         SQLITE_TRANSIENT
     );
+    if (categoryID > 0)
+    {
+        sqlite3_bind_int(statement, 6, categoryID);
+    }
+    else
+    {
+        sqlite3_bind_null(statement, 6);
+    }
 
     const bool success =
         sqlite3_step(statement) == SQLITE_DONE;
@@ -4183,7 +6030,8 @@ bool DatabaseManager::updateAssignment(
     const std::string &name,
     double grade,
     int weight,
-    const std::string &dueDate)
+    const std::string &dueDate,
+    int categoryID)
 {
     if (database == nullptr || assignmentID <= 0)
     {
@@ -4295,7 +6143,7 @@ bool DatabaseManager::updateAssignment(
 
     const char *sql =
         "UPDATE assignments "
-        "SET name = ?, grade = ?, weight = ?, due_date = ? "
+        "SET name = ?, grade = ?, weight = ?, due_date = ?, category_id = ? "
         "WHERE id = ?;";
 
     sqlite3_stmt *statement = nullptr;
@@ -4326,7 +6174,15 @@ bool DatabaseManager::updateAssignment(
         -1,
         SQLITE_TRANSIENT
     );
-    sqlite3_bind_int(statement, 5, assignmentID);
+    if (categoryID > 0)
+    {
+        sqlite3_bind_int(statement, 5, categoryID);
+    }
+    else
+    {
+        sqlite3_bind_null(statement, 5);
+    }
+    sqlite3_bind_int(statement, 6, assignmentID);
 
     const bool success =
         sqlite3_step(statement) == SQLITE_DONE;
@@ -4602,14 +6458,16 @@ DatabaseManager::loadAssignmentsForCourse(int courseID)
     std::vector<Assignment> assignments;
 
     const char *sql =
-        "SELECT id, name, weight, grade, due_date, completed, "
-        "projected_grade "
-        "FROM assignments "
-        "WHERE course_id = ? "
+        "SELECT a.id, a.name, a.weight, a.grade, a.due_date, a.completed, "
+        "a.projected_grade, COALESCE(a.category_id, -1), "
+        "COALESCE(c.name, 'Uncategorized') "
+        "FROM assignments a "
+        "LEFT JOIN assignment_categories c ON c.id = a.category_id "
+        "WHERE a.course_id = ? "
         "ORDER BY "
-        "completed ASC, "
-        "CASE WHEN due_date = '' THEN 1 ELSE 0 END, "
-        "due_date ASC, id ASC;";
+        "a.completed ASC, "
+        "CASE WHEN a.due_date = '' THEN 1 ELSE 0 END, "
+        "a.due_date ASC, a.id ASC;";
 
     sqlite3_stmt *statement = nullptr;
 
@@ -4666,6 +6524,17 @@ DatabaseManager::loadAssignmentsForCourse(int courseID)
         const double projectedGrade =
             sqlite3_column_double(statement, 6);
 
+        const int categoryID =
+            sqlite3_column_int(statement, 7);
+
+        const unsigned char *categoryText =
+            sqlite3_column_text(statement, 8);
+
+        const std::string categoryName =
+            categoryText
+                ? reinterpret_cast<const char *>(categoryText)
+                : "Uncategorized";
+
         assignments.emplace_back(
             assignmentID,
             assignmentName,
@@ -4673,7 +6542,9 @@ DatabaseManager::loadAssignmentsForCourse(int courseID)
             grade,
             dueDate,
             completed,
-            projectedGrade
+            projectedGrade,
+            categoryID,
+            categoryName
         );
     }
 
@@ -4686,6 +6557,206 @@ DatabaseManager::loadAssignmentsForCourse(int courseID)
 
     sqlite3_finalize(statement);
     return assignments;
+}
+
+std::vector<AssignmentCategory>
+DatabaseManager::loadAssignmentCategoriesForCourse(int courseID)
+{
+    std::vector<AssignmentCategory> categories;
+
+    if (database == nullptr || courseID <= 0)
+    {
+        return categories;
+    }
+
+    sqlite3_stmt *userStatement = nullptr;
+    const char *userSql =
+        "SELECT s.user_id "
+        "FROM courses c "
+        "JOIN semesters s ON s.id = c.semester_id "
+        "WHERE c.id = ?;";
+
+    if (sqlite3_prepare_v2(
+            database,
+            userSql,
+            -1,
+            &userStatement,
+            nullptr) != SQLITE_OK)
+    {
+        return categories;
+    }
+
+    sqlite3_bind_int(userStatement, 1, courseID);
+
+    if (sqlite3_step(userStatement) != SQLITE_ROW)
+    {
+        sqlite3_finalize(userStatement);
+        return categories;
+    }
+
+    const int userID = sqlite3_column_int(userStatement, 0);
+    sqlite3_finalize(userStatement);
+
+    static const char *builtInCategories[] = {
+        "Quiz",
+        "Homework",
+        "Test",
+        "Midterm",
+        "Final",
+        "Project",
+        "Lab",
+        "Presentation",
+        "Participation",
+        "Other"
+    };
+
+    sqlite3_stmt *seedStatement = nullptr;
+    const char *seedSql =
+        "INSERT OR IGNORE INTO assignment_categories "
+        "(user_id, name, is_builtin) VALUES (?, ?, 1);";
+
+    if (sqlite3_prepare_v2(
+            database,
+            seedSql,
+            -1,
+            &seedStatement,
+            nullptr) == SQLITE_OK)
+    {
+        for (const char *categoryName : builtInCategories)
+        {
+            sqlite3_reset(seedStatement);
+            sqlite3_clear_bindings(seedStatement);
+            sqlite3_bind_int(seedStatement, 1, userID);
+            sqlite3_bind_text(
+                seedStatement,
+                2,
+                categoryName,
+                -1,
+                SQLITE_STATIC
+            );
+            sqlite3_step(seedStatement);
+        }
+
+        sqlite3_finalize(seedStatement);
+    }
+
+    const char *sql =
+        "SELECT id, name "
+        "FROM assignment_categories "
+        "WHERE user_id = ? "
+        "ORDER BY "
+        "is_builtin DESC, "
+        "CASE name "
+        "WHEN 'Quiz' THEN 1 "
+        "WHEN 'Homework' THEN 2 "
+        "WHEN 'Test' THEN 3 "
+        "WHEN 'Midterm' THEN 4 "
+        "WHEN 'Final' THEN 5 "
+        "WHEN 'Project' THEN 6 "
+        "WHEN 'Lab' THEN 7 "
+        "WHEN 'Presentation' THEN 8 "
+        "WHEN 'Participation' THEN 9 "
+        "WHEN 'Other' THEN 10 "
+        "ELSE 100 END, "
+        "lower(name), id;";
+
+    sqlite3_stmt *statement = nullptr;
+    if (sqlite3_prepare_v2(database, sql, -1, &statement, nullptr) != SQLITE_OK)
+    {
+        return categories;
+    }
+
+    sqlite3_bind_int(statement, 1, userID);
+
+    while (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        const unsigned char *nameText = sqlite3_column_text(statement, 1);
+        categories.push_back({
+            sqlite3_column_int(statement, 0),
+            nameText ? reinterpret_cast<const char *>(nameText) : ""
+        });
+    }
+
+    sqlite3_finalize(statement);
+    return categories;
+}
+
+int DatabaseManager::ensureAssignmentCategoryForCourse(
+    int courseID,
+    const std::string &name)
+{
+    if (database == nullptr || courseID <= 0)
+    {
+        return -1;
+    }
+
+    const std::string normalizedName = trimCopy(name);
+    if (normalizedName.empty())
+    {
+        return -1;
+    }
+
+    sqlite3_stmt *userStatement = nullptr;
+    const char *userSql =
+        "SELECT s.user_id "
+        "FROM courses c "
+        "JOIN semesters s ON s.id = c.semester_id "
+        "WHERE c.id = ?;";
+
+    if (sqlite3_prepare_v2(database, userSql, -1, &userStatement, nullptr) != SQLITE_OK)
+    {
+        return -1;
+    }
+
+    sqlite3_bind_int(userStatement, 1, courseID);
+    if (sqlite3_step(userStatement) != SQLITE_ROW)
+    {
+        sqlite3_finalize(userStatement);
+        return -1;
+    }
+
+    const int userID = sqlite3_column_int(userStatement, 0);
+    sqlite3_finalize(userStatement);
+
+    sqlite3_stmt *findStatement = nullptr;
+    const char *findSql =
+        "SELECT id FROM assignment_categories "
+        "WHERE user_id = ? AND lower(trim(name)) = lower(trim(?)) "
+        "LIMIT 1;";
+
+    if (sqlite3_prepare_v2(database, findSql, -1, &findStatement, nullptr) != SQLITE_OK)
+    {
+        return -1;
+    }
+
+    sqlite3_bind_int(findStatement, 1, userID);
+    sqlite3_bind_text(findStatement, 2, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
+
+    if (sqlite3_step(findStatement) == SQLITE_ROW)
+    {
+        const int existingID = sqlite3_column_int(findStatement, 0);
+        sqlite3_finalize(findStatement);
+        return existingID;
+    }
+    sqlite3_finalize(findStatement);
+
+    sqlite3_stmt *insertStatement = nullptr;
+    const char *insertSql =
+        "INSERT INTO assignment_categories "
+        "(user_id, name, is_builtin) VALUES (?, ?, 0);";
+
+    if (sqlite3_prepare_v2(database, insertSql, -1, &insertStatement, nullptr) != SQLITE_OK)
+    {
+        return -1;
+    }
+
+    sqlite3_bind_int(insertStatement, 1, userID);
+    sqlite3_bind_text(insertStatement, 2, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
+
+    const bool inserted = sqlite3_step(insertStatement) == SQLITE_DONE;
+    sqlite3_finalize(insertStatement);
+
+    return inserted ? static_cast<int>(sqlite3_last_insert_rowid(database)) : -1;
 }
 
 // ============================================================

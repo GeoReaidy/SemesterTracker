@@ -192,14 +192,18 @@ Assignment::Assignment(int id,
                        double grade,
                        std::string dueDate,
                        bool completed,
-                       double projectedGrade)
+                       double projectedGrade,
+                       int categoryID,
+                       std::string categoryName)
     : assignmentName(validateAssignmentName(name)),
       assignmentWeight(weight),
       assignmentGrade(grade),
       assignmentID(id),
       dueDate(validateDueDate(dueDate)),
       completed(completed),
-      projectedGrade(projectedGrade)
+      projectedGrade(projectedGrade),
+      categoryID(categoryID),
+      categoryName(trimCopy(categoryName).empty() ? "Uncategorized" : trimCopy(categoryName))
 {
     validateAssignmentID(assignmentID);
     validateWeight(assignmentWeight);
@@ -272,6 +276,16 @@ double Assignment::getEffectiveGrade() const
     return projectedGrade;
 }
 
+int Assignment::getCategoryID() const
+{
+    return categoryID;
+}
+
+std::string Assignment::getCategoryName() const
+{
+    return categoryName;
+}
+
 void Assignment::setName(const std::string &name)
 {
     assignmentName = validateAssignmentName(name);
@@ -304,4 +318,11 @@ void Assignment::setProjectedGrade(double grade)
 {
     validateProjectedGrade(grade);
     projectedGrade = grade;
+}
+
+void Assignment::setCategory(int id, const std::string &name)
+{
+    categoryID = id;
+    const std::string trimmed = trimCopy(name);
+    categoryName = trimmed.empty() ? "Uncategorized" : trimmed;
 }

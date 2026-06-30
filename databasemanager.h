@@ -11,10 +11,33 @@
 #include <utility>
 #include <vector>
 
+
+
+struct UserDataImportSummary
+{
+    int semesters = 0;
+    int courses = 0;
+    int assignments = 0;
+    int categories = 0;
+};
+
+enum class UserDataImportMode
+{
+    Merge,
+    Replace
+};
+
+struct AssignmentCategory
+{
+    int id;
+    std::string name;
+};
+
 class DatabaseManager
 {
 private:
     sqlite3 *database;
+    std::string currentDatabasePath;
 
 public:
     DatabaseManager();
@@ -24,6 +47,46 @@ public:
     bool openDatabase(const std::string &databasePath);
     void closeDatabase();
     bool createTables();
+
+    // Database backup and restore
+    bool backupDatabase(
+        const std::string &destinationPath,
+        std::string *errorMessage = nullptr
+    );
+
+    bool restoreDatabase(
+        const std::string &sourcePath,
+        std::string *safetyBackupPath = nullptr,
+        std::string *errorMessage = nullptr
+    );
+
+    bool validateDatabaseFile(
+        const std::string &path,
+        std::string *errorMessage = nullptr
+    ) const;
+
+    const std::string &databasePath() const;
+
+    bool exportUserData(
+        int userID,
+        const std::string &destinationPath,
+        std::string *errorMessage = nullptr
+    ) const;
+
+    bool inspectUserDataFile(
+        const std::string &sourcePath,
+        UserDataImportSummary *summary,
+        std::string *errorMessage = nullptr
+    ) const;
+
+    bool importUserData(
+        int userID,
+        const std::string &sourcePath,
+        UserDataImportMode mode,
+        UserDataImportSummary *summary = nullptr,
+        std::string *errorMessage = nullptr
+    );
+
 
     // Utility
     int getLastInsertID() const;
@@ -180,13 +243,15 @@ public:
                        const std::string &name,
                        double grade,
                        int weight,
-                       const std::string &dueDate = "");
+                       const std::string &dueDate = "",
+                       int categoryID = -1);
 
     bool updateAssignment(int assignmentID,
                           const std::string &name,
                           double grade,
                           int weight,
-                          const std::string &dueDate = "");
+                          const std::string &dueDate = "",
+                          int categoryID = -1);
 
     bool deleteAssignment(int assignmentID);
 
@@ -202,6 +267,14 @@ public:
     );
 
     std::vector<Assignment> loadAssignmentsForCourse(int courseID);
+
+    std::vector<AssignmentCategory>
+    loadAssignmentCategoriesForCourse(int courseID);
+
+    int ensureAssignmentCategoryForCourse(
+        int courseID,
+        const std::string &name
+    );
 };
 
 #endif

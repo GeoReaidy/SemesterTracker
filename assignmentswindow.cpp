@@ -420,6 +420,14 @@ void AssignmentsWindow::addAssignmentRow(
         Qt::UserRole + 5,
         assignment.isCompleted()
     );
+    item->setData(
+        Qt::UserRole + 6,
+        assignment.getCategoryID()
+    );
+    item->setData(
+        Qt::UserRole + 7,
+        QString::fromStdString(assignment.getCategoryName())
+    );
 
     auto *rowWidget =
         new QWidget(ui->assignmentsListWidget);
@@ -493,7 +501,8 @@ void AssignmentsWindow::addAssignmentRow(
             : "Not graded";
 
     auto *detailsLabel = new QLabel(
-        QString("Weight: %1%   •   Grade: %2   •   Due: %3")
+        QString("%1   •   Weight: %2%   •   Grade: %3   •   Due: %4")
+            .arg(QString::fromStdString(assignment.getCategoryName()))
             .arg(assignment.getWeightPercentage(), 0, 'f', 0)
             .arg(gradeText)
             .arg(formattedDueDate),
@@ -758,7 +767,10 @@ void AssignmentsWindow::editAssignmentRow(
             item->data(Qt::UserRole + 4)
                 .toString()
                 .toStdString(),
-            item->data(Qt::UserRole + 5).toBool()
+            item->data(Qt::UserRole + 5).toBool(),
+            -1.0,
+            item->data(Qt::UserRole + 6).toInt(),
+            item->data(Qt::UserRole + 7).toString().toStdString()
         );
 
         AssignmentEditorDialog dialog(

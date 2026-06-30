@@ -42,6 +42,10 @@ private:
     void deleteAccount();
     void loadReminderPreferences();
     void saveReminderPreferences();
+    void createDatabaseBackup();
+    void restoreDatabaseBackup();
+    void exportUserData();
+    void importUserData();
 
     DatabaseManager &database;
     AuthService authService;
